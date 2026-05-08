@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gritnord Content Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0f10;
+    --bg2: #141618;
+    --bg3: #1c1f21;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0f0f0;
+    --muted: #888;
+    --dim: #555;
+    --accent: #4af09e;
+    --accent2: #2db87a;
+    --blue: #5b9cf6;
+    --amber: #f0a429;
+    --red: #f06060;
+    --purple: #a78bfa;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; min-height: 100vh; }
+  a { color: var(--accent); text-decoration: none; }
+
+  /* Layout */
+  .shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--bg2); border-right: 1px solid var(--border); padding: 28px 0; display: flex; flex-direction: column; }
+  .main { padding: 32px; overflow-y: auto; }
+
+  /* Sidebar */
+  .logo { padding: 0 20px 28px; border-bottom: 1px solid var(--border); }
+  .logo-mark { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; }
+  .logo-name { font-size: 17px; font-weight: 600; color: var(--text); margin-top: 4px; }
+  .logo-sub { font-size: 11px; color: var(--accent); font-weight: 500; }
+  .nav { padding: 16px 12px; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; margin-bottom: 2px; border: none; background: none; width: 100%; text-align: left; }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: rgba(74,240,158,0.08); color: var(--accent); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+  .engine-status { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* Cards */
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .card-sm { padding: 16px; }
+  .card-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+
+  /* Stats grid */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .stat-label { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .stat-value { font-size: 26px; font-weight: 600; color: var(--text); line-height: 1; }
+  .stat-sub { font-size: 12px; color: var(--dim); margin-top: 4px; }
+
+  /* Content list */
+  .content-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.15s; }
+  .content-item:hover { border-color: var(--border2); }
+  .content-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .badge { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .badge-channel { background: rgba(91,156,246,0.12); color: var(--blue); }
+  .badge-pending { background: rgba(240,164,41,0.12); color: var(--amber); }
+  .badge-approved { background: rgba(74,240,158,0.12); color: var(--accent); }
+  .badge-published { background: rgba(167,139,250,0.12); color: var(--purple); }
+  .badge-draft { background: rgba(136,136,136,0.12); color: var(--muted); }
+  .content-topic { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; line-height: 1.4; }
+  .content-preview { font-size: 12px; color: var(--muted); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .content-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+  .score-pill { font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 20px; }
+  .score-high { background: rgba(74,240,158,0.12); color: var(--accent); }
+  .score-mid { background: rgba(240,164,41,0.12); color: var(--amber); }
+  .score-low { background: rgba(240,96,96,0.12); color: var(--red); }
+  .score-none { background: var(--bg3); color: var(--dim); }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: 16px; padding: 28px; width: 680px; max-width: 95vw; max-height: 85vh; overflow-y: auto; }
+  .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+  .modal-close { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; }
+  .content-body { font-size: 14px; line-height: 1.75; color: var(--text); white-space: pre-wrap; background: var(--bg3); border-radius: 10px; padding: 20px; font-family: 'DM Mono', monospace; font-size: 13px; }
+
+  /* Score input */
+  .score-section { background: var(--bg3); border-radius: 10px; padding: 16px; margin-top: 20px; }
+  .score-inputs { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 12px 0; }
+  .input-group { display: flex; flex-direction: column; gap: 4px; }
+  .input-group label { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .input-group input { background: var(--bg2); border: 1px solid var(--border2); border-radius: 6px; padding: 7px 10px; color: var(--text); font-size: 13px; width: 100%; }
+
+  /* Generate panel */
+  .gen-panel { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+  .gen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .field label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 6px; }
+  .field input, .field select, .field textarea { background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 13px; width: 100%; font-family: inherit; }
+  .field textarea { resize: vertical; min-height: 80px; }
+
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; font-family: inherit; }
+  .btn-primary { background: var(--accent); color: #0a1a12; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border2); }
+  .btn-secondary:hover { border-color: var(--border); background: var(--bg2); }
+  .btn-danger { background: rgba(240,96,96,0.1); color: var(--red); border: 1px solid rgba(240,96,96,0.2); }
+
+  /* Cycle log */
+  .cycle-log { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); line-height: 1.8; }
+  .cycle-log .insight { color: var(--text); }
+  .cycle-log .up { color: var(--accent); }
+  .cycle-log .down { color: var(--amber); }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; }
+  .tab { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: none; color: var(--muted); transition: all 0.15s; }
+  .tab.active { background: var(--bg3); color: var(--text); }
+
+  /* Weight bars */
+  .weight-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .weight-label { font-size: 12px; color: var(--muted); width: 160px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .weight-bar-bg { flex: 1; height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+  .weight-bar { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.5s; }
+  .weight-val { font-size: 11px; color: var(--dim); width: 36px; text-align: right; font-family: 'DM Mono', monospace; }
+
+  /* Section header */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .section-title { font-size: 15px; font-weight: 600; color: var(--text); }
+
+  /* Filter bar */
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-btn { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid var(--border2); background: none; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .filter-btn.active { background: var(--bg3); color: var(--text); border-color: var(--border); }
+
+  /* Copy btn */
+  .copy-btn { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; border: 1px solid var(--border2); background: var(--bg3); color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .copy-btn:hover { color: var(--text); }
+
+  /* Grid */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">Gritnord</div>
+      <div class="logo-name">Content Engine</div>
+      <div class="logo-sub">Autonomous · Self-learning</div>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" onclick="showView('dashboard')"><span class="nav-dot"></span>Dashboard</button>
+      <button class="nav-item" onclick="showView('generate')"><span class="nav-dot"></span>Generate</button>
+      <button class="nav-item" onclick="showView('content')"><span class="nav-dot"></span>Content Library</button>
+      <button class="nav-item" onclick="showView('learning')"><span class="nav-dot"></span>Learning Engine</button>
+      <button class="nav-item" onclick="showView('cycles')"><span class="nav-dot"></span>Cycle History</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="engine-status">
+        <div class="pulse" id="statusDot"></div>
+        <span id="statusText">Connecting...</span>
+      </div>
+      <div style="font-size:11px;color:var(--dim);margin-top:6px" id="nextCycleText"></div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- DASHBOARD VIEW -->
+    <div id="view-dashboard" class="view">
+      <div class="section-header" style="margin-bottom:24px">
+        <div>
+          <h1 style="font-size:20px;font-weight:600;margin-bottom:4px">Overview</h1>
+          <p style="color:var(--muted);font-size:13px">Autonomous content generation and performance learning</p>
+        </div>
+        <button class="btn btn-secondary" onclick="runCycle()">▷ Run Cycle Now</button>
+      </div>
+
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-label">Total Generated</div><div class="stat-value" id="statTotal">—</div></div>
+        <div class="stat-card"><div class="stat-label">Scored Items</div><div class="stat-value" id="statScored">—</div></div>
+        <div class="stat-card"><div class="stat-label">Learning Cycles</div><div class="stat-value" id="statCycles">—</div></div>
+        <div class="stat-card"><div class="stat-label">Avg Score</div><div class="stat-value" id="statAvgScore">—</div></div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title">Last Learning Cycle</div>
+          <div class="cycle-log" id="lastCycleLog"><span style="color:var(--dim)">No cycles run yet. Trigger one manually or wait for 06:00 / 18:00 UTC.</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Top Weight Signals</div>
+          <div id="topWeights"></div>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top:24px">
+        <div class="section-title">Recent Content</div>
+        <a href="#" onclick="showView('content')">View all →</a>
+      </div>
+      <div id="recentContent"></div>
+    </div>
+
+    <!-- GENERATE VIEW -->
+    <div id="view-generate" class="view" style="display:none">
+      <div class="section-header" style="margin-bottom:24px">
+        <div>
+          <h1 style="font-size:20px;font-weight:600;margin-bottom:4px">Generate Content</h1>
+          <p style="color:var(--muted);font-size:13px">On-demand content for any channel</p>
+        </div>
+      </div>
+
+      <div class="gen-panel">
+        <div class="field" style="margin-bottom:12px">
+          <label>Channel</label>
+          <select id="genChannel"></select>
+        </div>
+        <div class="field" style="margin-bottom:12px">
+          <label>Topic / Brief</label>
+          <textarea id="genTopic" placeholder="e.g. Why performance-based outbound beats retainer models for EU startups"></textarea>
+        </div>
+        <div class="gen-grid">
+          <div class="field"><label>Angle</label><select id="genAngle"></select></div>
+          <div class="field"><label>Tone</label><select id="genTone"></select></div>
+        </div>
+        <button class="btn btn-primary" id="genBtn" onclick="generate()">⚡ Generate</button>
+      </div>
+
+      <div id="genOutput" style="display:none" class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div>
+            <span id="genOutLabel" class="badge badge-channel" style="font-size:11px"></span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="copy-btn" onclick="copyGen()">Copy</button>
+            <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="saveGen()">Save to Library</button>
+          </div>
+        </div>
+        <div id="genOutText" class="content-body"></div>
+      </div>
+    </div>
+
+    <!-- CONTENT LIBRARY VIEW -->
+    <div id="view-content" class="view" style="display:none">
+      <div class="section-header" style="margin-bottom:16px">
+        <div>
+          <h1 style="font-size:20px;font-weight:600;margin-bottom:4px">Content Library</h1>
+          <p style="color:var(--muted);font-size:13px">All generated content — score to train the engine</p>
+        </div>
+      </div>
+      <div class="filter-bar" id="channelFilters"></div>
+      <div id="contentList"></div>
+    </div>
+
+    <!-- LEARNING ENGINE VIEW -->
+    <div id="view-learning" class="view" style="display:none">
+      <div class="section-header" style="margin-bottom:24px">
+        <div>
+          <h1 style="font-size:20px;font-weight:600;margin-bottom:4px">Learning Engine</h1>
+          <p style="color:var(--muted);font-size:13px">Self-adjusting weights based on content performance</p>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title">Angle Weights</div>
+          <div id="angleWeights"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Tone Weights</div>
+          <div id="toneWeights"></div>
+        </div>
+      </div>
+      <div class="two-col" style="margin-top:16px">
+        <div class="card">
+          <div class="card-title">Channel Weights</div>
+          <div id="channelWeights"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Topic Cluster Weights</div>
+          <div id="clusterWeights"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CYCLES VIEW -->
+    <div id="view-cycles" class="view" style="display:none">
+      <div class="section-header" style="margin-bottom:24px">
+        <div>
+          <h1 style="font-size:20px;font-weight:600;margin-bottom:4px">Cycle History</h1>
+          <p style="color:var(--muted);font-size:13px">12-hour learning and generation cycles</p>
+        </div>
+        <button class="btn btn-secondary" onclick="runCycle()">▷ Run Cycle Now</button>
+      </div>
+      <div id="cycleList"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Content Modal -->
+<div class="modal-overlay" id="contentModal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="content-meta" id="modalMeta"></div>
+        <div style="font-size:15px;font-weight:600;color:var(--text)" id="modalTopic"></div>
+      </div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="content-body" id="modalBody"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="copy-btn" onclick="copyModal()">Copy content</button>
+      <select id="modalStatus" onchange="updateStatus()" style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:6px 10px;color:var(--text);font-size:12px;font-family:inherit">
+        <option value="pending">Pending</option>
+        <option value="draft">Draft</option>
+        <option value="approved">Approved</option>
+        <option value="published">Published</option>
+      </select>
+    </div>
+    <div class="score-section">
+      <div class="card-title">Score This Content (trains the engine)</div>
+      <div style="margin:10px 0;font-size:13px;color:var(--muted)">Enter engagement data, or set a manual score (0–100)</div>
+      <div class="score-inputs">
+        <div class="input-group"><label>Impressions</label><input type="number" id="sImpressions" placeholder="0"></div>
+        <div class="input-group"><label>Likes / Reactions</label><input type="number" id="sLikes" placeholder="0"></div>
+        <div class="input-group"><label>Comments</label><input type="number" id="sComments" placeholder="0"></div>
+        <div class="input-group"><label>Shares / Reposts</label><input type="number" id="sShares" placeholder="0"></div>
+        <div class="input-group"><label>Clicks / Opens</label><input type="number" id="sClicks" placeholder="0"></div>
+        <div class="input-group"><label>Manual Score (0–100)</label><input type="number" id="sManual" placeholder="Optional" min="0" max="100"></div>
+      </div>
+      <button class="btn btn-primary" onclick="submitScore()" style="font-size:12px;padding:8px 16px">Submit Score</button>
+      <span id="scoreResult" style="font-size:12px;color:var(--accent);margin-left:12px"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = "";  // Same origin — set to your deployed URL if separate
+let currentItem = null;
+let allContent = [];
+let activeChannelFilter = "all";
+let state = {};
+let options = {};
+
+async function api(path, method = "GET", body) {
+  const res = await fetch(API + path, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  return res.json();
+}
+
+function formatDate(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return d.toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+function timeUntil(iso) {
+  if (!iso) return "";
+  const diff = new Date(iso) - Date.now();
+  if (diff < 0) return "Soon";
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  return `${h}h ${m}m`;
+}
+
+function scorePill(score) {
+  if (score === null || score === undefined) return `<span class="score-pill score-none">No score</span>`;
+  const cls = score >= 60 ? "score-high" : score >= 35 ? "score-mid" : "score-low";
+  return `<span class="score-pill ${cls}">${score}/100</span>`;
+}
+
+function channelBadge(ch) {
+  return `<span class="badge badge-channel">${ch}</span>`;
+}
+
+function statusBadge(status) {
+  return `<span class="badge badge-${status || 'draft'}">${status || 'draft'}</span>`;
+}
+
+async function loadStatus() {
+  try {
+    state = await api("/api/status");
+    document.getElementById("statusDot").style.background = "var(--accent)";
+    document.getElementById("statusText").textContent = "Engine running";
+    if (state.engine?.nextCycleAt) {
+      document.getElementById("nextCycleText").textContent = `Next cycle in ${timeUntil(state.engine.nextCycleAt)}`;
+    }
+    document.getElementById("statTotal").textContent = state.content?.total ?? "—";
+    document.getElementById("statScored").textContent = state.content?.scored ?? "—";
+    document.getElementById("statCycles").textContent = state.engine?.totalCycles ?? "—";
+    if (state.recentCycle?.report?.avgScore !== undefined) {
+      document.getElementById("statAvgScore").textContent = state.recentCycle.report.avgScore + "/100";
+    }
+    renderLastCycle(state.recentCycle);
+    renderWeightBars("topWeights", state.weights, 5);
+    renderWeightSections(state.weights);
+  } catch(e) {
+    document.getElementById("statusText").textContent = "Offline — start server";
+    document.getElementById("statusDot").style.background = "var(--red)";
+  }
+}
+
+function renderLastCycle(cycle) {
+  const el = document.getElementById("lastCycleLog");
+  if (!cycle || !cycle.report) { el.innerHTML = '<span style="color:var(--dim)">No cycles yet.</span>'; return; }
+  const { insights = [], recommendations = [] } = cycle.report;
+  el.innerHTML = [...insights, ...recommendations.map(r => "💡 " + r)]
+    .map(i => `<div class="${i.includes("↑") ? "up" : i.includes("↓") ? "down" : "insight"}">${i}</div>`)
+    .join("");
+  el.innerHTML += `<div style="color:var(--dim);margin-top:6px;font-size:11px">${formatDate(cycle.ts)} · ${cycle.itemsGenerated} items generated</div>`;
+}
+
+function renderWeightBars(containerId, weights, limit) {
+  if (!weights) return;
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const all = [];
+  for (const [dim, keys] of Object.entries(weights)) {
+    for (const [key, val] of Object.entries(keys)) {
+      all.push({ dim, key, val });
+    }
+  }
+  all.sort((a, b) => b.val - a.val);
+  const items = limit ? all.slice(0, limit) : all;
+  const max = Math.max(...items.map(i => i.val), 3.5);
+  container.innerHTML = items.map(({ key, val }) => `
+    <div class="weight-item">
+      <div class="weight-label" title="${key}">${key}</div>
+      <div class="weight-bar-bg"><div class="weight-bar" style="width:${Math.round((val/max)*100)}%"></div></div>
+      <div class="weight-val">${val.toFixed(2)}</div>
+    </div>`).join("");
+}
+
+function renderWeightSections(weights) {
+  if (!weights) return;
+  const map = { angles: "angleWeights", tones: "toneWeights", channels: "channelWeights", clusters: "clusterWeights" };
+  for (const [dim, elId] of Object.entries(map)) {
+    if (!weights[dim]) continue;
+    const items = Object.entries(weights[dim]).map(([k, v]) => ({ key: k, val: v })).sort((a, b) => b.val - a.val);
+    const max = Math.max(...items.map(i => i.val), 3.5);
+    const container = document.getElementById(elId);
+    if (!container) continue;
+    container.innerHTML = items.map(({ key, val }) => `
+      <div class="weight-item">
+        <div class="weight-label" title="${key}">${key}</div>
+        <div class="weight-bar-bg"><div class="weight-bar" style="width:${Math.round((val/max)*100)}%"></div></div>
+        <div class="weight-val">${val.toFixed(2)}</div>
+      </div>`).join("");
+  }
+}
+
+async function loadContent() {
+  const res = await api(`/api/content?limit=100`);
+  allContent = res.items || [];
+  renderContentList();
+  document.getElementById("recentContent").innerHTML = allContent.slice(0, 5).map(renderContentCard).join("");
+}
+
+function renderContentList() {
+  const filtered = activeChannelFilter === "all" ? allContent : allContent.filter(c => c.channel === activeChannelFilter);
+  document.getElementById("contentList").innerHTML = filtered.length
+    ? filtered.map(renderContentCard).join("")
+    : '<div style="color:var(--muted);padding:20px 0">No content yet — generate some or run a cycle.</div>';
+}
+
+function renderContentCard(item) {
+  const preview = item.content?.slice(0, 120) || "";
+  return `
+    <div class="content-item" onclick="openModal('${item.id}')">
+      <div class="content-meta">
+        ${channelBadge(item.channelLabel || item.channel)}
+        ${statusBadge(item.status)}
+        <span style="font-size:11px;color:var(--dim)">${formatDate(item.generatedAt)}</span>
+      </div>
+      <div class="content-topic">${item.topic || "—"}</div>
+      <div class="content-preview">${preview}${preview.length === 120 ? "…" : ""}</div>
+      <div class="content-footer">
+        <span style="font-size:12px;color:var(--dim)">${item.angle || ""} · ${item.tone || ""}</span>
+        ${scorePill(item.score)}
+      </div>
+    </div>`;
+}
+
+async function loadOptions() {
+  try {
+    options = await api("/api/options");
+    const channels = await api("/api/channels");
+
+    const chanSel = document.getElementById("genChannel");
+    chanSel.innerHTML = channels.map(ch => `<option value="${ch.id}">${ch.label}</option>`).join("");
+
+    document.getElementById("genAngle").innerHTML = options.angles.map(a => `<option>${a}</option>`).join("");
+    document.getElementById("genTone").innerHTML = options.tones.map(t => `<option>${t}</option>`).join("");
+
+    // Channel filter buttons
+    const filters = document.getElementById("channelFilters");
+    filters.innerHTML = `<button class="filter-btn active" onclick="filterChannel('all',this)">All</button>` +
+      channels.map(ch => `<button class="filter-btn" onclick="filterChannel('${ch.id}',this)">${ch.label}</button>`).join("");
+  } catch {}
+}
+
+function filterChannel(id, btn) {
+  activeChannelFilter = id;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderContentList();
+}
+
+async function generate() {
+  const topic = document.getElementById("genTopic").value.trim();
+  if (!topic) return;
+  const btn = document.getElementById("genBtn");
+  btn.disabled = true;
+  btn.textContent = "Generating...";
+  document.getElementById("genOutput").style.display = "none";
+
+  try {
+    const item = await api("/api/generate", "POST", {
+      channel: document.getElementById("genChannel").value,
+      topic,
+      angle: document.getElementById("genAngle").value,
+      tone: document.getElementById("genTone").value
+    });
+    document.getElementById("genOutLabel").textContent = item.channelLabel || item.channel;
+    document.getElementById("genOutText").textContent = item.content;
+    document.getElementById("genOutput").style.display = "block";
+    window._genItem = item;
+    allContent.unshift(item);
+  } catch(e) {
+    alert("Generation failed: " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "⚡ Generate";
+  }
+}
+
+function copyGen() {
+  const text = document.getElementById("genOutText").textContent;
+  navigator.clipboard.writeText(text);
+}
+
+function saveGen() {
+  if (window._genItem) {
+    loadContent();
+    showView("content");
+  }
+}
+
+function openModal(id) {
+  currentItem = allContent.find(c => c.id === id);
+  if (!currentItem) return;
+  document.getElementById("modalMeta").innerHTML = channelBadge(currentItem.channelLabel || currentItem.channel) + " " + statusBadge(currentItem.status);
+  document.getElementById("modalTopic").textContent = currentItem.topic;
+  document.getElementById("modalBody").textContent = currentItem.content;
+  document.getElementById("modalStatus").value = currentItem.status || "pending";
+  document.getElementById("scoreResult").textContent = currentItem.score !== null && currentItem.score !== undefined ? `Current score: ${currentItem.score}/100` : "";
+  ["sImpressions","sLikes","sComments","sShares","sClicks","sManual"].forEach(id => { document.getElementById(id).value = ""; });
+  document.getElementById("contentModal").classList.add("open");
+}
+
+function closeModal(e) { if (e.target.id === "contentModal") closeModalDirect(); }
+function closeModalDirect() { document.getElementById("contentModal").classList.remove("open"); currentItem = null; }
+function copyModal() {
+  navigator.clipboard.writeText(document.getElementById("modalBody").textContent);
+}
+
+async function updateStatus() {
+  if (!currentItem) return;
+  const status = document.getElementById("modalStatus").value;
+  await api("/api/content/" + currentItem.id, "PATCH", { status });
+  currentItem.status = status;
+  const idx = allContent.findIndex(c => c.id === currentItem.id);
+  if (idx !== -1) allContent[idx].status = status;
+  renderContentList();
+}
+
+async function submitScore() {
+  if (!currentItem) return;
+  const body = {
+    engagementData: {
+      impressions: Number(document.getElementById("sImpressions").value) || 0,
+      likes: Number(document.getElementById("sLikes").value) || 0,
+      comments: Number(document.getElementById("sComments").value) || 0,
+      shares: Number(document.getElementById("sShares").value) || 0,
+      clicks: Number(document.getElementById("sClicks").value) || 0,
+    }
+  };
+  const manual = document.getElementById("sManual").value;
+  if (manual !== "") body.manualScore = Number(manual);
+
+  try {
+    const updated = await api("/api/score/" + currentItem.id, "POST", body);
+    document.getElementById("scoreResult").textContent = `Score saved: ${updated.score}/100`;
+    const idx = allContent.findIndex(c => c.id === currentItem.id);
+    if (idx !== -1) allContent[idx] = updated;
+    currentItem = updated;
+  } catch(e) {
+    document.getElementById("scoreResult").textContent = "Error saving score";
+  }
+}
+
+async function runCycle() {
+  if (!confirm("Run a learning + generation cycle now?")) return;
+  await api("/api/cycle/run", "POST");
+  setTimeout(() => { loadStatus(); loadContent(); }, 2000);
+}
+
+async function loadCycles() {
+  const cycles = await api("/api/cycles");
+  document.getElementById("cycleList").innerHTML = cycles.reverse().map(c => `
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text)">Cycle — ${formatDate(c.ts)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${c.itemsGenerated} items generated · Weights ${c.weightsUpdated ? "updated" : "unchanged"}</div>
+        </div>
+        <span style="font-size:12px;padding:3px 10px;border-radius:20px;background:rgba(74,240,158,0.08);color:var(--accent)">Score: ${c.report?.avgScore ?? "—"}/100</span>
+      </div>
+      <div class="cycle-log">${(c.report?.insights || []).map(i => `<div>${i}</div>`).join("")}</div>
+      ${c.report?.recommendations?.length ? `<div style="margin-top:8px;font-size:12px;color:var(--amber)">${c.report.recommendations.map(r => "💡 " + r).join("<br>")}</div>` : ""}
+    </div>`).join("") || '<div style="color:var(--muted)">No cycles yet.</div>';
+}
+
+function showView(name) {
+  document.querySelectorAll(".view").forEach(v => v.style.display = "none");
+  document.getElementById("view-" + name).style.display = "block";
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+  const nav = [...document.querySelectorAll(".nav-item")].find(n => n.getAttribute("onclick")?.includes(name));
+  if (nav) nav.classList.add("active");
+  if (name === "content") renderContentList();
+  if (name === "cycles") loadCycles();
+  if (name === "learning") renderWeightSections(state.weights);
+}
+
+// Init
+loadOptions();
+loadStatus();
+loadContent();
+setInterval(loadStatus, 30000);
+</script>
+</body>
+</html>
