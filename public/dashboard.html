@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gritnord Content Engine</title>
+<link rel="icon" type="image/png" href="/GN_FAV-03.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root, [data-theme="dark"] {
+    --bg: #000000;
+    --surface: #0f0f0f;
+    --surface2: #161616;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.16);
+    --text: #ffffff;
+    --muted: rgba(255,255,255,0.72);
+    --muted2: rgba(255,255,255,0.48);
+    --green: #22c55e;
+    --red: #f43f5e;
+    --grad: linear-gradient(135deg, #f472b6, #fb923c, #a855f7, #3b82f6);
+    --font: 'Inter', system-ui, sans-serif;
+  }
+  [data-theme="light"] {
+    --bg: #f5f5f5;
+    --surface: #ffffff;
+    --surface2: #f0f0f0;
+    --border: rgba(0,0,0,0.09);
+    --border-hover: rgba(0,0,0,0.18);
+    --text: #111111;
+    --muted: rgba(0,0,0,0.45);
+    --muted2: rgba(0,0,0,0.28);
+    --green: #16a34a;
+    --red: #dc2626;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+  /* ── Layout ── */
+  .shell { display: flex; min-height: 100vh; }
+  .sidebar { width: 232px; background: var(--surface); border-right: 1px solid var(--border); padding: 0; flex-shrink: 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+  .topbar { display: flex; align-items: center; justify-content: flex-end; padding: 12px 48px; border-bottom: 1px solid var(--border); gap: 10px; flex-shrink: 0; }
+  .main-content { padding: 40px 48px; flex: 1; }
+  .theme-toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); text-decoration: none; padding: 4px 12px; border: 1px solid var(--border); border-radius: 9999px; cursor: pointer; background: none; font-family: inherit; transition: color 0.15s, border-color 0.15s; }
+  .theme-toggle:hover { color: var(--text); border-color: var(--border-hover); }
+
+  /* ── Sidebar ── */
+  .logo { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
+  .logo-inner { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 28px; height: 28px; border-radius: 7px; overflow: hidden; }
+  .logo-icon img { width: 100%; height: 100%; object-fit: cover; }
+  .logo-text { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
+  .logo-sub { font-size: 10px; color: var(--muted); margin-top: 1px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  nav { padding: 12px 8px; flex: 1; }
+  nav a {
+    display: flex; align-items: center; gap: 9px; padding: 8px 12px;
+    color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500;
+    border-radius: 8px; transition: all 0.15s; cursor: pointer; margin-bottom: 1px;
+  }
+  nav a:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  nav a.active { color: var(--text); background: rgba(255,255,255,0.08); }
+  [data-theme="light"] nav a:hover  { background: rgba(0,0,0,0.05); }
+  [data-theme="light"] nav a.active { background: rgba(0,0,0,0.07); }
+  nav a .icon { font-size: 14px; width: 18px; text-align: center; opacity: 0.8; }
+
+  .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+  .status-row { display: flex; align-items: center; gap: 7px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; animation: pulse 2.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  .status-label { font-size: 11px; color: var(--muted); }
+
+  /* ── Pages ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── Page header ── */
+  .page-header { margin-bottom: 32px; }
+  .page-header h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+  .page-header p { color: var(--muted); font-size: 13px; margin-top: 5px; line-height: 1.5; }
+
+  /* ── Stat cards ── */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin-bottom: 36px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 20px 22px; transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--border-hover); }
+  .card-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+  .card-value { font-size: 32px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+  .card-value.grad { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .card-value.green { color: var(--green); }
+
+  /* ── Section title ── */
+  .section-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+
+  /* ── Tables ── */
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { padding: 11px 16px; text-align: left; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; border-bottom: 1px solid var(--border); }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background 0.1s; }
+  tbody tr:hover td { background: rgba(255,255,255,0.03); }
+
+  /* ── Badges ── */
+  .badge { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; }
+  .badge-draft    { background: rgba(255,255,255,0.06); color: var(--muted); }
+  .badge-scored   { background: rgba(168,85,247,0.15); color: #c084fc; }
+  .badge-approved { background: rgba(34,197,94,0.12); color: var(--green); }
+  .badge-published{ background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .badge-rejected { background: rgba(244,63,94,0.12); color: var(--red); }
+  [data-theme="light"] .badge-draft     { background: rgba(0,0,0,0.05); }
+  [data-theme="light"] .badge-scored    { background: rgba(168,85,247,0.1); color: #7c3aed; }
+  [data-theme="light"] .badge-approved  { background: rgba(34,197,94,0.1); }
+  [data-theme="light"] .badge-published { background: rgba(59,130,246,0.1); color: #1d4ed8; }
+  [data-theme="light"] .badge-rejected  { background: rgba(244,63,94,0.1); }
+
+  /* ── Channel tags ── */
+  .ch { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 5px; font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7); letter-spacing: 0.02em; }
+  [data-theme="light"] .ch { background: rgba(0,0,0,0.07); color: rgba(0,0,0,0.65); }
+
+  /* ── Buttons light mode ── */
+  [data-theme="light"] .btn-primary { background: #111; color: #fff; }
+  [data-theme="light"] .btn-primary:hover { background: #333; }
+  [data-theme="light"] .btn-secondary { background: rgba(0,0,0,0.04); }
+  [data-theme="light"] .btn-secondary:hover { background: rgba(0,0,0,0.08); }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 18px; border-radius: 9999px; font-size: 13px; font-weight: 600;
+    border: none; cursor: pointer; transition: all 0.15s; font-family: var(--font);
+    letter-spacing: -0.01em;
+  }
+  .btn-primary { background: #fff; color: #000; }
+  .btn-primary:hover { background: rgba(255,255,255,0.88); }
+  .btn-secondary { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: var(--border-hover); }
+  .btn-danger { background: rgba(244,63,94,0.1); color: var(--red); border: 1px solid rgba(244,63,94,0.2); }
+  .btn-danger:hover { background: rgba(244,63,94,0.18); }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  /* ── Forms ── */
+  .form-row { margin-bottom: 18px; }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 7px; font-weight: 500; }
+  select, input, textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 10px; padding: 10px 14px; font-size: 13px;
+    font-family: var(--font); outline: none; transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+  select:focus, input:focus, textarea:focus { border-color: rgba(255,255,255,0.3); }
+  textarea { resize: vertical; min-height: 88px; line-height: 1.6; }
+
+  /* ── Panel ── */
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 24px; }
+  .panel h3 { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 20px; }
+
+  /* ── Content display (markdown) ── */
+  .content-display {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 24px 28px; font-size: 14px; line-height: 1.75; max-height: 440px;
+    overflow-y: auto; color: rgba(255,255,255,0.85);
+  }
+  .content-display h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px; color: #fff; }
+  .content-display h2 { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; margin: 20px 0 10px; color: #fff; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+  .content-display h3 { font-size: 13px; font-weight: 700; margin: 16px 0 8px; color: rgba(255,255,255,0.9); }
+  .content-display p { margin-bottom: 12px; }
+  .content-display p:last-child { margin-bottom: 0; }
+  .content-display strong { color: #fff; font-weight: 600; }
+  .content-display em { color: rgba(255,255,255,0.7); font-style: italic; }
+  .content-display ul, .content-display ol { padding-left: 20px; margin-bottom: 12px; }
+  .content-display li { margin-bottom: 5px; }
+  .content-display hr { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+  .content-display blockquote { border-left: 2px solid rgba(255,255,255,0.2); padding-left: 14px; color: var(--muted); margin: 12px 0; }
+  .content-display code { background: rgba(255,255,255,0.07); padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: 'Fira Code', monospace; }
+
+  /* ── Score ── */
+  .score-pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; }
+  .score-high { background: rgba(34,197,94,0.12); color: var(--green); }
+  .score-mid  { background: rgba(168,85,247,0.12); color: #c084fc; }
+  .score-low  { background: rgba(244,63,94,0.12); color: var(--red); }
+
+  /* ── Log box ── */
+  .log-box {
+    background: #000; border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; font-family: 'Fira Code', 'SF Mono', monospace; font-size: 12px;
+    line-height: 1.9; color: var(--muted); max-height: 260px; overflow-y: auto; margin-top: 16px;
+  }
+  .log-box .ok   { color: var(--green); }
+  .log-box .err  { color: var(--red); }
+  .log-box .info { color: rgba(255,255,255,0.6); }
+
+  /* ── Channel intelligence cards ── */
+  .ch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .ch-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; transition: border-color 0.2s; }
+  .ch-card:hover { border-color: var(--border-hover); }
+  .ch-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 14px; letter-spacing: -0.01em; }
+  .ch-stat { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; font-size: 12px; }
+  .ch-stat span:first-child { color: var(--muted); }
+  .ch-stat span:last-child { font-weight: 600; font-size: 13px; }
+  .bar-wrap { height: 3px; background: rgba(255,255,255,0.06); border-radius: 99px; margin-top: 10px; overflow: hidden; }
+  .bar { height: 3px; border-radius: 99px; background: var(--grad); background-size: 200% 100%; transition: width 0.5s; }
+
+  /* ── Cycle checkboxes ── */
+  .ch-check-label {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer;
+    background: var(--surface2); padding: 6px 12px; border-radius: 99px;
+    border: 1px solid var(--border); transition: all 0.15s; font-weight: 500; color: var(--muted);
+  }
+  .ch-check-label:hover { border-color: var(--border-hover); color: var(--text); }
+  .ch-check-label input { display: none; }
+  .ch-check-label.checked { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: var(--text); }
+
+  /* ── Empty state ── */
+  .empty { text-align: center; padding: 56px 20px; color: var(--muted); }
+  .empty-icon { font-size: 28px; margin-bottom: 12px; opacity: 0.4; }
+  .empty p { font-size: 13px; line-height: 1.6; }
+
+  /* ── Modal ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; width: 100%; max-width: 740px; max-height: 90vh; overflow-y: auto; }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 22px 28px; border-bottom: 1px solid var(--border); }
+  .modal-head h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
+  .modal-body { padding: 24px 28px; }
+  .modal-close { background: rgba(255,255,255,0.06); border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 6px 10px; border-radius: 8px; transition: all 0.15s; line-height: 1; }
+  .modal-close:hover { color: var(--text); background: rgba(255,255,255,0.1); }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 99px; padding: 10px 18px;
+    font-size: 13px; font-weight: 500; z-index: 999;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6); transform: translateY(12px);
+    opacity: 0; transition: all 0.2s; pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: rgba(34,197,94,0.3); color: var(--green); }
+  .toast.error   { border-color: rgba(244,63,94,0.3); color: var(--red); }
+
+  /* ── Helpers ── */
+  .trunc { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gap { margin-bottom: 24px; }
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+  .meta-label { font-size: 10px; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .meta-value { font-size: 13px; color: rgba(255,255,255,0.8); }
+
+  /* ── Filter row ── */
+  .filter-row { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  .filter-row select { width: auto; min-width: 150px; border-radius: 99px; padding: 7px 14px; font-size: 12px; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-inner">
+        <div>
+          <div class="logo-text">Gritnord</div>
+          <div class="logo-sub">Content Engine</div>
+        </div>
+      </div>
+    </div>
+    <nav>
+      <a class="active" onclick="showPage('overview')" id="nav-overview">
+        <span class="icon">◻</span> Overview
+      </a>
+      <a onclick="showPage('generate')" id="nav-generate">
+        <span class="icon">✦</span> Generate
+      </a>
+      <a onclick="showPage('content')" id="nav-content">
+        <span class="icon">≡</span> Content
+      </a>
+      <a onclick="showPage('cycle')" id="nav-cycle">
+        <span class="icon">↻</span> Run Cycle
+      </a>
+      <a onclick="showPage('channels')" id="nav-channels">
+        <span class="icon">◈</span> Channels
+      </a>
+      <a onclick="showPage('cycles')" id="nav-cycles">
+        <span class="icon">◷</span> History
+      </a>
+      <a href="/linkedin.html" style="margin-top:8px">
+        <span class="icon">in</span> LinkedIn Queue
+      </a>
+      <a href="/twitter.html">
+        <span class="icon">𝕏</span> X Queue
+      </a>
+      <a href="/uc-acquisition.html" style="margin-top:8px">
+        <span class="icon">🎯</span> UC Acquisition
+      </a>
+      <a href="/roadmap.html" style="margin-top:8px">
+        <span class="icon">◈</span> Product Roadmap
+      </a>
+      <a href="/architecture-v7.html">
+        <span class="icon">⬡</span> Architecture V7
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="status-row">
+        <span class="status-dot"></span>
+        <span class="status-label" id="status-label">Connecting…</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="topbar">
+      <button class="theme-toggle" onclick="toggleTheme()"><span id="theme-icon">🌙</span> <span id="theme-label">Dark mode</span></button>
+    </div>
+    <div class="main-content">
+
+    <!-- Overview -->
+    <div class="page active" id="page-overview">
+      <div class="page-header">
+        <h1>Overview</h1>
+        <p>Your content engine at a glance</p>
+      </div>
+      <div class="cards">
+        <div class="card"><div class="card-label">Total Content</div><div class="card-value grad" id="ov-total">—</div></div>
+        <div class="card"><div class="card-label">Cycles Run</div><div class="card-value" id="ov-cycles">—</div></div>
+        <div class="card"><div class="card-label">Channels Active</div><div class="card-value green" id="ov-channels">8</div></div>
+        <div class="card"><div class="card-label">Avg Score</div><div class="card-value" id="ov-score">—</div></div>
+      </div>
+
+      <div class="section-title">Recent Content</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Channel</th><th>Topic</th><th>Status</th><th>Score</th><th>Created</th><th></th></tr>
+          </thead>
+          <tbody id="overview-table-body">
+            <tr><td colspan="6"><div class="empty"><div class="empty-icon">◻</div><p>No content yet — run a generation cycle to get started.</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Generate -->
+    <div class="page" id="page-generate">
+      <div class="page-header">
+        <h1>Generate Content</h1>
+        <p>Create a single piece of content for any channel</p>
+      </div>
+      <div class="panel">
+        <h3>New Piece</h3>
+        <div class="form-row">
+          <label>Channel</label>
+          <select id="gen-channel"><option value="">Select a channel…</option></select>
+        </div>
+        <div class="form-row">
+          <label>Topic / Angle <span style="color:var(--muted2);font-weight:400">— optional, AI picks if blank</span></label>
+          <input type="text" id="gen-topic" placeholder="e.g. Why most B2B cold emails fail in 2025">
+        </div>
+        <div class="form-row">
+          <label>Additional Context <span style="color:var(--muted2);font-weight:400">— optional</span></label>
+          <textarea id="gen-context" placeholder="Any specific angle, data points, or instructions…"></textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="doGenerate()" id="gen-btn">✦ Generate</button>
+        </div>
+        <div class="log-box" id="gen-log" style="display:none"></div>
+      </div>
+
+      <div id="gen-result" style="display:none">
+        <div class="section-title" style="margin-top:8px">Generated Content</div>
+        <div class="panel">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="ch" id="gen-res-ch"></span>
+              <span style="color:var(--muted);font-size:12px" id="gen-res-topic"></span>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-secondary btn-sm" onclick="copyResult()">Copy</button>
+              <button class="btn btn-secondary btn-sm" onclick="scoreResult()">Score</button>
+            </div>
+          </div>
+          <div class="content-display" id="gen-res-content"></div>
+          <div id="gen-res-score" style="margin-top:14px;display:none;align-items:center;gap:10px">
+            <span id="gen-score-pill"></span>
+            <span style="color:var(--muted);font-size:12px" id="gen-score-reason"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Library -->
+    <div class="page" id="page-content">
+      <div class="page-header">
+        <h1>Content Library</h1>
+        <p>All generated content across channels</p>
+      </div>
+      <div class="filter-row">
+        <select id="filter-channel" onchange="loadContent()">
+          <option value="">All channels</option>
+        </select>
+        <select id="filter-status" onchange="loadContent()">
+          <option value="">All statuses</option>
+          <option value="draft">Draft</option>
+          <option value="scored">Scored</option>
+          <option value="approved">Approved</option>
+          <option value="published">Published</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Channel</th><th>Topic</th><th>Status</th><th>Score</th><th>Created</th><th></th></tr>
+          </thead>
+          <tbody id="content-table-body">
+            <tr><td colspan="6"><div class="empty"><p>Loading…</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Run Cycle -->
+    <div class="page" id="page-cycle">
+      <div class="page-header">
+        <h1>Run Cycle</h1>
+        <p>Generate content across all channels in one shot</p>
+      </div>
+      <div class="panel">
+        <h3>Cycle Configuration</h3>
+        <div class="form-row">
+          <label>Topic / Angle <span style="color:var(--muted2);font-weight:400">— AI selects per channel if blank</span></label>
+          <input type="text" id="cycle-topic" placeholder="e.g. Q2 pipeline building">
+        </div>
+        <div class="form-row">
+          <label>Channels <span style="color:var(--muted2);font-weight:400">— leave all unchecked to run all</span></label>
+          <div id="cycle-channel-checks" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
+        </div>
+        <div class="btn-group" style="margin-top:4px">
+          <button class="btn btn-primary" onclick="doCycle()" id="cycle-btn">↻ Run Full Cycle</button>
+          <button class="btn btn-secondary btn-sm" onclick="selectAllChannels()">Select All</button>
+          <button class="btn btn-secondary btn-sm" onclick="clearChannels()">Clear</button>
+        </div>
+        <div class="log-box" id="cycle-log" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Channels -->
+    <div class="page" id="page-channels">
+      <div class="page-header">
+        <h1>Channel Intelligence</h1>
+        <p>AI-learned weights and performance per channel</p>
+      </div>
+      <div class="ch-grid" id="channels-grid">
+        <div class="empty"><p>Loading…</p></div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="page" id="page-cycles">
+      <div class="page-header">
+        <h1>Cycle History</h1>
+        <p>All past generation cycles</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Topic</th><th>Channels</th><th>Generated</th><th>Errors</th><th>Started</th></tr>
+          </thead>
+          <tbody id="cycles-table-body">
+            <tr><td colspan="6"><div class="empty"><p>No cycles yet.</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    </div><!-- /main-content -->
+  </main>
+</div>
+
+<!-- Content Modal -->
+<div class="modal-overlay" id="content-modal" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modal-title">Content</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:18px;flex-wrap:wrap">
+        <span class="ch" id="modal-channel"></span>
+        <span id="modal-status-badge"></span>
+        <span id="modal-score-pill"></span>
+      </div>
+      <div style="margin-bottom:14px">
+        <div class="meta-label">Topic</div>
+        <div class="meta-value" id="modal-topic"></div>
+      </div>
+      <div class="divider"></div>
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="meta-label">Content</div>
+          <button class="btn btn-secondary btn-sm" onclick="copyModal()">Copy</button>
+        </div>
+        <div class="content-display" id="modal-content"></div>
+      </div>
+      <div id="modal-score-reason" style="font-size:12px;color:var(--muted);margin-bottom:16px;display:none;line-height:1.6;padding:10px 14px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)"></div>
+      <div class="btn-group">
+        <button class="btn btn-secondary btn-sm" onclick="modalScore()" id="modal-score-btn">Score</button>
+        <button class="btn btn-secondary btn-sm" onclick="modalSetStatus('approved')">Approve</button>
+        <button class="btn btn-primary btn-sm" onclick="modalPublish()" id="modal-publish-btn">↑ Publish to Blog</button>
+        <button class="btn btn-danger btn-sm" onclick="modalSetStatus('rejected')">Reject</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '';
+let currentItem = null;
+let currentGenId = null;
+let channels = [];
+
+// ── Markdown renderer ──────────────────────────────────────────────────────
+function renderMarkdown(text) {
+  if (!text) return '';
+  let html = escHtml(text);
+
+  // Headings
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+  // HR
+  html = html.replace(/^---+$/gm, '<hr>');
+
+  // Bold & italic
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  // Blockquote
+  html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+
+  // Bullet lists — group consecutive items
+  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>.*<\/li>(\n|$))+/g, m => '<ul>' + m + '</ul>');
+
+  // Numbered lists
+  html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+
+  // Paragraphs: wrap lines not already wrapped in a block tag
+  const blockTags = /^(<h[1-6]|<ul|<ol|<li|<hr|<blockquote)/;
+  const lines = html.split('\n');
+  const out = [];
+  let para = [];
+  for (const line of lines) {
+    if (blockTags.test(line.trim())) {
+      if (para.length) { out.push('<p>' + para.join(' ') + '</p>'); para = []; }
+      out.push(line);
+    } else if (line.trim() === '') {
+      if (para.length) { out.push('<p>' + para.join(' ') + '</p>'); para = []; }
+    } else {
+      para.push(line);
+    }
+  }
+  if (para.length) out.push('<p>' + para.join(' ') + '</p>');
+
+  return out.join('\n');
+}
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  if (name === 'overview') loadOverview();
+  if (name === 'content')  loadContent();
+  if (name === 'channels') loadChannels();
+  if (name === 'cycles')   loadCycles();
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ── Status ─────────────────────────────────────────────────────────────────
+async function checkStatus() {
+  try {
+    const r = await fetch(API + '/api/status');
+    const d = await r.json();
+    document.getElementById('status-label').textContent = 'Engine running';
+    return d;
+  } catch {
+    document.getElementById('status-label').textContent = 'Offline';
+    return null;
+  }
+}
+
+// ── Load channel options ───────────────────────────────────────────────────
+async function loadChannelOptions() {
+  try {
+    const r = await fetch(API + '/api/options');
+    const d = await r.json();
+    channels = d.channels;
+
+    const genSel = document.getElementById('gen-channel');
+    const filterSel = document.getElementById('filter-channel');
+    channels.forEach(ch => {
+      genSel.innerHTML += `<option value="${ch}">${ch}</option>`;
+      filterSel.innerHTML += `<option value="${ch}">${ch}</option>`;
+    });
+
+    const wrap = document.getElementById('cycle-channel-checks');
+    channels.forEach(ch => {
+      const lbl = document.createElement('label');
+      lbl.className = 'ch-check-label';
+      lbl.innerHTML = `<input type="checkbox" class="ch-check" value="${ch}"> ${ch}`;
+      lbl.querySelector('input').addEventListener('change', e => {
+        lbl.classList.toggle('checked', e.target.checked);
+      });
+      wrap.appendChild(lbl);
+    });
+  } catch(e) { console.error(e); }
+}
+
+// ── Overview ───────────────────────────────────────────────────────────────
+async function loadOverview() {
+  const s = await checkStatus();
+  if (!s) return;
+  document.getElementById('ov-total').textContent = s.totalContent;
+  document.getElementById('ov-cycles').textContent = s.totalCycles;
+
+  const items = await fetch(API + '/api/content').then(r => r.json()).catch(() => ({ items: [] }));
+  const scored = items.items.filter(i => i.score != null);
+  const avg = scored.length ? (scored.reduce((a, b) => a + b.score, 0) / scored.length).toFixed(1) : '—';
+  document.getElementById('ov-score').textContent = avg;
+
+  const tbody = document.getElementById('overview-table-body');
+  const recent = items.items.slice(0, 10);
+  if (!recent.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="empty-icon">◻</div><p>No content yet — generate something to get started.</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = recent.map(i => `
+    <tr onclick="openModal('${i.id}')" style="cursor:pointer">
+      <td><span class="ch">${i.channel}</span></td>
+      <td class="trunc">${escHtml(i.topic)}</td>
+      <td>${statusBadge(i.status)}</td>
+      <td>${scorePill(i.score)}</td>
+      <td style="color:var(--muted)">${fmtDate(i.createdAt)}</td>
+      <td><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openModal('${i.id}')">View</button></td>
+    </tr>`).join('');
+}
+
+// ── Content Library ────────────────────────────────────────────────────────
+async function loadContent() {
+  const ch = document.getElementById('filter-channel').value;
+  const st = document.getElementById('filter-status').value;
+  let url = API + '/api/content';
+  const params = new URLSearchParams();
+  if (ch) params.set('channel', ch);
+  if (st) params.set('status', st);
+  if (params.toString()) url += '?' + params;
+
+  const d = await fetch(url).then(r => r.json()).catch(() => ({ items: [] }));
+  const tbody = document.getElementById('content-table-body');
+  if (!d.items.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><p>No content found.</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = d.items.map(i => `
+    <tr onclick="openModal('${i.id}')" style="cursor:pointer">
+      <td><span class="ch">${i.channel}</span></td>
+      <td class="trunc">${escHtml(i.topic)}</td>
+      <td>${statusBadge(i.status)}</td>
+      <td>${scorePill(i.score)}</td>
+      <td style="color:var(--muted)">${fmtDate(i.createdAt)}</td>
+      <td><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openModal('${i.id}')">View</button></td>
+    </tr>`).join('');
+}
+
+// ── Generate ───────────────────────────────────────────────────────────────
+async function doGenerate() {
+  const channel = document.getElementById('gen-channel').value;
+  const topic   = document.getElementById('gen-topic').value.trim();
+  const ctx     = document.getElementById('gen-context').value.trim();
+  if (!channel) return toast('Select a channel first', 'error');
+
+  const btn = document.getElementById('gen-btn');
+  const log = document.getElementById('gen-log');
+  const res = document.getElementById('gen-result');
+  btn.disabled = true; btn.textContent = '⏳ Generating…';
+  log.style.display = 'block';
+  log.innerHTML = '<span class="info">→ Sending request to Claude…</span>\n';
+  res.style.display = 'none';
+
+  try {
+    const r = await fetch(API + '/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ channel, topic, additionalContext: ctx }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Generation failed');
+
+    log.innerHTML += `<span class="ok">✓ Generated ${d.item.channelLabel}</span>\n`;
+    log.innerHTML += `<span class="info">Tokens: ${d.item.inputTokens} in / ${d.item.outputTokens} out</span>\n`;
+
+    currentGenId = d.item.id;
+    document.getElementById('gen-res-ch').textContent = d.item.channel;
+    document.getElementById('gen-res-topic').textContent = d.item.topic;
+    document.getElementById('gen-res-content').innerHTML = renderMarkdown(d.item.content);
+    document.getElementById('gen-res-score').style.display = 'none';
+    res.style.display = 'block';
+    toast('Content generated');
+  } catch(e) {
+    log.innerHTML += `<span class="err">✗ ${e.message}</span>\n`;
+    toast(e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '✦ Generate';
+  }
+}
+
+async function scoreResult() {
+  if (!currentGenId) return;
+  const r = await fetch(API + '/api/score/' + currentGenId, { method: 'POST' });
+  const d = await r.json();
+  if (!r.ok) return toast(d.error, 'error');
+  document.getElementById('gen-score-pill').innerHTML = scorePill(d.score);
+  document.getElementById('gen-score-reason').textContent = d.reasoning;
+  const scoreEl = document.getElementById('gen-res-score');
+  scoreEl.style.display = 'flex';
+  scoreEl.style.alignItems = 'center';
+  toast(`Scored ${d.score}/10`);
+}
+
+function copyResult() {
+  const el = document.getElementById('gen-res-content');
+  navigator.clipboard.writeText(el.innerText).then(() => toast('Copied'));
+}
+
+// ── Run Cycle ──────────────────────────────────────────────────────────────
+function selectAllChannels() {
+  document.querySelectorAll('.ch-check').forEach(c => { c.checked = true; c.closest('label').classList.add('checked'); });
+}
+function clearChannels() {
+  document.querySelectorAll('.ch-check').forEach(c => { c.checked = false; c.closest('label').classList.remove('checked'); });
+}
+
+async function doCycle() {
+  const topic = document.getElementById('cycle-topic').value.trim();
+  const checked = [...document.querySelectorAll('.ch-check:checked')].map(c => c.value);
+  const btn = document.getElementById('cycle-btn');
+  const log = document.getElementById('cycle-log');
+
+  btn.disabled = true; btn.textContent = '⏳ Running…';
+  log.style.display = 'block';
+  log.innerHTML = '<span class="info">→ Starting generation cycle…</span>\n';
+
+  try {
+    const body = { topic };
+    if (checked.length) body.channels = checked;
+
+    const r = await fetch(API + '/api/cycle/run', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    const reader = r.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '', generated = 0, errors = 0;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n'); buf = lines.pop();
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const ev = JSON.parse(line);
+          if (ev.event === 'channel_start') {
+            log.innerHTML += `<span class="info">→ Generating ${ev.channel}…</span>\n`;
+          } else if (ev.event === 'channel_done') {
+            generated++;
+            log.innerHTML += `<span class="ok">✓ ${ev.channel}</span>\n`;
+          } else if (ev.event === 'channel_error') {
+            errors++;
+            log.innerHTML += `<span class="err">✗ ${ev.channel}: ${ev.error}</span>\n`;
+          } else if (ev.event === 'cycle_done') {
+            log.innerHTML += `\n<span class="ok">✓ Done — ${ev.cycle.generated} generated, ${ev.cycle.errors} errors</span>\n`;
+          }
+          log.scrollTop = log.scrollHeight;
+        } catch {}
+      }
+    }
+    toast(`Cycle done — ${generated} generated`);
+  } catch(e) {
+    log.innerHTML += `<span class="err">✗ ${e.message}</span>\n`;
+    toast(e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '↻ Run Full Cycle';
+  }
+}
+
+// ── Channels ───────────────────────────────────────────────────────────────
+async function loadChannels() {
+  const r = await fetch(API + '/api/channels');
+  const d = await r.json();
+  const grid = document.getElementById('channels-grid');
+  grid.innerHTML = d.channels.map(c => `
+    <div class="ch-card">
+      <h4>${c.channel}</h4>
+      <div class="ch-stat"><span>Priority</span><span>${c.priority.toFixed(2)}</span></div>
+      <div class="ch-stat"><span>Success Rate</span><span>${(c.successRate * 100).toFixed(0)}%</span></div>
+      <div class="ch-stat"><span>Avg Score</span><span>${c.avgScore.toFixed(1)} / 10</span></div>
+      <div class="bar-wrap"><div class="bar" style="width:${Math.min(c.priority/2*100,100).toFixed(0)}%"></div></div>
+    </div>`).join('');
+}
+
+// ── History ────────────────────────────────────────────────────────────────
+async function loadCycles() {
+  const r = await fetch(API + '/api/cycles');
+  const d = await r.json();
+  const tbody = document.getElementById('cycles-table-body');
+  if (!d.cycles.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><p>No cycles yet.</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = d.cycles.map(c => `
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:var(--muted)">${c.id}</td>
+      <td class="trunc">${escHtml(c.topic)}</td>
+      <td style="color:var(--muted)">${c.channels?.length || 0}</td>
+      <td style="color:var(--green)">${c.generated ?? '—'}</td>
+      <td style="color:${c.errors ? 'var(--red)' : 'var(--muted)'}">${c.errors ?? '—'}</td>
+      <td style="color:var(--muted)">${fmtDate(c.startedAt)}</td>
+    </tr>`).join('');
+}
+
+// ── Modal ──────────────────────────────────────────────────────────────────
+async function openModal(id) {
+  const r = await fetch(API + '/api/content');
+  const d = await r.json();
+  const item = d.items.find(i => i.id === id);
+  if (!item) return;
+  currentItem = item;
+
+  document.getElementById('modal-title').textContent = item.channelLabel || item.channel;
+  document.getElementById('modal-channel').textContent = item.channel;
+  document.getElementById('modal-status-badge').innerHTML = statusBadge(item.status);
+  document.getElementById('modal-score-pill').innerHTML = scorePill(item.score);
+  document.getElementById('modal-topic').textContent = item.topic;
+  document.getElementById('modal-content').innerHTML = renderMarkdown(item.content);
+
+  const reasonEl = document.getElementById('modal-score-reason');
+  if (item.scoreReasoning) {
+    reasonEl.textContent = item.scoreReasoning;
+    reasonEl.style.display = 'block';
+  } else {
+    reasonEl.style.display = 'none';
+  }
+  document.getElementById('content-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('content-modal').classList.remove('open');
+  currentItem = null;
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('content-modal')) closeModal();
+}
+
+function copyModal() {
+  const el = document.getElementById('modal-content');
+  navigator.clipboard.writeText(el.innerText).then(() => toast('Copied'));
+}
+
+async function modalScore() {
+  if (!currentItem) return;
+  const btn = document.getElementById('modal-score-btn');
+  btn.disabled = true; btn.textContent = 'Scoring…';
+  try {
+    const r = await fetch(API + '/api/score/' + currentItem.id, { method: 'POST' });
+    const d = await r.json();
+    document.getElementById('modal-score-pill').innerHTML = scorePill(d.score);
+    const reasonEl = document.getElementById('modal-score-reason');
+    reasonEl.textContent = d.reasoning;
+    reasonEl.style.display = 'block';
+    currentItem.score = d.score;
+    toast(`Scored ${d.score}/10`);
+  } catch(e) { toast(e.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Score'; }
+}
+
+async function modalPublish() {
+  if (!currentItem) return;
+  const btn = document.getElementById('modal-publish-btn');
+  btn.disabled = true; btn.textContent = 'Publishing…';
+  try {
+    const r = await fetch(API + '/api/publish/' + currentItem.id, { method: 'POST' });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    document.getElementById('modal-status-badge').innerHTML = statusBadge('published');
+    currentItem.status = 'published';
+    toast('Published to blog ✓');
+  } catch(e) {
+    toast(e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '↑ Publish to Blog';
+  }
+}
+
+async function modalSetStatus(status) {
+  if (!currentItem) return;
+  const r = await fetch(API + '/api/content/' + currentItem.id, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+  const d = await r.json();
+  document.getElementById('modal-status-badge').innerHTML = statusBadge(d.item.status);
+  currentItem.status = status;
+  toast(`Status → ${status}`);
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function statusBadge(s) {
+  const map = { draft:'badge-draft', scored:'badge-scored', approved:'badge-approved', published:'badge-published', rejected:'badge-rejected' };
+  return `<span class="badge ${map[s] || 'badge-draft'}">${s || 'draft'}</span>`;
+}
+
+function scorePill(score) {
+  if (score == null) return '<span style="color:var(--muted2);font-size:12px">—</span>';
+  const cls = score >= 7 ? 'score-high' : score >= 5 ? 'score-mid' : 'score-low';
+  return `<span class="score-pill ${cls}">★ ${score}/10</span>`;
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+(async () => {
+  await loadChannelOptions();
+  await loadOverview();
+  checkStatus();
+  setInterval(checkStatus, 30000);
+})();
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('grtn-theme', next);
+  document.getElementById('theme-icon').textContent = next === 'dark' ? '🌙' : '☀️';
+  document.getElementById('theme-label').textContent = next === 'dark' ? 'Dark mode' : 'Light mode';
+}
+
+(function() {
+  const t = localStorage.getItem('grtn-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  document.addEventListener('DOMContentLoaded', () => {
+    const icon = document.getElementById('theme-icon');
+    const label = document.getElementById('theme-label');
+    if (icon) icon.textContent = t === 'dark' ? '🌙' : '☀️';
+    if (label) label.textContent = t === 'dark' ? 'Dark mode' : 'Light mode';
+  });
+})();
+</script>
+</body>
+</html>

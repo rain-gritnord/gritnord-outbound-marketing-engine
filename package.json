@@ -1,0 +1,17 @@
+{
+  "name": "gritnord-engine",
+  "version": "1.0.0",
+  "description": "Gritnord Content Engine — AI-powered multi-channel content generation",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --env-file=.env server.js",
+    "dev": "node --env-file=.env --watch server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "node-cron": "^3.0.3"
+  }
+}

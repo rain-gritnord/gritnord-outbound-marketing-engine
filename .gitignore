@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Environment — never commit secrets
+.env
+.env.*
+
+# Runtime data — local state, not source code
+data/linkedin-tokens.json
+data/media/
+data/*.json
+
+# macOS
+.DS_Store

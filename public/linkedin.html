@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/png" href="/GN_FAV-03.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkedIn Queue — Gritnord</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #000;
+      --surface: #0f0f0f;
+      --border: #1a1a1a;
+      --text: #f5f5f5;
+      --muted: #c0c0c0;
+      --accent: #e85d4a;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --radius: 16px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+    .logo span { opacity: 0.4; font-weight: 400; margin-left: 8px; }
+
+    .header-actions { display: flex; gap: 10px; align-items: center; }
+
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #ef4444;
+      display: inline-block;
+      margin-right: 6px;
+    }
+    .status-dot.connected { background: var(--green); }
+
+    .btn {
+      padding: 8px 18px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.8; }
+    .btn-primary { background: #fff; color: #000; }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-green { background: var(--green); color: #000; }
+    .btn-red { background: #ef4444; color: #fff; }
+    .btn-sm { padding: 6px 14px; font-size: 12px; }
+
+    main { max-width: 820px; margin: 0 auto; padding: 40px 24px; }
+
+    .page-title { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+    .page-sub { color: var(--muted); font-size: 13px; margin-bottom: 32px; }
+
+    .tabs {
+      display: flex; gap: 4px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+
+    .tab {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      font-family: inherit;
+    }
+    .tab.active { color: var(--text); border-bottom-color: var(--text); }
+
+    .empty {
+      text-align: center;
+      padding: 60px 0;
+      color: var(--muted);
+    }
+    .empty p { margin-top: 8px; font-size: 13px; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .source-badge {
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #1a1a1a;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-badge {
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .status-badge.draft { background: #1a1a1a; color: var(--muted); }
+    .status-badge.posted { background: #14532d; color: var(--green); }
+    .status-badge.posting { background: #1c1917; color: var(--yellow); }
+
+    .card-date { font-size: 11px; color: var(--muted); margin-left: auto; }
+
+    .article-ref {
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .article-thumb {
+      width: 64px;
+      height: 48px;
+      border-radius: 6px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #1a1a1a;
+    }
+
+    .article-info a {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .article-info a:hover { text-decoration: underline; }
+    .article-info p { font-size: 11px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+
+    .post-text {
+      width: 100%;
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      line-height: 1.7;
+      resize: vertical;
+      min-height: 160px;
+      margin-bottom: 16px;
+      transition: border-color 0.15s;
+    }
+    .post-text:focus { outline: none; border-color: #333; }
+
+    .char-count { font-size: 11px; color: var(--muted); margin-bottom: 12px; margin-top: -12px; }
+    .char-count.warn { color: var(--yellow); }
+    .char-count.over { color: #ef4444; }
+
+    .card-actions { display: flex; gap: 8px; }
+
+    .linkedin-url {
+      font-size: 12px;
+      color: #0a66c2;
+      text-decoration: none;
+      margin-top: 8px;
+      display: inline-block;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1a1a1a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.25s;
+      z-index: 99;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: var(--green); color: var(--green); }
+    .toast.error { border-color: #ef4444; color: #ef4444; }
+
+    .loading { color: var(--muted); font-size: 13px; padding: 40px 0; text-align: center; }
+
+    .connect-banner {
+      background: #0f0f0f;
+      border: 1px solid #1a1a1a;
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .connect-banner p { font-size: 13px; color: var(--muted); }
+    .connect-banner p strong { color: var(--text); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Gritnord <span>LinkedIn Queue</span></div>
+  <div class="header-actions">
+    <span id="status-indicator"><span class="status-dot" id="status-dot"></span><span id="status-text">Checking...</span></span>
+    <button class="btn btn-outline btn-sm" onclick="generateDrafts()" id="gen-btn">Generate drafts</button>
+    <a href="/dashboard.html" class="btn btn-outline btn-sm">← Dashboard</a>
+  </div>
+</header>
+
+<main>
+  <div class="page-title">LinkedIn Post Queue</div>
+  <div class="page-sub">Review and approve posts before they go live. 3 drafts generated Mon / Wed / Fri.</div>
+
+  <div id="connect-banner" class="connect-banner" style="display:none">
+    <div>
+      <p><strong>LinkedIn not connected.</strong></p>
+      <p>Connect once to enable one-click posting from this queue.</p>
+    </div>
+    <a href="/auth/linkedin" class="btn btn-primary">Connect LinkedIn</a>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('drafts', this)">Drafts <span id="draft-count"></span></button>
+    <button class="tab" onclick="switchTab('posted', this)">Posted</button>
+  </div>
+
+  <div id="queue-container"><div class="loading">Loading...</div></div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let allPosts = [];
+let currentTab = 'drafts';
+let connected = false;
+
+async function init() {
+  await checkStatus();
+  await loadQueue();
+}
+
+async function checkStatus() {
+  try {
+    const r = await fetch('/api/linkedin/status');
+    const d = await r.json();
+    connected = d.connected;
+    const dot = document.getElementById('status-dot');
+    const txt = document.getElementById('status-text');
+    const banner = document.getElementById('connect-banner');
+    if (d.connected) {
+      dot.classList.add('connected');
+      txt.textContent = 'Connected';
+      banner.style.display = 'none';
+    } else {
+      txt.textContent = 'Not connected';
+      banner.style.display = 'flex';
+    }
+  } catch {}
+}
+
+async function loadQueue() {
+  const r = await fetch('/api/linkedin/queue');
+  const d = await r.json();
+  allPosts = d.posts || [];
+  const draftCount = allPosts.filter(p => p.status === 'draft').length;
+  document.getElementById('draft-count').textContent = draftCount ? `(${draftCount})` : '';
+  renderTab();
+}
+
+function switchTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderTab();
+}
+
+function renderTab() {
+  const posts = allPosts.filter(p => currentTab === 'drafts' ? p.status === 'draft' || p.status === 'posting' : p.status === 'posted');
+  const container = document.getElementById('queue-container');
+
+  if (!posts.length) {
+    container.innerHTML = `<div class="empty">
+      ${currentTab === 'drafts'
+        ? '<div style="font-size:32px">✦</div><p>No drafts yet. Click "Generate drafts" or wait for the Monday cron.</p>'
+        : '<div style="font-size:32px">✦</div><p>No posted content yet.</p>'}
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = posts.map(post => renderCard(post)).join('');
+}
+
+function renderCard(post) {
+  const article = post.article || {};
+  const chars = (post.text || '').length;
+  const charClass = chars > 3000 ? 'over' : chars > 2500 ? 'warn' : '';
+  const date = new Date(post.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  const articleHtml = article.title ? `
+    <div class="article-ref">
+      ${article.image ? `<img src="${article.image}" class="article-thumb" onerror="this.style.display='none'">` : ''}
+      <div class="article-info">
+        <a href="${article.link}" target="_blank">${article.title}</a>
+        <p>${article.source || ''} · ${article.description?.slice(0, 100) || ''}${article.description?.length > 100 ? '…' : ''}</p>
+      </div>
+    </div>` : '';
+
+  const actionsHtml = post.status === 'posted'
+    ? `<a href="${post.linkedInUrl}" target="_blank" class="linkedin-url">View on LinkedIn →</a>`
+    : `<button class="btn btn-green btn-sm" onclick="approve('${post.id}')">↑ Post to LinkedIn</button>
+       <button class="btn btn-outline btn-sm" onclick="saveEdit('${post.id}')">Save edits</button>
+       <button class="btn btn-red btn-sm" onclick="discard('${post.id}')">Discard</button>`;
+
+  return `
+    <div class="card" id="card-${post.id}">
+      <div class="card-meta">
+        ${article.source ? `<span class="source-badge">${article.source}</span>` : ''}
+        <span class="status-badge ${post.status}">${post.status}</span>
+        <span class="card-date">${date}</span>
+      </div>
+      ${articleHtml}
+      <textarea class="post-text" id="text-${post.id}" onkeyup="updateCount('${post.id}')">${post.text || ''}</textarea>
+      <div class="char-count ${charClass}" id="count-${post.id}">${chars} chars</div>
+      ${article.link ? `<div style="font-size:11px;color:var(--muted);margin-top:6px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:#0a0a0a;">🔗 Article link appended on post: <a href="${article.link}" target="_blank" style="color:#60a5fa;word-break:break-all;">${article.link}</a></div>` : ''}
+      <div class="card-actions">${actionsHtml}</div>
+    </div>`;
+}
+
+function updateCount(id) {
+  const ta = document.getElementById(`text-${id}`);
+  const el = document.getElementById(`count-${id}`);
+  const n = ta.value.length;
+  el.textContent = `${n} chars`;
+  el.className = `char-count ${n > 3000 ? 'over' : n > 2500 ? 'warn' : ''}`;
+}
+
+async function saveEdit(id) {
+  const text = document.getElementById(`text-${id}`).value;
+  await fetch(`/api/linkedin/queue/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  });
+  toast('Saved', 'success');
+}
+
+async function approve(id) {
+  if (!connected) {
+    toast('LinkedIn not connected — click Connect LinkedIn first', 'error');
+    return;
+  }
+  await saveEdit(id);
+  const btn = document.querySelector(`#card-${id} .btn-green`);
+  if (btn) { btn.textContent = 'Posting…'; btn.disabled = true; }
+
+  try {
+    const r = await fetch(`/api/linkedin/approve/${id}`, { method: 'POST' });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    toast('Posted to LinkedIn!', 'success');
+    await loadQueue();
+  } catch (err) {
+    toast(err.message, 'error');
+    if (btn) { btn.textContent = '↑ Post to LinkedIn'; btn.disabled = false; }
+  }
+}
+
+async function discard(id) {
+  await fetch(`/api/linkedin/queue/${id}`, { method: 'DELETE' });
+  toast('Discarded', 'success');
+  await loadQueue();
+}
+
+async function generateDrafts() {
+  const btn = document.getElementById('gen-btn');
+  btn.textContent = 'Generating…';
+  btn.disabled = true;
+  try {
+    const r = await fetch('/api/linkedin/generate', { method: 'POST' });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    toast(`${d.total} drafts ready`, 'success');
+    await loadQueue();
+  } catch (err) {
+    toast(err.message, 'error');
+  } finally {
+    btn.textContent = 'Generate drafts';
+    btn.disabled = false;
+  }
+}
+
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show ${type}`;
+  setTimeout(() => el.className = 'toast', 3000);
+}
+
+init();
+</script>
+</body>
+</html>

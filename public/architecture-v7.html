@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture V7 — Gritnord</title>
+  <link rel="icon" type="image/png" href="/GN_FAV-03.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root, [data-theme="dark"] {
+      --bg: #000;
+      --surface: #0a0a0a;
+      --card: #0f0f0f;
+      --canvas-bg: #050505;
+      --canvas-dot: #1e1e1e;
+      --border: #1a1a1a;
+      --border-h: #2a2a2a;
+      --text: #f5f5f5;
+      --muted: #555;
+      --muted2: #888;
+      --green: #22c55e;
+      --amber: #eab308;
+      --blue: #3b82f6;
+      --purple: #8b5cf6;
+      --pink: #e879f9;
+      --orange: #f97316;
+      --node-bg: #0d0d0d;
+    }
+    [data-theme="light"] {
+      --bg: #f7f7f7;
+      --surface: #ffffff;
+      --card: #ffffff;
+      --canvas-bg: #f0f0f0;
+      --canvas-dot: #d5d5d5;
+      --border: #e0e0e0;
+      --border-h: #c0c0c0;
+      --text: #111;
+      --muted: #bbb;
+      --muted2: #666;
+      --green: #16a34a;
+      --amber: #ca8a04;
+      --blue: #2563eb;
+      --purple: #7c3aed;
+      --pink: #a21caf;
+      --orange: #c2410c;
+      --node-bg: #ffffff;
+    }
+
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 64px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg); backdrop-filter: blur(12px);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo-text { font-size: 14px; font-weight: 800; letter-spacing: -0.4px; color: var(--text); }
+    .nav-logo-sub { font-size: 10px; color: var(--muted2); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 1px; }
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+    .nav-link { font-size: 12px; color: var(--muted2); text-decoration: none; padding: 4px 12px; border: 1px solid var(--border); border-radius: 9999px; transition: color 0.15s; }
+    .nav-link:hover { color: var(--text); }
+    .theme-btn { background: none; border: 1px solid var(--border); border-radius: 9999px; padding: 4px 12px; font-size: 13px; cursor: pointer; color: var(--muted2); transition: color 0.15s; }
+    .theme-btn:hover { color: var(--text); }
+
+    /* ── Holo ── */
+    .holo { width: 100%; height: 2px; background: linear-gradient(90deg, transparent 0%, #8b5cf6 15%, #f97316 30%, #e879f9 50%, #3b82f6 70%, #22c55e 85%, transparent 100%); opacity: 0.6; }
+
+    /* ── Hero ── */
+    .hero { padding: 72px 40px 56px; max-width: 860px; margin: 0 auto; text-align: center; }
+    .hero-tag { display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px; border-radius: 9999px; border: 1px solid var(--border); font-size: 11px; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 24px; }
+    .hero h1 { font-size: clamp(32px, 5vw, 60px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.06; margin-bottom: 18px; }
+    .grad { background: linear-gradient(135deg, #8b5cf6 0%, #f97316 35%, #e879f9 65%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { font-size: 16px; color: var(--muted2); max-width: 520px; margin: 0 auto; }
+
+    /* ── Section wrapper ── */
+    .section { padding: 56px 40px 0; }
+    .section:last-of-type { padding-bottom: 80px; }
+    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .section-num { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+    .section-title { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
+    .section-desc { font-size: 13px; color: var(--muted2); margin-top: 4px; }
+    .section-rule { flex: 1; height: 1px; background: var(--border); }
+
+    /* ── Layer accent colors ── */
+    .l1 { color: var(--purple); }
+    .l2 { color: var(--blue); }
+    .l3 { color: var(--orange); }
+    .l4 { color: var(--green); }
+    .l5 { color: var(--amber); }
+    .l6 { color: var(--pink); }
+
+    /* ── Canvas ── */
+    .canvas-wrap {
+      background: var(--canvas-bg);
+      background-image: radial-gradient(circle, var(--canvas-dot) 1px, transparent 1px);
+      background-size: 22px 22px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow-x: auto;
+      padding: 40px 36px 48px;
+      position: relative;
+    }
+
+    /* ── Flow row ── */
+    .flow { display: flex; align-items: center; gap: 0; min-width: max-content; }
+    .flow + .flow { margin-top: 32px; }
+
+    /* ── Node ── */
+    .node {
+      flex-shrink: 0; width: 152px;
+      background: var(--node-bg); border: 1px solid var(--border);
+      border-radius: 14px; padding: 14px 14px 12px;
+      position: relative; transition: border-color 0.2s, transform 0.2s;
+    }
+    .node:hover { border-color: var(--border-h); transform: translateY(-2px); }
+    .node::before { content: ''; position: absolute; top: -1px; left: 16px; right: 16px; height: 3px; border-radius: 9999px; }
+
+    /* stripe colors per layer */
+    .s-purple::before { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
+    .s-blue::before   { background: var(--blue);   box-shadow: 0 0 8px var(--blue); }
+    .s-orange::before { background: var(--orange);  box-shadow: 0 0 8px var(--orange); }
+    .s-green::before  { background: var(--green);   box-shadow: 0 0 8px var(--green); }
+    .s-amber::before  { background: var(--amber);   box-shadow: 0 0 8px var(--amber); }
+    .s-pink::before   { background: var(--pink);    box-shadow: 0 0 8px var(--pink); }
+    .s-muted::before  { background: var(--muted); }
+
+    /* node wide variant */
+    .node-wide { width: 180px; }
+
+    .node-icon { font-size: 20px; margin-bottom: 8px; }
+    .node-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 4px; }
+    .node-title { font-size: 12px; font-weight: 700; letter-spacing: -0.2px; margin-bottom: 6px; line-height: 1.3; }
+    .node-desc { font-size: 10px; color: var(--muted2); line-height: 1.5; margin-bottom: 6px; }
+    .node-tags { display: flex; flex-wrap: wrap; gap: 3px; }
+    .ntag { font-size: 9px; font-weight: 500; padding: 2px 6px; border-radius: 4px; background: var(--node-bg); border: 1px solid var(--border); color: var(--muted2); }
+    [data-theme="light"] .ntag { background: var(--surface); }
+
+    /* ── Trigger node ── */
+    .node-trigger { border-color: var(--orange); background: #0d0a07; color: #f5f5f5; }
+    .node-trigger .node-title { color: #f5f5f5; }
+    .node-trigger .node-desc { color: #888; }
+    .node-trigger .ntag { background: #1a1208; border-color: #3a2a10; color: #aaa; }
+    .node-trigger::before { background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+
+    /* ── Arrow ── */
+    .arrow { flex-shrink: 0; width: 36px; position: relative; display: flex; align-items: center; justify-content: center; }
+    .arrow::before { content: ''; position: absolute; top: 50%; left: 0; right: 10px; height: 1.5px; background: linear-gradient(90deg, var(--border-h), var(--muted)); transform: translateY(-50%); }
+    .arrow::after { content: ''; position: absolute; top: 50%; right: 6px; transform: translateY(-50%) rotate(45deg); width: 6px; height: 6px; border-top: 2px solid var(--muted); border-right: 2px solid var(--muted); }
+
+    /* arrow down */
+    .arrow-down { width: 100%; height: 40px; position: relative; display: flex; align-items: center; justify-content: center; }
+    .arrow-down::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 8px; width: 1.5px; background: linear-gradient(180deg, var(--border-h), var(--muted)); transform: translateX(-50%); }
+    .arrow-down::after { content: ''; position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%) rotate(135deg); width: 6px; height: 6px; border-top: 2px solid var(--muted); border-right: 2px solid var(--muted); }
+
+    /* ── Decision node (diamond) ── */
+    .node-decision {
+      width: 130px;
+      background: var(--node-bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px;
+      position: relative; text-align: center;
+    }
+    .node-decision .node-title { font-size: 11px; }
+
+    /* ── Sub-row label ── */
+    .row-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted2); background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 3px 10px; white-space: nowrap; align-self: center; flex-shrink: 0; margin-right: 16px; }
+
+    /* ── Vertical branch ── */
+    .branch-col { display: flex; flex-direction: column; align-items: center; }
+    .vline { width: 1.5px; background: var(--border-h); }
+
+    /* ── Channel grid (8 cols) ── */
+    .channel-grid { display: grid; grid-template-columns: repeat(8, 148px); gap: 12px; margin-top: 16px; }
+    .ch-node {
+      background: var(--node-bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 12px 10px;
+      position: relative; transition: border-color 0.2s;
+    }
+    .ch-node:hover { border-color: var(--border-h); }
+    .ch-node::before { content: ''; position: absolute; top: -1px; left: 12px; right: 12px; height: 2.5px; border-radius: 9999px; }
+    .ch-node.live::before  { background: var(--green); }
+    .ch-node.build::before { background: var(--amber); }
+    .ch-node.plan::before  { background: var(--muted); }
+    .ch-node .node-icon { font-size: 18px; }
+    .ch-node .node-title { font-size: 11px; margin-bottom: 4px; }
+    .ch-node .node-desc { font-size: 9px; }
+
+    /* ── Touch timeline ── */
+    .touch-row { display: flex; align-items: stretch; gap: 0; min-width: max-content; margin-top: 20px; }
+    .touch-node {
+      flex-shrink: 0; width: 160px;
+      background: var(--node-bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 12px 12px;
+      position: relative;
+    }
+    .touch-node::before { content: ''; position: absolute; top: -1px; left: 12px; right: 12px; height: 3px; border-radius: 9999px; background: var(--orange); }
+    .touch-day { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--orange); margin-bottom: 4px; }
+    .touch-channel { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+    .touch-detail { font-size: 10px; color: var(--muted2); line-height: 1.45; margin-bottom: 6px; }
+    .touch-stat { font-size: 9px; color: var(--muted); }
+
+    /* ── Master overview (vertical stack) ── */
+    .master-wrap { display: flex; gap: 40px; padding: 40px 36px 48px; }
+    .master-pipeline { display: flex; flex-direction: column; align-items: center; gap: 0; flex-shrink: 0; }
+    .master-node {
+      width: 220px; background: var(--node-bg);
+      border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px 18px; position: relative;
+      cursor: pointer; transition: border-color 0.2s, transform 0.2s;
+    }
+    .master-node:hover { border-color: var(--border-h); transform: translateX(4px); }
+    .master-node::before { content: ''; position: absolute; left: -1px; top: 16px; bottom: 16px; width: 3px; border-radius: 9999px; }
+    .master-node.ml1::before { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
+    .master-node.ml2::before { background: var(--blue);   box-shadow: 0 0 8px var(--blue); }
+    .master-node.ml3::before { background: var(--orange);  box-shadow: 0 0 8px var(--orange); }
+    .master-node.ml4::before { background: var(--green);   box-shadow: 0 0 8px var(--green); }
+    .master-node.ml5::before { background: var(--amber);   box-shadow: 0 0 8px var(--amber); }
+    .master-node.ml6::before { background: var(--pink);    box-shadow: 0 0 8px var(--pink); }
+    .master-layer-num { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .master-layer-title { font-size: 13px; font-weight: 700; letter-spacing: -0.2px; margin-bottom: 4px; }
+    .master-layer-desc { font-size: 11px; color: var(--muted2); line-height: 1.5; }
+    .master-arrow-down { width: 220px; height: 36px; position: relative; display: flex; align-items: center; justify-content: center; }
+    .master-arrow-down::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 8px; width: 1.5px; background: var(--border-h); transform: translateX(-50%); }
+    .master-arrow-down::after { content: ''; position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%) rotate(135deg); width: 6px; height: 6px; border-top: 2px solid var(--muted); border-right: 2px solid var(--muted); }
+
+    /* feedback loop label */
+    .feedback-loop {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 8px;
+      border: 1px dashed var(--border-h); border-radius: 16px;
+      padding: 24px 20px; flex: 1; min-height: 300px;
+      color: var(--muted); font-size: 12px; text-align: center;
+    }
+    .feedback-loop .fl-title { font-weight: 700; font-size: 13px; color: var(--pink); margin-bottom: 8px; }
+    .feedback-loop .fl-item { padding: 6px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--node-bg); font-size: 11px; color: var(--muted2); width: 100%; }
+
+    /* ── Stats bar ── */
+    .stats-bar { display: flex; gap: 0; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; background: var(--surface); margin-top: 40px; }
+    .stat-cell { flex: 1; padding: 18px 20px; border-right: 1px solid var(--border); text-align: center; }
+    .stat-cell:last-child { border-right: none; }
+    .stat-val { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; }
+    .stat-lbl { font-size: 10px; color: var(--muted2); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.6px; }
+
+    /* ── Footer ── */
+    footer { padding: 40px; border-top: 1px solid var(--border); text-align: center; font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; margin-top: 60px; }
+    .footer-logo { font-weight: 800; font-size: 13px; color: var(--text); }
+  </style>
+</head>
+<body>
+
+<div class="holo"></div>
+
+<nav>
+  <a href="/roadmap.html" class="nav-logo">
+    <div>
+      <div class="nav-logo-text">Gritnord</div>
+      <div class="nav-logo-sub">Architecture V7 — Full Build</div>
+    </div>
+  </a>
+  <div class="nav-right">
+    <a href="/uc-acquisition.html" class="nav-link">UC Acquisition</a>
+    <a href="/roadmap.html" class="nav-link">← Roadmap</a>
+    <a href="/dashboard.html" class="nav-link">Dashboard</a>
+    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙</button>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-tag">⬡ Full System Architecture · V7</div>
+  <h1>The <span class="grad">Gritnord Machine</span><br>— every layer</h1>
+  <p>6 interconnected layers. UC onboarding to booked meetings to billing to self-learning. One end-to-end AI-powered B2B engine.</p>
+</div>
+
+<!-- ══════════════════ MASTER OVERVIEW ══════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">Master Architecture</div>
+    <div class="section-rule"></div>
+    <div style="font-size:11px;color:var(--muted2)">6 layers · self-improving loop</div>
+  </div>
+
+  <div class="canvas-wrap">
+    <div class="master-wrap">
+      <!-- Left: vertical pipeline -->
+      <div class="master-pipeline">
+        <div class="master-node ml1">
+          <div class="master-layer-num l1">Layer 1</div>
+          <div class="master-layer-title">UC Onboarding</div>
+          <div class="master-layer-desc">13-section ICP form · audio · Claude fill · Stripe lock · ICP JSON output</div>
+        </div>
+        <div class="master-arrow-down"></div>
+        <div class="master-node ml2">
+          <div class="master-layer-num l2">Layer 2</div>
+          <div class="master-layer-title">DC Research</div>
+          <div class="master-layer-desc">Clay + Apollo · 250 DCs/batch · BetterContact · Claude 0–100 score · Top 50</div>
+        </div>
+        <div class="master-arrow-down"></div>
+        <div class="master-node ml3">
+          <div class="master-layer-num l3">Layer 3</div>
+          <div class="master-layer-title">30-Day Outreach</div>
+          <div class="master-layer-desc">8 channels · 8 touches · every channel references the last</div>
+        </div>
+        <div class="master-arrow-down"></div>
+        <div class="master-node ml4">
+          <div class="master-layer-num l4">Layer 4</div>
+          <div class="master-layer-title">Meeting Machine</div>
+          <div class="master-layer-desc">Cal.com booking · confirmation · no-show prevention · held → €500 Stripe</div>
+        </div>
+        <div class="master-arrow-down"></div>
+        <div class="master-node ml5">
+          <div class="master-layer-num l5">Layer 5</div>
+          <div class="master-layer-title">Revenue Flywheel</div>
+          <div class="master-layer-desc">UC dashboard · billing · referrals · content engine · search & book pages</div>
+        </div>
+        <div class="master-arrow-down"></div>
+        <div class="master-node ml6">
+          <div class="master-layer-num l6">Layer 6</div>
+          <div class="master-layer-title">Self-Learning</div>
+          <div class="master-layer-desc">Outcome data → Claude analysis → ICP refinement → better batches → restart</div>
+        </div>
+      </div>
+
+      <!-- Right: feedback loop + key metrics -->
+      <div style="flex:1;display:flex;flex-direction:column;gap:16px;">
+        <div class="feedback-loop">
+          <div class="fl-title">♾ Self-Improving Loop</div>
+          <div class="fl-item">Meeting outcome logged → Supabase</div>
+          <div style="height:8px;"></div>
+          <div class="fl-item">Claude scores ICP match quality</div>
+          <div style="height:8px;"></div>
+          <div class="fl-item">Sequence A/B signal extracted</div>
+          <div style="height:8px;"></div>
+          <div class="fl-item">DC scoring model updated</div>
+          <div style="height:8px;"></div>
+          <div class="fl-item">Next batch: smarter targeting</div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:14px;padding:20px;background:var(--node-bg);">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted2);margin-bottom:14px;">Key Numbers</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="text-align:center;padding:12px;border:1px solid var(--border);border-radius:10px;">
+              <div style="font-size:20px;font-weight:800;color:var(--green);">€500</div>
+              <div style="font-size:10px;color:var(--muted2);margin-top:2px;">per meeting held</div>
+            </div>
+            <div style="text-align:center;padding:12px;border:1px solid var(--border);border-radius:10px;">
+              <div style="font-size:20px;font-weight:800;color:var(--blue);">250</div>
+              <div style="font-size:10px;color:var(--muted2);margin-top:2px;">DCs per batch</div>
+            </div>
+            <div style="text-align:center;padding:12px;border:1px solid var(--border);border-radius:10px;">
+              <div style="font-size:20px;font-weight:800;color:var(--orange);">8</div>
+              <div style="font-size:10px;color:var(--muted2);margin-top:2px;">outreach channels</div>
+            </div>
+            <div style="text-align:center;padding:12px;border:1px solid var(--border);border-radius:10px;">
+              <div style="font-size:20px;font-weight:800;color:var(--amber);">30</div>
+              <div style="font-size:10px;color:var(--muted2);margin-top:2px;">day sequence</div>
+            </div>
+            <div style="text-align:center;padding:12px;border:1px solid var(--border);border-radius:10px;">
+              <div style="font-size:20px;font-weight:800;color:var(--purple);">5–12%</div>
+              <div style="font-size:10px;color:var(--muted2);margin-top:2px;">DC→meeting rate</div>
+            </div>
+            <div style="text-align:center;padding:12px;border:1px solid var(--border);border-radius:10px;">
+              <div style="font-size:20px;font-weight:800;color:var(--pink);">€100M</div>
+              <div style="font-size:10px;color:var(--muted2);margin-top:2px;">ARR target</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ LAYER 1: UC ONBOARDING ══════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num l1">Layer 1</div>
+    <div class="section-title">UC Onboarding</div>
+    <div class="section-rule"></div>
+    <div style="font-size:11px;color:var(--muted2)">Lovable · Claude · Whisper · Stripe · Supabase</div>
+  </div>
+
+  <div class="canvas-wrap">
+    <div class="flow">
+      <!-- Trigger -->
+      <div class="node node-trigger" style="width:140px;">
+        <div class="node-icon">🌐</div>
+        <div class="node-label">Entry</div>
+        <div class="node-title">UC Lands on gritnord.com/meet/[slug]</div>
+        <div class="node-tags"><span class="ntag">Lovable</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-purple">
+        <div class="node-icon">📋</div>
+        <div class="node-label">ICP Form</div>
+        <div class="node-title">13-Section ICP Capture</div>
+        <div class="node-desc">Company, ICP, pain points, decision maker profile, budget signals</div>
+        <div class="node-tags"><span class="ntag">Lovable</span><span class="ntag">Supabase</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-purple">
+        <div class="node-icon">🎙️</div>
+        <div class="node-label">Audio</div>
+        <div class="node-title">Live Audio Recording</div>
+        <div class="node-desc">UC speaks answers aloud — Whisper transcribes in real time</div>
+        <div class="node-tags"><span class="ntag">Whisper</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-purple">
+        <div class="node-icon">🤖</div>
+        <div class="node-label">AI Fill</div>
+        <div class="node-title">Claude Structures ICP</div>
+        <div class="node-desc">Fills all 13 sections from transcript. Flags gaps for human review.</div>
+        <div class="node-tags"><span class="ntag">Claude API</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-purple">
+        <div class="node-icon">👁️</div>
+        <div class="node-label">Review</div>
+        <div class="node-title">UC Reviews & Approves</div>
+        <div class="node-desc">Edit, confirm, lock. One-time action — cannot change after lock.</div>
+        <div class="node-tags"><span class="ntag">Lovable</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-purple">
+        <div class="node-icon">💳</div>
+        <div class="node-label">Paywall</div>
+        <div class="node-title">Stripe Lock & Launch</div>
+        <div class="node-desc">€X setup fee or subscription. Payment gates sequence start.</div>
+        <div class="node-tags"><span class="ntag">Stripe</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-purple" style="border-color:var(--purple);">
+        <div class="node-icon">📦</div>
+        <div class="node-label">Output</div>
+        <div class="node-title">ICP JSON Locked</div>
+        <div class="node-desc">Immutable ICP object stored. Fires webhook to Layer 2.</div>
+        <div class="node-tags"><span class="ntag">Supabase</span><span class="ntag">Webhook</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ LAYER 2: DC RESEARCH ══════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num l2">Layer 2</div>
+    <div class="section-title">DC Research Pipeline</div>
+    <div class="section-rule"></div>
+    <div style="font-size:11px;color:var(--muted2)">CompanyEnrich · BetterContact · Claude Code (Node.js) · HubSpot · Clay</div>
+  </div>
+
+  <div class="canvas-wrap">
+    <div class="flow">
+      <div class="node node-trigger" style="width:136px;">
+        <div class="node-icon">📦</div>
+        <div class="node-label">Input</div>
+        <div class="node-title">ICP config from Supabase</div>
+        <div class="node-desc" style="font-size:10px;">block1_icp + block1_personas tables. Triggered via webhook on Lock &amp; Load.</div>
+        <div class="node-tags"><span class="ntag">Supabase</span><span class="ntag">PostgreSQL</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-blue">
+        <div class="node-icon">🏗️</div>
+        <div class="node-label">Company Discovery</div>
+        <div class="node-title">CompanyEnrich finds matches</div>
+        <div class="node-desc">Search by NAICS, employee bands, markets. Output: qualified company list (ICP score ≥7.0).</div>
+        <div class="node-tags"><span class="ntag">CompanyEnrich API</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-blue">
+        <div class="node-icon">👤</div>
+        <div class="node-label">People Discovery</div>
+        <div class="node-title">BetterContact finds contacts</div>
+        <div class="node-desc">Person search by title + location per persona config. Output: contacts per company, role-typed (economic_buyer / champion / influencer).</div>
+        <div class="node-tags"><span class="ntag">BetterContact API</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-blue">
+        <div class="node-icon">🧠</div>
+        <div class="node-label">Scoring</div>
+        <div class="node-title">Claude scores + batches</div>
+        <div class="node-desc">Node.js pipeline scripts: ICP scoring, dedup, patch batching (250/batch). Output: qualified-companies.json, contacts-batch.json.</div>
+        <div class="node-tags"><span class="ntag">Claude Code</span><span class="ntag">Node.js</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-blue">
+        <div class="node-icon">🏢</div>
+        <div class="node-label">CRM Write</div>
+        <div class="node-title">HubSpot companies created</div>
+        <div class="node-desc">hubspot-company-writer.js writes qualified companies via HubSpot REST API. Returns hs_object_id per company, stored in local log.</div>
+        <div class="node-tags"><span class="ntag">HubSpot API</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-blue" style="border-color:var(--blue);">
+        <div class="node-icon">🔗</div>
+        <div class="node-label">Contact Enrichment</div>
+        <div class="node-title">Clay webhook enriches + links</div>
+        <div class="node-desc">Receives contacts with hubspot_company_id. Runs email/phone enrichment. Writes enriched contacts to HubSpot, associates to company object. Fires to Layer 3.</div>
+        <div class="node-tags"><span class="ntag">Clay</span><span class="ntag">HubSpot</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ LAYER 3: 30-DAY OUTREACH ══════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num l3">Layer 3</div>
+    <div class="section-title">30-Day Outreach Sequence</div>
+    <div class="section-rule"></div>
+    <div style="font-size:11px;color:var(--muted2)">8 channels · 8 touches · every channel references the last</div>
+  </div>
+
+  <div class="canvas-wrap">
+    <!-- 8 channels -->
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted2);margin-bottom:12px;">8 outreach channels</div>
+    <div class="channel-grid">
+      <div class="ch-node live">
+        <div class="node-icon">📣</div>
+        <div class="node-title">Paid Social</div>
+        <div class="node-desc" style="font-size:9px;color:var(--muted2);">Meta · LinkedIn<br>Gritnord company page</div>
+        <div class="node-tags" style="margin-top:6px;"><span class="ntag">Meta</span><span class="ntag">LinkedIn</span></div>
+      </div>
+      <div class="ch-node live">
+        <div class="node-icon">💼</div>
+        <div class="node-title">LinkedIn DM</div>
+        <div class="node-desc" style="font-size:9px;color:var(--muted2);">UC founder account<br>Claude-written per DC</div>
+        <div class="node-tags" style="margin-top:6px;"><span class="ntag">Claude</span></div>
+      </div>
+      <div class="ch-node live">
+        <div class="node-icon">🎬</div>
+        <div class="node-title">HeyGen Video</div>
+        <div class="node-desc" style="font-size:9px;color:var(--muted2);">60-sec AI video<br>says name + company</div>
+        <div class="node-tags" style="margin-top:6px;"><span class="ntag">HeyGen</span></div>
+      </div>
+      <div class="ch-node live">
+        <div class="node-icon">📞</div>
+        <div class="node-title">BDR Cold Call</div>
+        <div class="node-desc" style="font-size:9px;color:var(--muted2);">AI dialer · references<br>all prior touches</div>
+        <div class="node-tags" style="margin-top:6px;"><span class="ntag">Nooks</span><span class="ntag">Orum</span></div>
+      </div>
+      <div class="ch-node build">
+        <div class="node-icon">🎤</div>
+        <div class="node-title">Voice Note</div>
+        <div class="node-desc" style="font-size:9px;color:var(--muted2);">UC founder LinkedIn<br>30-sec, personal</div>
+        <div class="node-tags" style="margin-top:6px;"><span class="ntag">LinkedIn</span></div>
+      </div>
+      <div class="ch-node build">
+        <div class="node-icon">💬</div>
+        <div class="node-title">WhatsApp</div>
+        <div class="node-desc" style="font-size:9px;color:var(--muted2);">2 sentences +<br>one-tap Calendly</div>
+        <div class="node-tags" style="margin-top:6px;"><span class="ntag">Make.com</span></div>
+      </div>
+      <div class="ch-node build">
+        <div class="node-icon">🍪</div>
+        <div class="node-title">Cookie Retargeting</div>
+        <div class="node-desc" style="font-size:9px;color:var(--muted2);">Stays warm forever<br>Gritnord Pixel</div>
+        <div class="node-tags" style="margin-top:6px;"><span class="ntag">Gritnord Pixel</span></div>
+      </div>
+      <div class="ch-node build">
+        <div class="node-icon">📧</div>
+        <div class="node-title">Email</div>
+        <div class="node-desc" style="font-size:9px;color:var(--muted2);">Personalised cold<br>High open rate</div>
+        <div class="node-tags" style="margin-top:6px;"><span class="ntag">HubSpot</span></div>
+      </div>
+    </div>
+
+    <!-- 8 touches timeline -->
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted2);margin-top:32px;margin-bottom:0;">30-day touch timeline → 1 DC contact</div>
+    <div class="touch-row">
+      <div class="touch-node">
+        <div class="touch-day">Day 1</div>
+        <div class="touch-channel">📣 Paid Social</div>
+        <div class="touch-detail">Starts + LinkedIn connection request. Gritnord company page warms.</div>
+        <div class="touch-stat">Gritnord company page</div>
+      </div>
+      <div class="arrow"></div>
+      <div class="touch-node">
+        <div class="touch-day">Day 3</div>
+        <div class="touch-channel">💼 LinkedIn DM</div>
+        <div class="touch-detail">UC founder sends value-first DM. Claude-written per DC, references day 1.</div>
+        <div class="touch-stat">3–6% conversion</div>
+      </div>
+      <div class="arrow"></div>
+      <div class="touch-node">
+        <div class="touch-day">Day 5</div>
+        <div class="touch-channel">🎬 HeyGen Video</div>
+        <div class="touch-detail">60-sec AI video says DC's name + company. Sent via LinkedIn DM.</div>
+        <div class="touch-stat">+40% reply uplift</div>
+      </div>
+      <div class="arrow"></div>
+      <div class="touch-node">
+        <div class="touch-day">Day 7</div>
+        <div class="touch-channel">📞 BDR Call</div>
+        <div class="touch-detail">AI dialer call — references all prior touches. Asks for 15-min call.</div>
+        <div class="touch-stat">5–12% booked</div>
+      </div>
+      <div class="arrow"></div>
+      <div class="touch-node">
+        <div class="touch-day">Day 8</div>
+        <div class="touch-channel">🎤 Voice Note</div>
+        <div class="touch-detail">UC founder LinkedIn voice note — 30 sec, personal, high open rate.</div>
+        <div class="touch-stat">High open rate</div>
+      </div>
+      <div class="arrow"></div>
+      <div class="touch-node">
+        <div class="touch-day">Day 10</div>
+        <div class="touch-channel">💬 WhatsApp</div>
+        <div class="touch-detail">2 sentences + one-tap Calendly link. 5–12% in EU markets.</div>
+        <div class="touch-stat">5–12% EU markets</div>
+      </div>
+      <div class="arrow"></div>
+      <div class="touch-node">
+        <div class="touch-day">Day 14</div>
+        <div class="touch-channel">📞 BDR Call 2</div>
+        <div class="touch-detail">Shorter, final ask. Last active push before nurture phase starts.</div>
+        <div class="touch-stat">Last active push</div>
+      </div>
+      <div class="arrow"></div>
+      <div class="touch-node">
+        <div class="touch-day">Day 21</div>
+        <div class="touch-channel">💼 LinkedIn Breakup</div>
+        <div class="touch-detail">Breakup message → long-term nurture + ads for 30 more days.</div>
+        <div class="touch-stat">Stays warm forever</div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;padding:14px 16px;background:var(--canvas-bg);border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--muted2);line-height:1.7;">
+      ★ <strong style="color:var(--text)">Signal override:</strong> Job change · new CFO hire · funding round · ERP transformation announced → restart sequence immediately, regardless of day in cycle.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ LAYER 4: MEETING MACHINE ══════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num l4">Layer 4</div>
+    <div class="section-title">Meeting Machine</div>
+    <div class="section-rule"></div>
+    <div style="font-size:11px;color:var(--muted2)">Cal.com · Calendly · ElevenLabs · Make.com · Stripe</div>
+  </div>
+
+  <div class="canvas-wrap">
+    <div class="flow">
+      <div class="node node-trigger" style="width:136px;">
+        <div class="node-icon">🗓️</div>
+        <div class="node-label">Input</div>
+        <div class="node-title">DC clicks Calendly link</div>
+        <div class="node-tags"><span class="ntag">Calendly</span><span class="ntag">Cal.com</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-green">
+        <div class="node-icon">✅</div>
+        <div class="node-label">Book</div>
+        <div class="node-title">Meeting booked</div>
+        <div class="node-desc">Auto-confirms slot, fires webhook to Supabase + HubSpot deal created</div>
+        <div class="node-tags"><span class="ntag">Supabase</span><span class="ntag">HubSpot</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-green">
+        <div class="node-icon">📨</div>
+        <div class="node-label">Confirm</div>
+        <div class="node-title">Confirmation flow</div>
+        <div class="node-desc">Email + LinkedIn DM sent immediately. Calendar invite with agenda.</div>
+        <div class="node-tags"><span class="ntag">Make.com</span><span class="ntag">Resend</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-green">
+        <div class="node-icon">🔔</div>
+        <div class="node-label">Remind</div>
+        <div class="node-title">No-show prevention</div>
+        <div class="node-desc">24h + 1h reminders via ElevenLabs voice call + WhatsApp</div>
+        <div class="node-tags"><span class="ntag">ElevenLabs</span><span class="ntag">Make</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-green">
+        <div class="node-icon">🤝</div>
+        <div class="node-label">Meeting</div>
+        <div class="node-title">Meeting happens</div>
+        <div class="node-desc">UC marks meeting held in Admin Panel. Triggers billing flow.</div>
+        <div class="node-tags"><span class="ntag">Lovable</span><span class="ntag">Supabase</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-green" style="border-color:var(--green);">
+        <div class="node-icon">💰</div>
+        <div class="node-label">Charge</div>
+        <div class="node-title">Stripe fires €500</div>
+        <div class="node-desc">Automatic charge on meeting-held event. UC gets invoice.</div>
+        <div class="node-tags"><span class="ntag">Stripe</span><span class="ntag">Resend</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-green">
+        <div class="node-icon">📊</div>
+        <div class="node-label">Log</div>
+        <div class="node-title">Outcome logged</div>
+        <div class="node-desc">Deal stage, notes, next step stored. Fires signal to Layer 6.</div>
+        <div class="node-tags"><span class="ntag">Supabase</span><span class="ntag">HubSpot</span></div>
+      </div>
+    </div>
+
+    <!-- No-show branch -->
+    <div style="margin-top:24px;padding:14px 16px;background:var(--canvas-bg);border:1px dashed var(--border-h);border-radius:10px;font-size:12px;color:var(--muted2);">
+      <strong style="color:var(--text);">No-show path:</strong> DC misses → auto-reschedule email + ElevenLabs call within 10 min → rebook or return to Day 10 of sequence → max 2 rebook attempts then dropped to nurture.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ LAYER 5: REVENUE FLYWHEEL ══════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num l5">Layer 5</div>
+    <div class="section-title">Revenue Flywheel</div>
+    <div class="section-rule"></div>
+    <div style="font-size:11px;color:var(--muted2)">Lovable · Supabase · Stripe · Node.js · Claude API</div>
+  </div>
+
+  <div class="canvas-wrap">
+    <div class="flow">
+      <div class="node s-amber">
+        <div class="node-icon">🧩</div>
+        <div class="node-label">UC Interface</div>
+        <div class="node-title">UC Dashboard</div>
+        <div class="node-desc">Meeting pipeline, booked/held/pending, credits used, ICP status</div>
+        <div class="node-tags"><span class="ntag">Lovable</span><span class="ntag">Supabase</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-amber">
+        <div class="node-icon">🌐</div>
+        <div class="node-label">Public</div>
+        <div class="node-title">Search & Book Pages</div>
+        <div class="node-desc">gritnord.com/meet/[slug] · DC fills 5-field form · ICP-gated → Calendly</div>
+        <div class="node-tags"><span class="ntag">Lovable</span><span class="ntag">Cal.com</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-amber">
+        <div class="node-icon">🛡️</div>
+        <div class="node-label">Admin</div>
+        <div class="node-title">Admin & Billing Panel</div>
+        <div class="node-desc">Internal Gritnord view · mark meeting held · retainer billing · referrals</div>
+        <div class="node-tags"><span class="ntag">Lovable</span><span class="ntag">Stripe</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-amber">
+        <div class="node-icon">✍️</div>
+        <div class="node-label">Content</div>
+        <div class="node-title">Content Engine</div>
+        <div class="node-desc">4 SEO blogs/wk · 3 LinkedIn posts · 3 X posts. AI draft → approval queue</div>
+        <div class="node-tags"><span class="ntag">Node.js</span><span class="ntag">Claude</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-amber">
+        <div class="node-icon">🔁</div>
+        <div class="node-label">Referral</div>
+        <div class="node-title">UC Referral Loop</div>
+        <div class="node-desc">UCs refer other UCs · referral credit system · tracked in Supabase</div>
+        <div class="node-tags"><span class="ntag">Supabase</span><span class="ntag">Stripe</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-amber" style="border-color:var(--amber);">
+        <div class="node-icon">📈</div>
+        <div class="node-label">Scale</div>
+        <div class="node-title">Retainer Billing</div>
+        <div class="node-desc">Monthly retainer auto-charged on 1st. Usage credits for extra batches.</div>
+        <div class="node-tags"><span class="ntag">Stripe</span><span class="ntag">Resend</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ LAYER 6: SELF-LEARNING ══════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num l6">Layer 6</div>
+    <div class="section-title">Self-Learning Engine</div>
+    <div class="section-rule"></div>
+    <div style="font-size:11px;color:var(--muted2)">Claude API · Supabase · automated optimization loop</div>
+  </div>
+
+  <div class="canvas-wrap">
+    <div class="flow">
+      <div class="node node-trigger" style="width:140px;">
+        <div class="node-icon">📊</div>
+        <div class="node-label">Input</div>
+        <div class="node-title">Outcome data from Layer 4</div>
+        <div class="node-tags"><span class="ntag">Supabase</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-pink">
+        <div class="node-icon">🧠</div>
+        <div class="node-label">Analyse</div>
+        <div class="node-title">Claude reads outcomes</div>
+        <div class="node-desc">Which DCs booked, held, ghosted. Which touch triggered response.</div>
+        <div class="node-tags"><span class="ntag">Claude API</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-pink">
+        <div class="node-icon">🎯</div>
+        <div class="node-label">Score</div>
+        <div class="node-title">ICP match quality scored</div>
+        <div class="node-desc">Updates scoring weights. Industries, sizes, titles that convert best.</div>
+        <div class="node-tags"><span class="ntag">Claude API</span><span class="ntag">Supabase</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-pink">
+        <div class="node-icon">🔬</div>
+        <div class="node-label">A/B Signal</div>
+        <div class="node-title">Sequence signal extracted</div>
+        <div class="node-desc">Which day / channel / message type drove the most replies per batch.</div>
+        <div class="node-tags"><span class="ntag">Supabase</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-pink">
+        <div class="node-icon">⚙️</div>
+        <div class="node-label">Update</div>
+        <div class="node-title">Model weights updated</div>
+        <div class="node-desc">DC scoring model + sequence timing recommendations updated in Supabase.</div>
+        <div class="node-tags"><span class="ntag">Claude API</span><span class="ntag">Supabase</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-pink">
+        <div class="node-icon">📋</div>
+        <div class="node-label">Report</div>
+        <div class="node-title">UC insight report</div>
+        <div class="node-desc">Weekly email: what's working, what changed, next batch recommendation.</div>
+        <div class="node-tags"><span class="ntag">Resend</span><span class="ntag">Claude</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node s-pink" style="border-color:var(--pink);">
+        <div class="node-icon">♾️</div>
+        <div class="node-label">Loop</div>
+        <div class="node-title">Next batch: smarter</div>
+        <div class="node-desc">Updated ICP + scoring fires back to Layer 2. Cycle restarts improved.</div>
+        <div class="node-tags"><span class="ntag">Layer 2 →</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ GTM: GRITNORD UC ACQUISITION ══════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num" style="color:#06b6d4;">GTM</div>
+    <div class="section-title">Gritnord UC Acquisition — Eating Our Own Cooking</div>
+    <div class="section-rule"></div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="font-size:11px;color:var(--muted2)">Target: 10 UC contracts/month</div>
+      <span style="padding:3px 10px;border-radius:9999px;font-size:10px;font-weight:700;background:rgba(34,197,94,0.1);color:#22c55e;">Engine built — uc-researcher.js · uc-sequencer.js · video-generator.js</span>
+    </div>
+  </div>
+
+  <!-- The math -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px;">
+    <div style="background:var(--node-bg);border:1px solid var(--border);border-radius:14px;padding:20px;border-top:3px solid #06b6d4;">
+      <div style="font-size:28px;font-weight:800;color:#06b6d4;">250</div>
+      <div style="font-size:11px;color:var(--text);font-weight:700;margin-top:4px;">UC candidates/batch</div>
+      <div style="font-size:11px;color:var(--muted2);margin-top:6px;line-height:1.5;">B2B founders, VP Sales, RevOps leads. 5–50 person teams. High-ticket B2B sellers. Sourced via Clay + Apollo same as DC pipeline.</div>
+    </div>
+    <div style="background:var(--node-bg);border:1px solid var(--border);border-radius:14px;padding:20px;border-top:3px solid var(--orange);">
+      <div style="font-size:28px;font-weight:800;color:var(--orange);">5–12%</div>
+      <div style="font-size:11px;color:var(--text);font-weight:700;margin-top:4px;">meeting rate</div>
+      <div style="font-size:11px;color:var(--muted2);margin-top:6px;line-height:1.5;">12–30 demo calls booked per batch of 250. Same 8-channel sequence — now pointed at UC candidates, not DCs.</div>
+    </div>
+    <div style="background:var(--node-bg);border:1px solid var(--border);border-radius:14px;padding:20px;border-top:3px solid var(--green);">
+      <div style="font-size:28px;font-weight:800;color:var(--green);">40%</div>
+      <div style="font-size:11px;color:var(--text);font-weight:700;margin-top:4px;">demo→close rate</div>
+      <div style="font-size:11px;color:var(--muted2);margin-top:6px;line-height:1.5;">4–12 UCs signed per batch. 1 batch/month gets you to target. Run 2 batches for buffer. System sells itself — we show it live in the demo.</div>
+    </div>
+    <div style="background:var(--node-bg);border:1px solid var(--border);border-radius:14px;padding:20px;border-top:3px solid var(--amber);">
+      <div style="font-size:28px;font-weight:800;color:var(--amber);">10 UCs</div>
+      <div style="font-size:11px;color:var(--text);font-weight:700;margin-top:4px;">per month target</div>
+      <div style="font-size:11px;color:var(--muted2);margin-top:6px;line-height:1.5;">Each UC = retainer + €500/meeting held. 10 UCs × avg 8 meetings/mo × €500 = €40K/mo recurring at scale.</div>
+    </div>
+  </div>
+
+  <!-- Outbound UC acquisition flow -->
+  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted2);margin-bottom:12px;">Outbound UC acquisition — V7 pointed at itself</div>
+  <div class="canvas-wrap" style="margin-bottom:32px;">
+    <div class="flow">
+      <div class="node node-trigger" style="width:140px;">
+        <div class="node-icon">🎯</div>
+        <div class="node-label">ICP</div>
+        <div class="node-title">UC Candidate Profile</div>
+        <div class="node-desc" style="font-size:10px;">B2B founder · VP Sales · 5–50 team · high-ticket · needs meetings</div>
+      </div>
+      <div class="arrow"></div>
+      <div class="node" style="border-top:3px solid #06b6d4;">
+        <div class="node-icon">🔭</div>
+        <div class="node-label">Find</div>
+        <div class="node-title">Clay + Apollo</div>
+        <div class="node-desc" style="font-size:10px;">250 UC candidates. Filter: active LinkedIn, B2B SaaS/consulting/agency, EN/EU market</div>
+        <div class="node-tags"><span class="ntag">Clay</span><span class="ntag">Apollo</span></div>
+      </div>
+      <div class="arrow"></div>
+      <div class="node" style="border-top:3px solid #06b6d4;">
+        <div class="node-icon">🤖</div>
+        <div class="node-label">Personalise</div>
+        <div class="node-title">Claude writes angle</div>
+        <div class="node-desc" style="font-size:10px;">"We use this exact system to book our own meetings. Here's what it looks like running live…"</div>
+        <div class="node-tags"><span class="ntag">Claude API</span></div>
+      </div>
+      <div class="arrow"></div>
+      <div class="node" style="border-top:3px solid #06b6d4;">
+        <div class="node-icon">📣</div>
+        <div class="node-label">Sequence</div>
+        <div class="node-title">8-channel · 30 days</div>
+        <div class="node-desc" style="font-size:10px;">Same flow as Layer 3 — paid social, LinkedIn DM, HeyGen video, BDR call, WhatsApp</div>
+        <div class="node-tags"><span class="ntag">Make.com</span><span class="ntag">HeyGen</span></div>
+      </div>
+      <div class="arrow"></div>
+      <div class="node" style="border-top:3px solid #06b6d4;">
+        <div class="node-icon">🖥️</div>
+        <div class="node-label">Demo</div>
+        <div class="node-title">Live system demo</div>
+        <div class="node-desc" style="font-size:10px;">Show real dashboard · real metrics · live sequence running for another UC · 15 min</div>
+        <div class="node-tags"><span class="ntag">Gritnord dashboard</span></div>
+      </div>
+      <div class="arrow"></div>
+      <div class="node" style="border-top:3px solid #06b6d4;">
+        <div class="node-icon">✍️</div>
+        <div class="node-label">Close</div>
+        <div class="node-title">ICP form + Stripe</div>
+        <div class="node-desc" style="font-size:10px;">UC completes onboarding (Layer 1). Setup fee locked. First batch starts within 48h.</div>
+        <div class="node-tags"><span class="ntag">Lovable</span><span class="ntag">Stripe</span></div>
+      </div>
+      <div class="arrow"></div>
+      <div class="node" style="border-top:3px solid var(--green);border-color:var(--green);">
+        <div class="node-icon">🚀</div>
+        <div class="node-label">Live</div>
+        <div class="node-title">UC is in the machine</div>
+        <div class="node-desc" style="font-size:10px;">Layer 2 fires immediately. 250 DCs found. 30-day sequence starts. UC watches dashboard.</div>
+        <div class="node-tags"><span class="ntag">Layer 2 →</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hyper-personal UC touch -->
+  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted2);margin-bottom:6px;">Hyper-personal UC touch — 1:1 for every one of the 250</div>
+  <div style="font-size:11px;color:var(--muted2);margin-bottom:16px;line-height:1.6;">We don't broadcast content hoping the right founders find us. We identify each of the 250 UC candidates, research them individually, and send something so specific they can't ignore it. Same V7 engine — pointed at UC buyers.</div>
+  <div class="canvas-wrap" style="margin-bottom:16px;">
+    <div class="flow" style="flex-wrap:nowrap;">
+
+      <div class="node node-trigger" style="width:160px;flex-shrink:0;">
+        <div class="node-icon">🔭</div>
+        <div class="node-label">Find — Live pipeline</div>
+        <div class="node-title">250 UC candidates</div>
+        <div class="node-desc" style="font-size:10px;">Same 6-layer DC discovery pipeline, re-pointed at UC ICP. Supabase ICP config → CompanyEnrich → BetterContact → Claude scoring → HubSpot → Clay enrichment. Outputs 250 enriched contacts per batch.</div>
+        <div class="node-tags"><span class="ntag">Supabase</span><span class="ntag">Claude</span><span class="ntag">HubSpot</span><span class="ntag">Clay</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node" style="border-top:3px solid #06b6d4;flex-shrink:0;">
+        <div class="node-icon">🧠</div>
+        <div class="node-label">Research</div>
+        <div class="node-title">Claude dossier per person</div>
+        <div class="node-desc" style="font-size:10px;">Last 3 LinkedIn posts · company news · tech stack · hiring signals · sales pain indicators. One paragraph personalisation angle per UC.</div>
+        <div class="node-tags"><span class="ntag">Claude API</span><span class="ntag">Clay</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node" style="border-top:3px solid #06b6d4;flex-shrink:0;">
+        <div class="node-icon">🎬</div>
+        <div class="node-label">Day 1 — Video</div>
+        <div class="node-title">HeyGen: says their name</div>
+        <div class="node-desc" style="font-size:10px;">"Hi [Name], I run Gritnord — we book meetings for B2B founders using AI. I looked at [Company] and think you're losing [X] because [specific reason]. Here's the dashboard live…" — 45 sec.</div>
+        <div class="node-tags"><span class="ntag">HeyGen</span><span class="ntag">Claude</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node" style="border-top:3px solid #06b6d4;flex-shrink:0;">
+        <div class="node-icon">💬</div>
+        <div class="node-label">Day 1 — DM</div>
+        <div class="node-title">LinkedIn: references their post</div>
+        <div class="node-desc" style="font-size:10px;">"Saw your post about [specific thing]. We built a system that solves exactly that — sent you a 45-sec video showing it live on our dashboard. Worth a look?" + Calendly link.</div>
+        <div class="node-tags"><span class="ntag">LinkedIn</span><span class="ntag">Claude</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node" style="border-top:3px solid #06b6d4;flex-shrink:0;">
+        <div class="node-icon">🎙️</div>
+        <div class="node-label">Day 3 — Voice</div>
+        <div class="node-title">Rain voice note: WhatsApp</div>
+        <div class="node-desc" style="font-size:10px;">20-second voice note. Rain says name, company, one pain, one result we got for a similar UC. Not scripted-sounding. "Happy to show you in 15 mins." Booking link in caption.</div>
+        <div class="node-tags"><span class="ntag">WhatsApp</span><span class="ntag">Resend</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node" style="border-top:3px solid #06b6d4;flex-shrink:0;">
+        <div class="node-icon">📊</div>
+        <div class="node-label">Day 7 — Proof</div>
+        <div class="node-title">Vertical case study sent</div>
+        <div class="node-desc" style="font-size:10px;">"We're running this for a [same vertical] UC right now — they booked 19 meetings in week 1. Numbers are in the deck, link below. One call to see if it fits you."</div>
+        <div class="node-tags"><span class="ntag">Resend</span><span class="ntag">Notion</span></div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node" style="border-top:3px solid var(--green);border-color:var(--green);flex-shrink:0;">
+        <div class="node-icon">📅</div>
+        <div class="node-label">Book</div>
+        <div class="node-title">15-min discovery call</div>
+        <div class="node-desc" style="font-size:10px;">Rain runs a qualification call. Walks through the system using a recorded walkthrough + real metrics deck. Closes on ICP fit + setup fee. No live dashboard yet — product in build.</div>
+        <div class="node-tags"><span class="ntag">Cal.com</span><span class="ntag">Loom</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Why this beats broad content -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:32px;">
+    <div style="background:var(--node-bg);border:1px solid var(--border);border-radius:12px;padding:16px;border-left:3px solid #ef4444;">
+      <div style="font-size:11px;font-weight:700;color:#ef4444;margin-bottom:6px;">Why broad content fails here</div>
+      <div style="font-size:10px;color:var(--muted2);line-height:1.7;">250 UC candidates/month is a small, high-value pool. SEO and LinkedIn posts reach thousands of irrelevant people and maybe 2–3 of the right ones. Content ROI is near zero at this scale. The right 250 won't self-select fast enough to hit 10 UCs/month.</div>
+    </div>
+    <div style="background:var(--node-bg);border:1px solid var(--border);border-radius:12px;padding:16px;border-left:3px solid #06b6d4;">
+      <div style="font-size:11px;font-weight:700;color:#06b6d4;margin-bottom:6px;">Why hyper-personal works</div>
+      <div style="font-size:10px;color:var(--muted2);line-height:1.7;">A video that says your name + references your last LinkedIn post + shows your pain in a live dashboard is impossible to ignore. It's not a pitch — it's proof. The UC sees Gritnord doing for itself exactly what they'll be paying for. Conversion rate is 4–6× higher than generic outbound.</div>
+    </div>
+    <div style="background:var(--node-bg);border:1px solid var(--border);border-radius:12px;padding:16px;border-left:3px solid var(--green);">
+      <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:6px;">The operational reality</div>
+      <div style="font-size:10px;color:var(--muted2);line-height:1.7;">Clay automates the research. Claude writes the angle. HeyGen renders 250 personalised videos in ~2h. Rain records 5 voice note templates (by vertical) — Make.com splices the name. Each "personal" touch costs &lt;€2 to produce. Total batch cost: &lt;€500 to reach 250 perfectly-targeted UCs.</div>
+    </div>
+  </div>
+
+  <!-- UC ICP definition -->
+  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted2);margin-bottom:12px;">UC ICP — who Gritnord targets as customers</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:32px;">
+    <div style="background:var(--node-bg);border:1px solid var(--border);border-radius:12px;padding:18px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">✅ Perfect UC fit</div>
+      <div style="font-size:11px;color:var(--muted2);line-height:1.8;">
+        B2B founder or VP Sales<br>
+        5–100 person company<br>
+        Selling €10K+ deals<br>
+        Currently doing outbound manually<br>
+        Active LinkedIn presence<br>
+        EN or Nordic/EU market<br>
+        Has budget for tools (€2–5K/mo)<br>
+        Values speed over perfection
+      </div>
+    </div>
+    <div style="background:var(--node-bg);border:1px solid var(--border);border-radius:12px;padding:18px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">⚡ High-value verticals</div>
+      <div style="font-size:11px;color:var(--muted2);line-height:1.8;">
+        SaaS (B2B, mid-market focus)<br>
+        Management consulting<br>
+        Staffing &amp; recruitment firms<br>
+        Financial services / fintech<br>
+        ERP / software implementation<br>
+        Marketing agencies (B2B)<br>
+        HR tech &amp; talent platforms<br>
+        Professional services
+      </div>
+    </div>
+    <div style="background:var(--node-bg);border:1px solid var(--border);border-radius:12px;padding:18px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;">🚫 Poor UC fit</div>
+      <div style="font-size:11px;color:var(--muted2);line-height:1.8;">
+        B2C companies<br>
+        Enterprise (100+ sales reps)<br>
+        Regulated industries (pharma, legal)<br>
+        Local/geographic-only businesses<br>
+        Deal size under €5K<br>
+        No existing sales motion<br>
+        Wants to own all tools internally<br>
+        No LinkedIn presence at all
+      </div>
+    </div>
+  </div>
+
+  <!-- DC → UC trust flow -->
+  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted2);margin-bottom:12px;">DC → UC trust flow — why DCs show up to meetings</div>
+  <div class="canvas-wrap">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+      <div style="background:var(--node-bg);border:1px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid var(--purple);">
+        <div style="font-size:18px;margin-bottom:8px;">🎯</div>
+        <div style="font-size:11px;font-weight:700;margin-bottom:6px;">Problem 1: DC doesn't know who's calling</div>
+        <div style="font-size:10px;color:var(--muted2);line-height:1.6;margin-bottom:8px;">Cold outreach = ignored without brand recognition.</div>
+        <div style="font-size:10px;font-weight:600;color:var(--purple);">Fix: paid social + cookie retargeting starts D1. DC sees Gritnord/UC brand 3–5 times before first DM arrives. Warm before touched.</div>
+      </div>
+      <div style="background:var(--node-bg);border:1px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid var(--blue);">
+        <div style="font-size:18px;margin-bottom:8px;">🤔</div>
+        <div style="font-size:11px;font-weight:700;margin-bottom:6px;">Problem 2: DC doesn't trust the offer</div>
+        <div style="font-size:10px;color:var(--muted2);line-height:1.6;margin-bottom:8px;">Generic pitch = no credibility. DC has seen 50 like it.</div>
+        <div style="font-size:10px;font-weight:600;color:var(--blue);">Fix: HeyGen video says DC's name + company. UC founder voice note is personal. LinkedIn DM references specific DC pain (Claude-researched). Not generic — provably personalised.</div>
+      </div>
+      <div style="background:var(--node-bg);border:1px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid var(--orange);">
+        <div style="font-size:18px;margin-bottom:8px;">⏱️</div>
+        <div style="font-size:11px;font-weight:700;margin-bottom:6px;">Problem 3: DC doesn't have time</div>
+        <div style="font-size:10px;color:var(--muted2);line-height:1.6;margin-bottom:8px;">Even interested DCs don't act unless friction is near zero.</div>
+        <div style="font-size:10px;font-weight:600;color:var(--orange);">Fix: one-tap Calendly in every message. Ask for 15 min max. WhatsApp message is 2 sentences. BDR call scripts are 90 sec qualification only. Lowest possible ask.</div>
+      </div>
+      <div style="background:var(--node-bg);border:1px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid var(--green);">
+        <div style="font-size:18px;margin-bottom:8px;">💡</div>
+        <div style="font-size:11px;font-weight:700;margin-bottom:6px;">Problem 4: DC forgets between touches</div>
+        <div style="font-size:10px;color:var(--muted2);line-height:1.6;margin-bottom:8px;">Sequence gaps = DC goes cold. Each touch feels disconnected.</div>
+        <div style="font-size:10px;font-weight:600;color:var(--green);">Fix: every touch references the previous one. "I sent you a video Tuesday…" — continuous narrative. DC feels followed, not spammed. Cookie retargeting keeps brand visible between all touches.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;padding:14px 16px;background:var(--canvas-bg);border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--muted2);line-height:1.7;">
+      ★ <strong style="color:var(--text);">The core insight:</strong> DCs don't show up to meetings because of one great message. They show up because they've seen the brand 7+ times across different channels and the ask is frictionless. Volume × personalisation × ease = meetings booked.
+    </div>
+  </div>
+</div>
+
+<!-- Stats bar -->
+<div class="section" style="padding-bottom:0;">
+  <div class="stats-bar">
+    <div class="stat-cell"><div class="stat-val" style="color:var(--green);">€500</div><div class="stat-lbl">per meeting held</div></div>
+    <div class="stat-cell"><div class="stat-val" style="color:var(--blue);">250</div><div class="stat-lbl">DCs per batch</div></div>
+    <div class="stat-cell"><div class="stat-val" style="color:var(--orange);">8</div><div class="stat-lbl">outreach channels</div></div>
+    <div class="stat-cell"><div class="stat-val" style="color:var(--amber);">5–12%</div><div class="stat-lbl">DC→meeting rate</div></div>
+    <div class="stat-cell"><div class="stat-val" style="color:var(--purple);">30</div><div class="stat-lbl">day sequence</div></div>
+    <div class="stat-cell"><div class="stat-val" style="color:var(--pink);">€2–10</div><div class="stat-lbl">content cost/piece</div></div>
+    <div class="stat-cell"><div class="stat-val" style="color:var(--text);">83%</div><div class="stat-lbl">avg quality score</div></div>
+    <div class="stat-cell"><div class="stat-val" style="color:var(--green);">€100M</div><div class="stat-lbl">ARR target</div></div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">Gritnord</div>
+  <div>Architecture V7 · 6 layers · Self-improving</div>
+  <div>© 2026 Gritnord OÜ</div>
+</footer>
+
+<script>
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('grtn-theme', next);
+    document.getElementById('theme-btn').textContent = next === 'dark' ? '🌙' : '☀️';
+  }
+  (function() {
+    const t = localStorage.getItem('grtn-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('theme-btn');
+      if (btn) btn.textContent = t === 'dark' ? '🌙' : '☀️';
+    });
+  })();
+</script>
+</body>
+</html>
