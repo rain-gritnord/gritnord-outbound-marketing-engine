@@ -458,10 +458,20 @@ async function loadPerformance() {
   c.innerHTML = '<div class="loading">Loading analytics…</div>';
   try {
     const r = await fetch('/api/linkedin/analytics');
+    if (!r.ok) {
+      const txt = await r.text();
+      // If server is returning HTML (old server still running), tell user to restart
+      if (txt.trim().startsWith('<')) {
+        c.innerHTML = `<div class="empty"><p style="color:#ef4444">Server running old code.<br>Please restart: <code style="font-size:12px;background:#1a1a1a;padding:2px 8px;border-radius:4px;">node --env-file=.env server.js</code></p></div>`;
+      } else {
+        c.innerHTML = `<div class="empty"><p>API error ${r.status}: ${txt.slice(0, 200)}</p></div>`;
+      }
+      return;
+    }
     const d = await r.json();
     c.innerHTML = renderPerformance(d);
   } catch (err) {
-    c.innerHTML = `<div class="empty"><p>Failed to load analytics: ${err.message}</p></div>`;
+    c.innerHTML = `<div class="empty"><p style="color:#ef4444">Failed to reach server.<br>Make sure it's running: <code style="font-size:12px;background:#1a1a1a;padding:2px 8px;border-radius:4px;">node --env-file=.env server.js</code></p></div>`;
   }
 }
 

@@ -3,152 +3,168 @@
 
 (function () {
   const NAV_ITEMS = [
-    { label: 'Overview',        icon: '◻',  href: '/dashboard.html',        group: null },
-    { label: 'Generate',        icon: '✦',  href: '/dashboard.html#generate', group: null },
-    { label: 'Content',         icon: '≡',  href: '/dashboard.html#content',  group: null },
-    { label: 'Run Cycle',       icon: '↻',  href: '/dashboard.html#cycle',    group: null },
-    { label: 'Channels',        icon: '◈',  href: '/dashboard.html#channels', group: null },
-    { label: 'History',         icon: '◷',  href: '/dashboard.html#history',  group: null },
-    { label: 'LinkedIn Queue',  icon: 'in', href: '/linkedin.html',           group: 'Publish' },
-    { label: 'X Queue',         icon: '𝕏',  href: '/twitter.html',            group: null },
-    { label: 'UC Acquisition',  icon: '🎯', href: '/uc-acquisition.html',     group: 'Growth' },
-    { label: 'Product Roadmap', icon: '◈',  href: '/roadmap.html',            group: null },
-    { label: 'Architecture V7', icon: '⬡',  href: '/architecture-v7.html',    group: null },
+    { label: 'Overview',        icon: '◻',  href: '/dashboard.html',          group: null },
+    { label: 'Generate',        icon: '✦',  href: '/dashboard.html#generate',  group: null },
+    { label: 'Content',         icon: '≡',  href: '/dashboard.html#content',   group: null },
+    { label: 'Run Cycle',       icon: '↻',  href: '/dashboard.html#cycle',     group: null },
+    { label: 'Channels',        icon: '◈',  href: '/dashboard.html#channels',  group: null },
+    { label: 'History',         icon: '◷',  href: '/dashboard.html#history',   group: null },
+    { label: 'LinkedIn Queue',  icon: 'in', href: '/linkedin.html',            group: 'Publish' },
+    { label: 'X Queue',         icon: '𝕏',  href: '/twitter.html',             group: null },
+    { label: 'UC Acquisition',  icon: '🎯', href: '/uc-acquisition.html',      group: 'Growth' },
+    { label: 'Product Roadmap', icon: '◈',  href: '/roadmap.html',             group: null },
+    { label: 'Architecture V7', icon: '⬡',  href: '/architecture-v7.html',     group: null },
   ];
 
+  // All selectors scoped under #gnav-root so nothing leaks, and !important guards
+  // against page-level element rules (e.g. "nav { height:64px }" on arch page)
   const STYLES = `
-    .gnav-trigger {
-      position: fixed;
-      top: 16px;
-      left: 16px;
-      z-index: 1100;
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: #0f0f0f;
-      border: 1px solid rgba(255,255,255,0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
-      flex-direction: column;
-      gap: 4px;
-      padding: 9px;
+    /* ── Trigger button ─────────────────────────────── */
+    #gnav-trigger {
+      position: fixed !important;
+      top: 16px !important;
+      left: 16px !important;
+      z-index: 9100 !important;
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 10px !important;
+      background: #111 !important;
+      border: 1px solid rgba(255,255,255,0.14) !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 5px !important;
+      cursor: pointer !important;
+      padding: 10px !important;
+      box-sizing: border-box !important;
+      transition: background 0.15s, border-color 0.15s !important;
     }
-    .gnav-trigger:hover { background: #1a1a1a; border-color: rgba(255,255,255,0.22); }
-    .gnav-trigger span {
-      display: block;
-      width: 100%;
-      height: 1.5px;
-      background: rgba(255,255,255,0.8);
-      border-radius: 2px;
-      transition: all 0.2s;
+    #gnav-trigger:hover { background: #1e1e1e !important; border-color: rgba(255,255,255,0.28) !important; }
+    #gnav-trigger .gnav-bar {
+      display: block !important;
+      width: 16px !important;
+      height: 1.5px !important;
+      background: rgba(255,255,255,0.85) !important;
+      border-radius: 2px !important;
+      transition: all 0.2s !important;
+      flex-shrink: 0 !important;
     }
-    .gnav-trigger.open span:nth-child(1) { transform: translateY(5.5px) rotate(45deg); }
-    .gnav-trigger.open span:nth-child(2) { opacity: 0; }
-    .gnav-trigger.open span:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
+    #gnav-trigger.gnav-open .gnav-bar:nth-child(1) { transform: translateY(6.5px) rotate(45deg) !important; }
+    #gnav-trigger.gnav-open .gnav-bar:nth-child(2) { opacity: 0 !important; }
+    #gnav-trigger.gnav-open .gnav-bar:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg) !important; }
 
-    .gnav-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 1050;
-      background: rgba(0,0,0,0.55);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.22s;
+    /* ── Overlay ─────────────────────────────────────── */
+    #gnav-overlay {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 9050 !important;
+      background: rgba(0,0,0,0.52) !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transition: opacity 0.22s !important;
     }
-    .gnav-overlay.open { opacity: 1; pointer-events: all; }
+    #gnav-overlay.gnav-open { opacity: 1 !important; pointer-events: all !important; }
 
-    .gnav-sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      z-index: 1080;
-      width: 240px;
-      background: #0f0f0f;
-      border-right: 1px solid rgba(255,255,255,0.08);
-      display: flex;
-      flex-direction: column;
-      transform: translateX(-100%);
-      transition: transform 0.24s cubic-bezier(0.4,0,0.2,1);
+    /* ── Sidebar ─────────────────────────────────────── */
+    #gnav-root {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 240px !important;
+      height: 100vh !important;
+      height: 100dvh !important;
+      z-index: 9080 !important;
+      background: #0f0f0f !important;
+      border-right: 1px solid rgba(255,255,255,0.08) !important;
+      display: flex !important;
+      flex-direction: column !important;
+      transform: translateX(-100%) !important;
+      transition: transform 0.24s cubic-bezier(0.4,0,0.2,1) !important;
+      font-family: -apple-system, 'Inter', sans-serif !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
     }
-    .gnav-sidebar.open { transform: translateX(0); }
+    #gnav-root.gnav-open { transform: translateX(0) !important; }
 
-    .gnav-logo {
-      padding: 22px 20px 18px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      flex-shrink: 0;
+    /* ── Logo ────────────────────────────────────────── */
+    #gnav-root .gnav-logo {
+      padding: 22px 20px 18px !important;
+      border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+      flex-shrink: 0 !important;
     }
-    .gnav-logo-name {
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      color: #fff;
-      font-family: inherit;
+    #gnav-root .gnav-logo-name {
+      font-size: 14px !important;
+      font-weight: 700 !important;
+      letter-spacing: -0.01em !important;
+      color: #ffffff !important;
+      line-height: 1.2 !important;
     }
-    .gnav-logo-sub {
-      font-size: 10px;
-      color: rgba(255,255,255,0.45);
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      margin-top: 2px;
-      font-family: inherit;
-    }
-
-    .gnav-nav {
-      flex: 1;
-      overflow-y: auto;
-      padding: 10px 8px;
-    }
-    .gnav-group-label {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: rgba(255,255,255,0.3);
-      padding: 12px 12px 4px;
-      font-family: inherit;
-    }
-    .gnav-item {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      padding: 9px 12px;
-      color: rgba(255,255,255,0.55);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      border-radius: 9px;
-      transition: all 0.14s;
-      margin-bottom: 1px;
-      font-family: inherit;
-      cursor: pointer;
-    }
-    .gnav-item:hover {
-      color: #fff;
-      background: rgba(255,255,255,0.06);
-    }
-    .gnav-item.active {
-      color: #fff;
-      background: rgba(255,255,255,0.09);
-    }
-    .gnav-icon {
-      font-size: 14px;
-      width: 18px;
-      text-align: center;
-      flex-shrink: 0;
-      opacity: 0.85;
+    #gnav-root .gnav-logo-sub {
+      font-size: 10px !important;
+      color: rgba(255,255,255,0.4) !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.07em !important;
+      margin-top: 3px !important;
+      line-height: 1.2 !important;
     }
 
-    .gnav-footer {
-      padding: 14px 20px;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      font-size: 11px;
-      color: rgba(255,255,255,0.3);
-      font-family: inherit;
-      flex-shrink: 0;
+    /* ── Nav list ────────────────────────────────────── */
+    #gnav-root .gnav-list {
+      flex: 1 !important;
+      overflow-y: auto !important;
+      padding: 10px 8px !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    #gnav-root .gnav-group {
+      font-size: 10px !important;
+      font-weight: 700 !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.08em !important;
+      color: rgba(255,255,255,0.28) !important;
+      padding: 14px 12px 5px !important;
+      line-height: 1 !important;
+    }
+    #gnav-root .gnav-link {
+      display: flex !important;
+      align-items: center !important;
+      gap: 9px !important;
+      padding: 9px 12px !important;
+      color: rgba(255,255,255,0.58) !important;
+      text-decoration: none !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      border-radius: 9px !important;
+      transition: background 0.13s, color 0.13s !important;
+      margin-bottom: 1px !important;
+      cursor: pointer !important;
+      line-height: 1.3 !important;
+    }
+    #gnav-root .gnav-link:hover {
+      color: #ffffff !important;
+      background: rgba(255,255,255,0.07) !important;
+    }
+    #gnav-root .gnav-link.gnav-active {
+      color: #ffffff !important;
+      background: rgba(255,255,255,0.1) !important;
+    }
+    #gnav-root .gnav-icon {
+      font-size: 13px !important;
+      width: 18px !important;
+      text-align: center !important;
+      flex-shrink: 0 !important;
+      opacity: 0.8 !important;
+    }
+
+    /* ── Footer ──────────────────────────────────────── */
+    #gnav-root .gnav-footer {
+      padding: 14px 20px !important;
+      border-top: 1px solid rgba(255,255,255,0.08) !important;
+      font-size: 11px !important;
+      color: rgba(255,255,255,0.28) !important;
+      flex-shrink: 0 !important;
+      line-height: 1.2 !important;
     }
   `;
 
@@ -157,95 +173,93 @@
   }
 
   function render() {
-    // Inject styles
     const style = document.createElement('style');
     style.textContent = STYLES;
     document.head.appendChild(style);
 
     // Overlay
     const overlay = document.createElement('div');
-    overlay.className = 'gnav-overlay';
+    overlay.id = 'gnav-overlay';
     overlay.addEventListener('click', close);
     document.body.appendChild(overlay);
 
-    // Sidebar
-    const sidebar = document.createElement('nav');
-    sidebar.className = 'gnav-sidebar';
-    sidebar.setAttribute('role', 'navigation');
-    sidebar.setAttribute('aria-label', 'Main navigation');
+    // Sidebar — use DIV not NAV to avoid inheriting page nav{} styles
+    const root = document.createElement('div');
+    root.id = 'gnav-root';
+    root.setAttribute('role', 'navigation');
+    root.setAttribute('aria-label', 'Main navigation');
 
+    // Logo
     const logo = document.createElement('div');
     logo.className = 'gnav-logo';
-    logo.innerHTML = `<div class="gnav-logo-name">Gritnord</div><div class="gnav-logo-sub">Content Engine</div>`;
-    sidebar.appendChild(logo);
+    logo.innerHTML = '<div class="gnav-logo-name">Gritnord</div><div class="gnav-logo-sub">Content Engine</div>';
+    root.appendChild(logo);
 
-    const nav = document.createElement('div');
-    nav.className = 'gnav-nav';
+    // Nav list
+    const list = document.createElement('div');
+    list.className = 'gnav-list';
 
-    let lastGroup = undefined;
     const path = currentPage();
+    let lastGroup = undefined;
 
     NAV_ITEMS.forEach(item => {
+      // Group divider
       if (item.group !== lastGroup) {
         if (item.group) {
           const gl = document.createElement('div');
-          gl.className = 'gnav-group-label';
+          gl.className = 'gnav-group';
           gl.textContent = item.group;
-          nav.appendChild(gl);
+          list.appendChild(gl);
         }
         lastGroup = item.group;
       }
 
       const a = document.createElement('a');
-      a.className = 'gnav-item';
+      a.className = 'gnav-link';
       a.href = item.href;
-      // Mark active if pathname matches (ignore hash)
-      const itemPath = item.href.split('#')[0];
-      if (path === itemPath || (path === '/' && itemPath === '/dashboard.html')) {
-        a.classList.add('active');
+      const itemBase = item.href.split('#')[0];
+      if (path === itemBase || (path === '/' && itemBase === '/dashboard.html')) {
+        a.classList.add('gnav-active');
       }
-      a.innerHTML = `<span class="gnav-icon">${item.icon}</span>${item.label}`;
-      nav.appendChild(a);
+      a.innerHTML = `<span class="gnav-icon">${item.icon}</span><span>${item.label}</span>`;
+      list.appendChild(a);
     });
 
-    sidebar.appendChild(nav);
+    root.appendChild(list);
 
+    // Footer
     const footer = document.createElement('div');
     footer.className = 'gnav-footer';
     footer.textContent = 'localhost:3000';
-    sidebar.appendChild(footer);
-    document.body.appendChild(sidebar);
+    root.appendChild(footer);
+    document.body.appendChild(root);
 
     // Trigger button
     const trigger = document.createElement('button');
-    trigger.className = 'gnav-trigger';
+    trigger.id = 'gnav-trigger';
     trigger.setAttribute('aria-label', 'Toggle navigation');
-    trigger.innerHTML = '<span></span><span></span><span></span>';
+    trigger.innerHTML = '<span class="gnav-bar"></span><span class="gnav-bar"></span><span class="gnav-bar"></span>';
     trigger.addEventListener('click', toggle);
     document.body.appendChild(trigger);
 
-    // Keyboard close
     document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
   }
 
   function toggle() {
-    const open = document.querySelector('.gnav-sidebar').classList.contains('open');
-    open ? close() : open_();
+    document.getElementById('gnav-root').classList.contains('gnav-open') ? close() : open_();
   }
   function open_() {
-    document.querySelector('.gnav-sidebar').classList.add('open');
-    document.querySelector('.gnav-overlay').classList.add('open');
-    document.querySelector('.gnav-trigger').classList.add('open');
+    document.getElementById('gnav-root').classList.add('gnav-open');
+    document.getElementById('gnav-overlay').classList.add('gnav-open');
+    document.getElementById('gnav-trigger').classList.add('gnav-open');
   }
   function close() {
-    document.querySelector('.gnav-sidebar').classList.remove('open');
-    document.querySelector('.gnav-overlay').classList.remove('open');
-    document.querySelector('.gnav-trigger').classList.remove('open');
+    document.getElementById('gnav-root').classList.remove('gnav-open');
+    document.getElementById('gnav-overlay').classList.remove('gnav-open');
+    document.getElementById('gnav-trigger').classList.remove('gnav-open');
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', render);
-  } else {
-    render();
-  }
+  document.readyState === 'loading'
+    ? document.addEventListener('DOMContentLoaded', render)
+    : render();
 })();
