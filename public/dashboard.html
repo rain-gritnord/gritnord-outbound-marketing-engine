@@ -145,6 +145,13 @@
   .btn-sm { padding: 5px 12px; font-size: 12px; }
   .btn:disabled { opacity: 0.35; cursor: not-allowed; }
   .btn-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .src-mode-btn {
+    padding: 8px 18px; border-radius: 9999px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border); background: transparent;
+    color: var(--muted); font-family: var(--font); transition: all 0.15s;
+  }
+  .src-mode-btn:hover { color: var(--text); border-color: var(--border-hover); }
+  .src-mode-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
 
   /* ── Forms ── */
   .form-row { margin-bottom: 18px; }
@@ -356,7 +363,7 @@
     <div class="page" id="page-generate">
       <div class="page-header">
         <h1>Generate Content</h1>
-        <p>Create a single piece of content for any channel</p>
+        <p>Pulls from curated sources — Sifted, Tech in Asia, FT, a16z and 35 others — by default</p>
       </div>
       <div class="panel">
         <h3>New Piece</h3>
@@ -364,14 +371,43 @@
           <label>Channel</label>
           <select id="gen-channel"><option value="">Select a channel…</option></select>
         </div>
-        <div class="form-row">
-          <label>Topic / Angle <span style="color:var(--muted2);font-weight:400">— optional, AI picks if blank</span></label>
-          <input type="text" id="gen-topic" placeholder="e.g. Why most B2B cold emails fail in 2025">
+
+        <!-- Source mode toggle -->
+        <div style="display:flex;gap:8px;margin-bottom:20px;">
+          <button id="src-auto-btn" class="src-mode-btn active" onclick="setSourceMode('auto')">
+            ✦ From curated sources
+          </button>
+          <button id="src-own-btn" class="src-mode-btn" onclick="setSourceMode('own')">
+            + My own idea
+          </button>
         </div>
-        <div class="form-row">
-          <label>Additional Context <span style="color:var(--muted2);font-weight:400">— optional</span></label>
-          <textarea id="gen-context" placeholder="Any specific angle, data points, or instructions…"></textarea>
+
+        <!-- Auto mode: shows what sources will be picked -->
+        <div id="src-auto-section">
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted2);margin-bottom:6px;">How it works</div>
+            <div style="font-size:13px;color:var(--muted);line-height:1.6;">
+              The engine picks the most relevant article from your 40 curated sources (Sifted, FT, Tech in Asia, a16z, EU-Startups…), classifies it as AI or GTM, and writes a post in Rain's voice around it.
+            </div>
+          </div>
+          <div class="form-row">
+            <label>Angle hint <span style="color:var(--muted2);font-weight:400">— optional nudge for the AI</span></label>
+            <input type="text" id="gen-hint" placeholder="e.g. focus on the outbound angle, ignore the funding news">
+          </div>
         </div>
+
+        <!-- Own idea mode -->
+        <div id="src-own-section" style="display:none;">
+          <div class="form-row">
+            <label>Your idea / topic</label>
+            <input type="text" id="gen-topic" placeholder="e.g. Why most B2B cold emails fail in 2025">
+          </div>
+          <div class="form-row">
+            <label>Additional context <span style="color:var(--muted2);font-weight:400">— optional</span></label>
+            <textarea id="gen-context" placeholder="Any specific angle, data points, or instructions…"></textarea>
+          </div>
+        </div>
+
         <div class="btn-group">
           <button class="btn btn-primary" onclick="doGenerate()" id="gen-btn">✦ Generate</button>
         </div>
@@ -701,18 +737,63 @@ async function loadContent() {
 }
 
 // ── Generate ───────────────────────────────────────────────────────────────
+let genSourceMode = 'auto'; // 'auto' = curated sources, 'own' = user's topic
+
+function setSourceMode(mode) {
+  genSourceMode = mode;
+  document.getElementById('src-auto-btn').classList.toggle('active', mode === 'auto');
+  document.getElementById('src-own-btn').classList.toggle('active', mode === 'own');
+  document.getElementById('src-auto-section').style.display = mode === 'auto' ? 'block' : 'none';
+  document.getElementById('src-own-section').style.display  = mode === 'own'  ? 'block' : 'none';
+}
+
 async function doGenerate() {
   const channel = document.getElementById('gen-channel').value;
-  const topic   = document.getElementById('gen-topic').value.trim();
-  const ctx     = document.getElementById('gen-context').value.trim();
   if (!channel) return toast('Select a channel first', 'error');
+
+  // Resource-first: use LinkedIn generate endpoint if auto mode + linkedin channel,
+  // otherwise pass additionalContext (hint) and no topic so engine picks from sources
+  const isAuto = genSourceMode === 'auto';
+  const hint   = isAuto ? (document.getElementById('gen-hint')?.value.trim() || '') : '';
+  const topic  = isAuto ? '' : (document.getElementById('gen-topic')?.value.trim() || '');
+  const ctx    = isAuto ? hint : (document.getElementById('gen-context')?.value.trim() || '');
+
+  // For linkedin in auto mode, redirect to the dedicated curated generate endpoint
+  if (isAuto && channel === 'linkedin') {
+    const btn2 = document.getElementById('gen-btn');
+    const log2 = document.getElementById('gen-log');
+    btn2.disabled = true; btn2.textContent = '⏳ Curating sources…';
+    log2.style.display = 'block';
+    log2.innerHTML = '<span class="info">→ Fetching from 40 curated sources…</span>\n';
+    document.getElementById('gen-result').style.display = 'none';
+    try {
+      const r2 = await fetch('/api/linkedin/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ additionalContext: hint }),
+      });
+      const d2 = await r2.json();
+      if (!r2.ok) throw new Error(d2.error || 'Generation failed');
+      log2.innerHTML += `<span class="ok">✓ ${d2.total} draft(s) added to LinkedIn Queue</span>\n`;
+      log2.innerHTML += `<span class="info">→ Review them in LinkedIn Queue → Drafts</span>\n`;
+      toast('Drafts added to LinkedIn Queue');
+    } catch(e2) {
+      log2.innerHTML += `<span class="err">✗ ${e2.message}</span>\n`;
+      toast(e2.message, 'error');
+    } finally {
+      btn2.disabled = false; btn2.textContent = '✦ Generate';
+    }
+    return;
+  }
 
   const btn = document.getElementById('gen-btn');
   const log = document.getElementById('gen-log');
   const res = document.getElementById('gen-result');
   btn.disabled = true; btn.textContent = '⏳ Generating…';
   log.style.display = 'block';
-  log.innerHTML = '<span class="info">→ Sending request to Claude…</span>\n';
+  log.innerHTML = isAuto
+    ? '<span class="info">→ Pulling from curated sources + generating…</span>\n'
+    : '<span class="info">→ Generating from your idea…</span>\n';
   res.style.display = 'none';
 
   try {
