@@ -24,7 +24,7 @@
     }
     body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; min-height: 100vh; }
 
-    header { display: flex; align-items: center; justify-content: space-between; padding: 20px 32px; border-bottom: 1px solid var(--border); }
+    header { display: flex; align-items: center; justify-content: space-between; padding: 20px 32px 20px 64px; border-bottom: 1px solid var(--border); }
     .logo { font-size: 16px; font-weight: 700; }
     .logo span { opacity: 0.4; font-weight: 400; margin-left: 8px; }
     .header-actions { display: flex; gap: 10px; align-items: center; }
@@ -564,5 +564,6 @@ function toast(msg, type = 'success') {
 
 init();
 </script>
+<script src="/nav.js"></script>
 </body>
 </html>
