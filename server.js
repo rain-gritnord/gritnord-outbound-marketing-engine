@@ -23,6 +23,7 @@ import { researchUCCandidate, batchResearchUCCandidates } from './engine/uc-rese
 import { generateKineticVideo } from './engine/video-generator.js';
 import { tickSequences, startUCSequence, fireSequenceStep } from './engine/uc-sequencer.js';
 import { syncCandidateToAudience, syncEmailsToLinkedInAudience } from './engine/linkedin-audiences.js';
+import { fetchAndLearnFromEngagement } from './engine/linkedin-engagement.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -452,6 +453,16 @@ app.post('/api/linkedin/approve/:id', async (req, res) => {
   }
 });
 
+// POST /api/linkedin/engagement/sync — manually trigger engagement fetch + learning
+app.post('/api/linkedin/engagement/sync', async (req, res) => {
+  try {
+    const results = await fetchAndLearnFromEngagement();
+    res.json({ success: true, scored: results.length, results });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // DELETE /api/linkedin/queue/:id — discard draft
 app.delete('/api/linkedin/queue/:id', (req, res) => {
   deleteLinkedInPost(req.params.id);
@@ -832,6 +843,19 @@ cron.schedule('0 9 * * 2,4,6', async () => {
     }
   } catch (err) {
     console.error('[cron] twitter-drafts — error:', err.message);
+  }
+});
+
+// LinkedIn engagement learning — every 6h, score posts that are 48–72h old
+cron.schedule('0 */6 * * *', async () => {
+  console.log('[cron] linkedin-engagement — checking for posts ready to score');
+  try {
+    const results = await fetchAndLearnFromEngagement();
+    if (results.length > 0) {
+      console.log(`[cron] linkedin-engagement — scored ${results.length} post(s), weights updated`);
+    }
+  } catch (err) {
+    console.error('[cron] linkedin-engagement — error:', err.message);
   }
 });
 

@@ -342,8 +342,16 @@ function renderCard(post) {
       </div>
     </div>` : '';
 
+  const engagementHtml = post.engagement
+    ? `<div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:var(--muted);">
+        <span>👍 ${post.engagement.likes} likes</span>
+        <span>💬 ${post.engagement.comments} comments</span>
+        <span>🔁 ${post.engagement.shares} shares</span>
+        ${post.engagementScore ? `<span style="color:var(--green);font-weight:600;">Score fed to learner: ${post.engagementScore}/10</span>` : ''}
+       </div>` : '';
+
   const actionsHtml = post.status === 'posted'
-    ? `<a href="${post.linkedInUrl}" target="_blank" class="linkedin-url">View on LinkedIn →</a>`
+    ? `<a href="${post.linkedInUrl}" target="_blank" class="linkedin-url">View on LinkedIn →</a>${engagementHtml}`
     : `<button class="btn btn-green btn-sm" onclick="approve('${post.id}')">↑ Post to LinkedIn</button>
        <button class="btn btn-outline btn-sm" onclick="saveEdit('${post.id}')">Save edits</button>
        <button class="btn btn-red btn-sm" onclick="discard('${post.id}')">Discard</button>`;
