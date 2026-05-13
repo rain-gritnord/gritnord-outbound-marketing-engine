@@ -463,6 +463,54 @@ app.post('/api/linkedin/engagement/sync', async (req, res) => {
   }
 });
 
+// GET /api/linkedin/analytics — learning state + all scored posts for performance tab
+app.get('/api/linkedin/analytics', (req, res) => {
+  const weights  = getLearningState();
+  const li       = weights.find(w => w.channel === 'linkedin') || {};
+  const queue    = getLinkedInQueue();
+
+  // All posts that have been scored (have real engagement data)
+  const scored = queue
+    .filter(p => p.status === 'posted' && p.engagementScoredAt)
+    .map(p => ({
+      id:              p.id,
+      text:            (p.text || '').slice(0, 120) + ((p.text || '').length > 120 ? '…' : ''),
+      postedAt:        p.postedAt,
+      scoredAt:        p.engagementScoredAt,
+      likes:           p.engagement?.likes    ?? 0,
+      comments:        p.engagement?.comments ?? 0,
+      shares:          p.engagement?.shares   ?? 0,
+      score:           p.engagementScore      ?? null,
+      linkedInUrl:     p.linkedInUrl          || null,
+      source:          p.article?.source      || null,
+      topic:           p.article?.topic       || null,
+    }))
+    .sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt));
+
+  // All posted (including unscored) — to show pending engagement pulls
+  const posted = queue
+    .filter(p => p.status === 'posted' && !p.engagementScoredAt)
+    .map(p => ({
+      id:      p.id,
+      text:    (p.text || '').slice(0, 120) + ((p.text || '').length > 120 ? '…' : ''),
+      postedAt: p.postedAt,
+      source:   p.article?.source || null,
+      topic:    p.article?.topic  || null,
+    }));
+
+  res.json({
+    learner: {
+      avgScore:    li.avgScore    ?? null,
+      successRate: li.successRate ?? null,
+      priority:    li.priority    ?? null,
+    },
+    scored,
+    pending: posted,
+    totalScored:  scored.length,
+    totalPosted:  scored.length + posted.length,
+  });
+});
+
 // DELETE /api/linkedin/queue/:id — discard draft
 app.delete('/api/linkedin/queue/:id', (req, res) => {
   deleteLinkedInPost(req.params.id);

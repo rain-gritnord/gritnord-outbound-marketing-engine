@@ -259,9 +259,11 @@
   <div class="tabs">
     <button class="tab active" onclick="switchTab('drafts', this)">Drafts <span id="draft-count"></span></button>
     <button class="tab" onclick="switchTab('posted', this)">Posted</button>
+    <button class="tab" onclick="switchTab('performance', this)">Performance</button>
   </div>
 
   <div id="queue-container"><div class="loading">Loading...</div></div>
+  <div id="perf-container" style="display:none"></div>
 </main>
 
 <div class="toast" id="toast"></div>
@@ -308,7 +310,15 @@ function switchTab(tab, el) {
   currentTab = tab;
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
-  renderTab();
+  if (tab === 'performance') {
+    document.getElementById('queue-container').style.display = 'none';
+    document.getElementById('perf-container').style.display = 'block';
+    loadPerformance();
+  } else {
+    document.getElementById('queue-container').style.display = 'block';
+    document.getElementById('perf-container').style.display = 'none';
+    renderTab();
+  }
 }
 
 function renderTab() {
@@ -439,6 +449,165 @@ function toast(msg, type = 'success') {
   el.textContent = msg;
   el.className = `toast show ${type}`;
   setTimeout(() => el.className = 'toast', 3000);
+}
+
+// ── Performance tab ───────────────────────────────────────────────────────────
+
+async function loadPerformance() {
+  const c = document.getElementById('perf-container');
+  c.innerHTML = '<div class="loading">Loading analytics…</div>';
+  try {
+    const r = await fetch('/api/linkedin/analytics');
+    const d = await r.json();
+    c.innerHTML = renderPerformance(d);
+  } catch (err) {
+    c.innerHTML = `<div class="empty"><p>Failed to load analytics: ${err.message}</p></div>`;
+  }
+}
+
+function scoreColor(s) {
+  if (s === null) return 'var(--muted)';
+  if (s >= 7) return 'var(--green)';
+  if (s >= 5) return 'var(--yellow)';
+  return '#ef4444';
+}
+
+function pct(n, max) { return Math.min(100, Math.round((n / max) * 100)); }
+
+function trendLabel(scored) {
+  if (scored.length < 2) return null;
+  const half = Math.floor(scored.length / 2);
+  const recent = scored.slice(0, half).map(p => p.score).filter(Boolean);
+  const older  = scored.slice(half).map(p => p.score).filter(Boolean);
+  if (!recent.length || !older.length) return null;
+  const avgRecent = recent.reduce((a,b) => a+b,0) / recent.length;
+  const avgOlder  = older.reduce((a,b) => a+b,0) / older.length;
+  const diff = avgRecent - avgOlder;
+  if (diff > 0.5)  return { label: `↑ +${diff.toFixed(1)} vs earlier posts`, color: 'var(--green)' };
+  if (diff < -0.5) return { label: `↓ ${diff.toFixed(1)} vs earlier posts`, color: '#ef4444' };
+  return { label: '→ Stable', color: 'var(--muted)' };
+}
+
+function renderPerformance({ learner, scored, pending, totalScored, totalPosted }) {
+  const l = learner;
+  const hasSome = totalScored > 0;
+  const trend = trendLabel(scored);
+
+  const avgPct = l.avgScore ? pct(l.avgScore, 10) : 0;
+  const sucPct = l.successRate ? pct(l.successRate * 100, 100) : 50;
+  const priPct = l.priority   ? pct((l.priority - 0.1) / 1.9 * 100, 100) : 50;
+
+  // Learner state card
+  const learnerCard = `
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+      <div>
+        <div style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Learner State — LinkedIn</div>
+        <div style="font-size:20px;font-weight:700;">${totalScored} post${totalScored !== 1 ? 's' : ''} scored · ${totalPosted} total posted</div>
+      </div>
+      ${trend ? `<div style="font-size:13px;font-weight:600;color:${trend.color};background:${trend.color}22;padding:6px 14px;border-radius:999px;">${trend.label}</div>` : ''}
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+      ${statBar('Avg engagement score', l.avgScore != null ? `${l.avgScore.toFixed(1)} / 10` : '—', avgPct, scoreColor(l.avgScore))}
+      ${statBar('Success rate', l.successRate != null ? `${Math.round(l.successRate * 100)}%` : '—', sucPct, '#60a5fa', 'Posts scoring ≥ 6/10')}
+      ${statBar('Channel priority', l.priority != null ? l.priority.toFixed(3) : '—', priPct, '#a78bfa', 'Drives how often engine picks LinkedIn')}
+    </div>
+
+    ${!hasSome ? `<div style="margin-top:16px;font-size:13px;color:var(--muted);">⏳ Engagement scores are pulled 48–72h after each post is published. Check back after your first post has been live for 2 days.</div>` : ''}
+    <div style="margin-top:16px;display:flex;gap:10px;">
+      <button class="btn btn-outline btn-sm" onclick="syncEngagement()">↻ Pull engagement now</button>
+    </div>
+  </div>`;
+
+  // Scored posts table
+  const tableRows = scored.map(p => {
+    const date = p.postedAt ? new Date(p.postedAt).toLocaleDateString('en-GB', { day:'numeric', month:'short' }) : '—';
+    const bar = p.score != null
+      ? `<div style="display:flex;align-items:center;gap:8px;">
+           <div style="flex:1;height:6px;background:var(--border);border-radius:3px;">
+             <div style="width:${pct(p.score,10)}%;height:100%;background:${scoreColor(p.score)};border-radius:3px;"></div>
+           </div>
+           <span style="color:${scoreColor(p.score)};font-weight:600;font-size:13px;min-width:28px;">${p.score}</span>
+         </div>`
+      : '<span style="color:var(--muted)">—</span>';
+    const link = p.linkedInUrl ? `<a href="${p.linkedInUrl}" target="_blank" style="color:#60a5fa;font-size:11px;">↗ View</a>` : '';
+    return `<tr style="border-top:1px solid var(--border);">
+      <td style="padding:12px 8px;color:var(--muted);font-size:12px;white-space:nowrap;">${date}</td>
+      <td style="padding:12px 8px;font-size:13px;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${p.text.replace(/"/g,'')}">${p.text}</td>
+      <td style="padding:12px 8px;text-align:center;font-size:13px;">👍 ${p.likes}</td>
+      <td style="padding:12px 8px;text-align:center;font-size:13px;">💬 ${p.comments}</td>
+      <td style="padding:12px 8px;text-align:center;font-size:13px;">🔁 ${p.shares}</td>
+      <td style="padding:12px 8px;min-width:120px;">${bar}</td>
+      <td style="padding:12px 8px;">${link}</td>
+    </tr>`;
+  }).join('');
+
+  const table = scored.length ? `
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
+    <div style="font-size:15px;font-weight:600;margin-bottom:16px;">Post scores</div>
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;">
+          <th style="padding:0 8px 10px;text-align:left;font-weight:500;">Date</th>
+          <th style="padding:0 8px 10px;text-align:left;font-weight:500;">Post</th>
+          <th style="padding:0 8px 10px;text-align:center;font-weight:500;">Likes</th>
+          <th style="padding:0 8px 10px;text-align:center;font-weight:500;">Comments</th>
+          <th style="padding:0 8px 10px;text-align:center;font-weight:500;">Shares</th>
+          <th style="padding:0 8px 10px;font-weight:500;">Score</th>
+          <th style="padding:0 8px 10px;font-weight:500;"></th>
+        </tr>
+      </thead>
+      <tbody>${tableRows}</tbody>
+    </table>
+  </div>` : '';
+
+  // Pending (posted but not yet scored)
+  const pendingRows = pending.map(p => {
+    const date = p.postedAt ? new Date(p.postedAt).toLocaleDateString('en-GB', { day:'numeric', month:'short' }) : '—';
+    const age  = p.postedAt ? Math.round((Date.now() - new Date(p.postedAt)) / 3600000) : null;
+    const ready = age != null && age >= 48;
+    return `<tr style="border-top:1px solid var(--border);">
+      <td style="padding:10px 8px;color:var(--muted);font-size:12px;">${date}</td>
+      <td style="padding:10px 8px;font-size:13px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.text}</td>
+      <td style="padding:10px 8px;font-size:12px;color:${ready ? 'var(--yellow)' : 'var(--muted)'};">${age != null ? (ready ? `Ready (${age}h old)` : `${age}h — pulls at 48h`) : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  const pendingTable = pending.length ? `
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;">
+    <div style="font-size:15px;font-weight:600;margin-bottom:4px;">Awaiting engagement data</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">Scores are pulled automatically every 6 hours once posts are 48h old</div>
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;">
+          <th style="padding:0 8px 10px;text-align:left;font-weight:500;">Date</th>
+          <th style="padding:0 8px 10px;text-align:left;font-weight:500;">Post</th>
+          <th style="padding:0 8px 10px;text-align:left;font-weight:500;">Status</th>
+        </tr>
+      </thead>
+      <tbody>${pendingRows}</tbody>
+    </table>
+  </div>` : '';
+
+  return learnerCard + table + pendingTable;
+}
+
+function statBar(label, value, pctVal, color, tooltip = '') {
+  return `<div style="background:#0a0a0a;border:1px solid var(--border);border-radius:12px;padding:16px;">
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;" title="${tooltip}">${label}</div>
+    <div style="font-size:22px;font-weight:700;color:${color};margin-bottom:10px;">${value}</div>
+    <div style="height:6px;background:var(--border);border-radius:3px;">
+      <div style="width:${pctVal}%;height:100%;background:${color};border-radius:3px;transition:width .4s;"></div>
+    </div>
+  </div>`;
+}
+
+async function syncEngagement() {
+  const r = await fetch('/api/linkedin/engagement/sync', { method: 'POST' });
+  const d = await r.json();
+  toast(`Scored ${d.scored} post(s)`, 'success');
+  loadPerformance();
 }
 
 init();
