@@ -6,13 +6,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, '..', 'data');
 
 const FILES = {
-  content:        path.join(DATA_DIR, 'content.json'),
-  cycles:         path.join(DATA_DIR, 'cycles.json'),
-  weights:        path.join(DATA_DIR, 'weights.json'),
-  linkedinQueue:  path.join(DATA_DIR, 'linkedin-queue.json'),
-  twitterQueue:   path.join(DATA_DIR, 'twitter-queue.json'),
-  ucCandidates:   path.join(DATA_DIR, 'uc-candidates.json'),
-  ucSequences:    path.join(DATA_DIR, 'uc-sequences.json'),
+  content:           path.join(DATA_DIR, 'content.json'),
+  cycles:            path.join(DATA_DIR, 'cycles.json'),
+  weights:           path.join(DATA_DIR, 'weights.json'),
+  linkedinQueue:     path.join(DATA_DIR, 'linkedin-queue.json'),
+  twitterQueue:      path.join(DATA_DIR, 'twitter-queue.json'),
+  ucCandidates:      path.join(DATA_DIR, 'uc-candidates.json'),
+  ucSequences:       path.join(DATA_DIR, 'uc-sequences.json'),
+  linkedinGuidelines: path.join(DATA_DIR, 'linkedin-guidelines.json'),
+  linkedinFollowers:  path.join(DATA_DIR, 'linkedin-followers.json'),
 };
 
 function ensureFile(filePath, defaultData) {
@@ -202,4 +204,36 @@ export function updateUCSequence(candidateId, updates) {
 
 export function getUCSequenceByCandidateId(candidateId) {
   return getUCSequences().find(s => s.candidateId === candidateId) || null;
+}
+
+// ── LinkedIn Guidelines (accepted AI suggestions) ────────────────────────────
+
+export function getLinkedInGuidelines() {
+  return read(FILES.linkedinGuidelines, []);
+}
+
+export function saveLinkedInGuideline(guideline) {
+  const all = getLinkedInGuidelines();
+  // avoid exact duplicates
+  if (!all.find(g => g.id === guideline.id)) all.push(guideline);
+  write(FILES.linkedinGuidelines, all);
+  return guideline;
+}
+
+export function dismissLinkedInGuideline(id) {
+  const all = getLinkedInGuidelines().filter(g => g.id !== id);
+  write(FILES.linkedinGuidelines, all);
+}
+
+// ── LinkedIn Follower history ─────────────────────────────────────────────────
+
+export function getFollowerHistory() {
+  return read(FILES.linkedinFollowers, []);
+}
+
+export function recordFollowerCount(count) {
+  const all = getFollowerHistory();
+  all.push({ count, recordedAt: new Date().toISOString() });
+  write(FILES.linkedinFollowers, all.slice(-90)); // keep 90 data points
+  return count;
 }

@@ -15,6 +15,8 @@ import {
   getAllContent, getContentById, saveContent, updateContent,
   getAllCycles, saveCycle,
   getLinkedInQueue, saveLinkedInDraft, updateLinkedInPost, deleteLinkedInPost,
+  getLinkedInGuidelines, saveLinkedInGuideline, dismissLinkedInGuideline,
+  getFollowerHistory,
   getTwitterQueue, saveTwitterDraft, updateTwitterPost, deleteTwitterPost,
   getUCCandidates, saveUCCandidate, updateUCCandidate, deleteUCCandidate,
   getUCSequences, saveUCSequence, updateUCSequence, getUCSequenceByCandidateId,
@@ -23,7 +25,8 @@ import { researchUCCandidate, batchResearchUCCandidates } from './engine/uc-rese
 import { generateKineticVideo } from './engine/video-generator.js';
 import { tickSequences, startUCSequence, fireSequenceStep } from './engine/uc-sequencer.js';
 import { syncCandidateToAudience, syncEmailsToLinkedInAudience } from './engine/linkedin-audiences.js';
-import { fetchAndLearnFromEngagement } from './engine/linkedin-engagement.js';
+import { fetchAndLearnFromEngagement, fetchFollowerCount } from './engine/linkedin-engagement.js';
+import { generateSuggestions } from './engine/suggestion-engine.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -463,6 +466,41 @@ app.post('/api/linkedin/engagement/sync', async (req, res) => {
   }
 });
 
+// GET /api/linkedin/suggestions — AI-generated improvement suggestions
+app.get('/api/linkedin/suggestions', async (req, res) => {
+  try {
+    const result = await generateSuggestions();
+    const accepted = getLinkedInGuidelines();
+    res.json({ ...result, accepted });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/linkedin/suggestions/accept — accept a suggestion as a guideline
+app.post('/api/linkedin/suggestions/accept', (req, res) => {
+  const { id, title, action, category } = req.body;
+  if (!id || !title) return res.status(400).json({ error: 'id and title required' });
+  const guideline = saveLinkedInGuideline({
+    id, title, action, category,
+    acceptedAt: new Date().toISOString(),
+  });
+  res.json({ success: true, guideline });
+});
+
+// DELETE /api/linkedin/suggestions/accept/:id — dismiss a guideline
+app.delete('/api/linkedin/suggestions/accept/:id', (req, res) => {
+  dismissLinkedInGuideline(req.params.id);
+  res.json({ success: true });
+});
+
+// GET /api/linkedin/followers — follower count history
+app.get('/api/linkedin/followers', async (req, res) => {
+  const history = getFollowerHistory();
+  const current = await fetchFollowerCount().catch(() => null);
+  res.json({ current, history });
+});
+
 // GET /api/linkedin/analytics — learning state + all scored posts for performance tab
 app.get('/api/linkedin/analytics', (req, res) => {
   const weights  = getLearningState();
@@ -477,13 +515,15 @@ app.get('/api/linkedin/analytics', (req, res) => {
       text:            (p.text || '').slice(0, 120) + ((p.text || '').length > 120 ? '…' : ''),
       postedAt:        p.postedAt,
       scoredAt:        p.engagementScoredAt,
-      likes:           p.engagement?.likes    ?? 0,
-      comments:        p.engagement?.comments ?? 0,
-      shares:          p.engagement?.shares   ?? 0,
-      score:           p.engagementScore      ?? null,
-      linkedInUrl:     p.linkedInUrl          || null,
-      source:          p.article?.source      || null,
-      topic:           p.article?.topic       || null,
+      likes:           p.engagement?.likes       ?? 0,
+      comments:        p.engagement?.comments   ?? 0,
+      shares:          p.engagement?.shares     ?? 0,
+      impressions:     p.engagement?.impressions ?? null,
+      clicks:          p.engagement?.clicks      ?? null,
+      score:           p.engagementScore         ?? null,
+      linkedInUrl:     p.linkedInUrl             || null,
+      source:          p.article?.source         || null,
+      topic:           p.article?.topic          || null,
     }))
     .sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt));
 

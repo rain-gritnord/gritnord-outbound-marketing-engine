@@ -3,7 +3,7 @@
 // converts to a score, and feeds it into the channel learner.
 
 import { loadTokens } from './linkedin-poster.js';
-import { getLinkedInQueue, updateLinkedInPost } from './db.js';
+import { getLinkedInQueue, updateLinkedInPost, recordFollowerCount, getFollowerHistory } from './db.js';
 import { recordScore } from './learner.js';
 
 const MIN_AGE_MS  = 48 * 60 * 60 * 1000; // 48 hours
@@ -52,10 +52,47 @@ async function fetchEngagement(postUrn) {
     ?.shareStatistics?.totalShareStatistics ?? {};
 
   return {
-    likes:    stats.likeCount    ?? 0,
-    comments: stats.commentCount ?? 0,
-    shares:   stats.shareCount   ?? 0,
+    likes:       stats.likeCount       ?? 0,
+    comments:    stats.commentCount    ?? 0,
+    shares:      stats.shareCount      ?? 0,
+    impressions: stats.impressionCount ?? null,
+    clicks:      stats.clickCount      ?? null,
   };
+}
+
+// ── Fetch follower count for Rain's personal profile ─────────────────────────
+
+export async function fetchFollowerCount() {
+  const tokens = loadTokens();
+  if (!tokens?.access_token) return null;
+
+  try {
+    // Get person URN first
+    const profileRes = await fetch('https://api.linkedin.com/v2/userinfo', {
+      headers: { Authorization: `Bearer ${tokens.access_token}` },
+    });
+    if (!profileRes.ok) return null;
+    const profile = await profileRes.json();
+    const personUrn = encodeURIComponent(`urn:li:person:${profile.sub}`);
+
+    // Follower count via networkSizes
+    const res = await fetch(
+      `https://api.linkedin.com/v2/networkSizes/${personUrn}?edgeType=CompanyFollowedByMember`,
+      {
+        headers: {
+          Authorization: `Bearer ${tokens.access_token}`,
+          'X-Restli-Protocol-Version': '2.0.0',
+        },
+      }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const count = data.firstDegreeSize ?? data.followerCount ?? null;
+    if (count !== null) recordFollowerCount(count);
+    return count;
+  } catch {
+    return null;
+  }
 }
 
 // ── Convert engagement metrics into a learning score (1–10) ─────────────────
@@ -101,7 +138,7 @@ export async function fetchAndLearnFromEngagement() {
       const metrics = await fetchEngagement(postUrn);
       const score = engagementToScore(metrics);
 
-      console.log(`[engagement] ${post.id}: likes=${metrics.likes} comments=${metrics.comments} shares=${metrics.shares} → score=${score}`);
+      console.log(`[engagement] ${post.id}: likes=${metrics.likes} comments=${metrics.comments} shares=${metrics.shares} impressions=${metrics.impressions ?? '?'} → score=${score}`);
 
       // Feed into learner
       recordScore('linkedin', score);

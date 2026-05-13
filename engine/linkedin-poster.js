@@ -5,6 +5,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { homedir } from 'os';
 import path from 'path';
+import { getLinkedInGuidelines } from './db.js';
 
 // Store tokens in ~/.gritnord/ to avoid macOS Desktop folder TCC restrictions
 const TOKEN_DIR = path.join(homedir(), '.gritnord');
@@ -190,6 +191,12 @@ STYLE RULES — study the most viral founder posts on LinkedIn:
 `;
 
 export async function generateLinkedInPost({ article, postType = 'reshare', additionalContext = '' }) {
+  // Pull any accepted improvement guidelines and inject them
+  const guidelines = getLinkedInGuidelines();
+  const guidelineBlock = guidelines.length > 0
+    ? `\nACCEPTED IMPROVEMENT RULES (apply every post — Rain approved these based on real engagement data):\n${guidelines.map((g, i) => `${i + 1}. ${g.title}: ${g.action}`).join('\n')}\n`
+    : '';
+
   let prompt = '';
 
   if (postType === 'reshare') {
@@ -203,7 +210,7 @@ URL: ${article.link}
 Summary: ${article.description}
 
 ${POST_STYLE_RULES}
-
+${guidelineBlock}
 TASK: Write a post that:
 1. Opens with Rain's hot take or the most interesting angle from the article
 2. Adds one insight or pushback that the article doesn't cover — Rain's real-world experience angle
@@ -217,7 +224,7 @@ ${additionalContext ? `IMPORTANT ANGLE GUIDANCE: ${additionalContext}\n` : ''}Ou
 Write an original LinkedIn post on this topic: "${article.title}"
 
 ${POST_STYLE_RULES}
-
+${guidelineBlock}
 TASK: Write an original post where Rain shares a direct insight, counterintuitive observation, or tactical lesson from his experience building B2B pipeline and running Gritnord.
 End with a question that sparks comments from founders and sales leaders.
 
