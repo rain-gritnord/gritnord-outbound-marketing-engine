@@ -12,7 +12,26 @@ const RSS_SOURCES = [
   { name: 'Sequoia',         url: 'https://www.sequoiacap.com/feed/' },
   { name: 'NFX',             url: 'https://www.nfx.com/feed' },
 
-  // ── West European startup & VC ────────────────────────────────────────────
+  // ── UK startup & business ─────────────────────────────────────────────────
+  { name: 'Startups UK',     url: 'https://startups.co.uk/feed/' },
+  { name: 'Real Business',   url: 'https://realbusiness.co.uk/feed' },
+  { name: 'City A.M.',       url: 'https://www.cityam.com/feed/' },
+  { name: 'Wired UK',        url: 'https://www.wired.co.uk/rss' },
+  { name: 'Management Today', url: 'https://www.managementtoday.co.uk/rss' },
+  { name: 'Raconteur',       url: 'https://www.raconteur.net/feed/' },
+  { name: 'GrowthBusiness',  url: 'https://growthbusiness.co.uk/feed/' },
+  { name: 'Prolific North',  url: 'https://www.prolificnorth.co.uk/feed/' },
+
+  // ── UK & global business press ────────────────────────────────────────────
+  { name: 'FT',              url: 'https://www.ft.com/rss/home/uk' },
+  { name: 'The Economist',   url: 'https://www.economist.com/business/rss.xml' },
+  { name: 'Guardian Business', url: 'https://www.theguardian.com/uk/business/rss' },
+  { name: 'BBC Business',    url: 'http://feeds.bbci.co.uk/news/business/rss.xml' },
+  { name: 'Reuters Business', url: 'https://feeds.reuters.com/reuters/businessNews' },
+  { name: 'Business Insider', url: 'https://www.businessinsider.com/rss' },
+  { name: 'Forbes',          url: 'https://www.forbes.com/feeds/forbeslatam/2014/08/11/forbesfeeds.rss' },
+
+  // ── European startup & VC ────────────────────────────────────────────────
   { name: 'Sifted',          url: 'https://sifted.eu/feed/' },
   { name: 'EU-Startups',     url: 'https://eu-startups.com/feed/' },
   { name: 'Tech.eu',         url: 'https://tech.eu/feed/' },
@@ -20,24 +39,31 @@ const RSS_SOURCES = [
   { name: 'Silicon Republic', url: 'https://www.siliconrepublic.com/feed' },
   { name: 'Maddyness',       url: 'https://www.maddyness.com/en/feed/' },
   { name: 'Dealroom',        url: 'https://dealroom.co/blog/rss' },
-  { name: 'Startups UK',     url: 'https://startups.co.uk/feed/' },
-  { name: 'Real Business',   url: 'https://realbusiness.co.uk/feed' },
+  { name: 'Atomico',         url: 'https://www.atomico.com/rss.xml' },
 
-  // ── West European business & economy ─────────────────────────────────────
-  { name: 'The Economist',   url: 'https://www.economist.com/business/rss.xml' },
-  { name: 'FT',              url: 'https://www.ft.com/rss/home/uk' },
-  { name: 'Reuters Business', url: 'https://feeds.reuters.com/reuters/businessNews' },
-  { name: 'Guardian Business', url: 'https://www.theguardian.com/uk/business/rss' },
-  { name: 'BBC Business',    url: 'http://feeds.bbci.co.uk/news/business/rss.xml' },
-  { name: 'City A.M.',       url: 'https://www.cityam.com/feed/' },
-  { name: 'Wired UK',        url: 'https://www.wired.co.uk/rss' },
-  { name: 'Management Today', url: 'https://www.managementtoday.co.uk/rss' },
-  { name: 'Business Insider', url: 'https://www.businessinsider.com/rss' },
-  { name: 'Forbes',          url: 'https://www.forbes.com/feeds/forbeslatam/2014/08/11/forbesfeeds.rss' },
+  // ── Nordic & Baltic ──────────────────────────────────────────────────────
+  { name: 'ArcticStartup',   url: 'https://arcticstartup.com/feed/' },
+  { name: 'Nordic9',         url: 'https://nordic9.com/feed/' },
+  { name: 'The Hub',         url: 'https://thehub.io/blog/rss' },
+
+  // ── European business press ──────────────────────────────────────────────
   { name: 'Handelsblatt',    url: 'https://www.handelsblatt.com/contentexport/feed/schlagzeilen' },
   { name: 'Les Echos',       url: 'https://feeds.lesechos.fr/lesechos-start' },
   { name: 'Politico Europe', url: 'https://www.politico.eu/feed/' },
   { name: 'EurActiv Business', url: 'https://www.euractiv.com/feed/' },
+
+  // ── Southeast Asia startup & VC ───────────────────────────────────────────
+  { name: 'Tech in Asia',    url: 'https://www.techinasia.com/feed' },
+  { name: 'e27',             url: 'https://e27.co/feed/' },
+  { name: 'KrASIA',          url: 'https://kr.asia/feed' },
+  { name: 'DealStreetAsia',  url: 'https://www.dealstreetasia.com/feed/' },
+  { name: 'Vulcan Post',     url: 'https://vulcanpost.com/feed/' },
+  { name: 'TechNode',        url: 'https://technode.com/feed/' },
+
+  // ── Asia-Pacific business press ───────────────────────────────────────────
+  { name: 'Nikkei Asia',     url: 'https://asia.nikkei.com/rss/feed/nar' },
+  { name: 'FinanceAsia',     url: 'https://www.financeasia.com/rss.xml' },
+  { name: 'The Ken',         url: 'https://the-ken.com/feed/' },
 ];
 
 // ── Topic classification ──────────────────────────────────────────────────────
@@ -66,6 +92,11 @@ const RELEVANT_KEYWORDS = [
   'productivity', 'hiring', 'team', 'customers', 'retention', 'churn', 'mrr', 'arr',
   'fundraising', 'investor', 'vc', 'saas', 'product', 'marketing', 'sdr', 'account',
   'prospecting', 'cold email', 'linkedin', 'strategy', 'scale', 'enterprise',
+  // UK / EU / SEA context
+  'series a', 'series b', 'seed round', 'exit', 'acquisition', 'scaleup', 'scale-up',
+  'southeast asia', 'singapore', 'indonesia', 'vietnam', 'philippines', 'malaysia',
+  'nordic', 'baltic', 'estonia', 'scandinavia', 'fintech', 'deep tech',
+  'market entry', 'expansion', 'global', 'cross-border',
 ];
 
 function classifyArticle(title, description = '') {
