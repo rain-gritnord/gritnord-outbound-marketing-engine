@@ -25,7 +25,7 @@
       background: var(--bg);
       color: var(--text);
       font-family: 'Inter', sans-serif;
-      font-size: 14px;
+      font-size: 15px;
       min-height: 100vh;
     }
 
@@ -64,12 +64,12 @@
     .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
     .btn-green { background: var(--green); color: #000; }
     .btn-red { background: #ef4444; color: #fff; }
-    .btn-sm { padding: 6px 14px; font-size: 12px; }
+    .btn-sm { padding: 7px 16px; font-size: 13px; }
 
-    main { max-width: 820px; margin: 0 auto; padding: 40px 24px; }
+    main { max-width: 860px; margin: 0 auto; padding: 40px 24px; }
 
-    .page-title { font-size: 24px; font-weight: 700; margin-bottom: 6px; }
-    .page-sub { color: var(--muted); font-size: 13px; margin-bottom: 32px; }
+    .page-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .page-sub { color: var(--muted); font-size: 15px; margin-bottom: 32px; }
 
     .tabs {
       display: flex; gap: 4px;
@@ -78,8 +78,8 @@
     }
 
     .tab {
-      padding: 8px 16px;
-      font-size: 13px;
+      padding: 10px 18px;
+      font-size: 14px;
       font-weight: 500;
       color: var(--muted);
       cursor: pointer;
@@ -98,7 +98,7 @@
       padding: 60px 0;
       color: var(--muted);
     }
-    .empty p { margin-top: 8px; font-size: 13px; }
+    .empty p { margin-top: 8px; font-size: 15px; }
 
     .card {
       background: var(--surface);
@@ -116,9 +116,9 @@
     }
 
     .source-badge {
-      padding: 3px 10px;
+      padding: 4px 11px;
       border-radius: 9999px;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       background: #1a1a1a;
       color: var(--muted);
@@ -127,16 +127,16 @@
     }
 
     .status-badge {
-      padding: 3px 10px;
+      padding: 4px 11px;
       border-radius: 9999px;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
     }
     .status-badge.draft { background: #1a1a1a; color: var(--muted); }
     .status-badge.posted { background: #14532d; color: var(--green); }
     .status-badge.posting { background: #1c1917; color: var(--yellow); }
 
-    .card-date { font-size: 11px; color: var(--muted); margin-left: auto; }
+    .card-date { font-size: 12px; color: var(--muted); margin-left: auto; }
 
     .article-ref {
       background: #0a0a0a;
@@ -159,39 +159,39 @@
     }
 
     .article-info a {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 500;
       color: var(--text);
       text-decoration: none;
     }
     .article-info a:hover { text-decoration: underline; }
-    .article-info p { font-size: 11px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+    .article-info p { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
 
     .post-text {
       width: 100%;
       background: #0a0a0a;
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 14px;
+      padding: 16px;
       color: var(--text);
       font-family: 'Inter', sans-serif;
-      font-size: 13px;
-      line-height: 1.7;
+      font-size: 15px;
+      line-height: 1.75;
       resize: vertical;
-      min-height: 160px;
+      min-height: 180px;
       margin-bottom: 16px;
       transition: border-color 0.15s;
     }
     .post-text:focus { outline: none; border-color: #333; }
 
-    .char-count { font-size: 11px; color: var(--muted); margin-bottom: 12px; margin-top: -12px; }
+    .char-count { font-size: 12px; color: var(--muted); margin-bottom: 12px; margin-top: -12px; }
     .char-count.warn { color: var(--yellow); }
     .char-count.over { color: #ef4444; }
 
     .card-actions { display: flex; gap: 8px; }
 
     .linkedin-url {
-      font-size: 12px;
+      font-size: 14px;
       color: #0a66c2;
       text-decoration: none;
       margin-top: 8px;
@@ -206,7 +206,7 @@
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 12px 18px;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 500;
       transform: translateY(80px);
       opacity: 0;
@@ -217,7 +217,7 @@
     .toast.success { border-color: var(--green); color: var(--green); }
     .toast.error { border-color: #ef4444; color: #ef4444; }
 
-    .loading { color: var(--muted); font-size: 13px; padding: 40px 0; text-align: center; }
+    .loading { color: var(--muted); font-size: 15px; padding: 40px 0; text-align: center; }
 
     .connect-banner {
       background: #0f0f0f;
@@ -229,7 +229,7 @@
       justify-content: space-between;
       margin-bottom: 28px;
     }
-    .connect-banner p { font-size: 13px; color: var(--muted); }
+    .connect-banner p { font-size: 14px; color: var(--muted); }
     .connect-banner p strong { color: var(--text); }
   </style>
 </head>
@@ -353,7 +353,7 @@ function renderCard(post) {
     </div>` : '';
 
   const engagementHtml = post.engagement
-    ? `<div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:var(--muted);">
+    ? `<div style="display:flex;gap:16px;margin-top:8px;font-size:14px;color:var(--muted);">
         <span>👍 ${post.engagement.likes} likes</span>
         <span>💬 ${post.engagement.comments} comments</span>
         <span>🔁 ${post.engagement.shares} shares</span>
@@ -376,7 +376,7 @@ function renderCard(post) {
       ${articleHtml}
       <textarea class="post-text" id="text-${post.id}" onkeyup="updateCount('${post.id}')">${post.text || ''}</textarea>
       <div class="char-count ${charClass}" id="count-${post.id}">${chars} chars</div>
-      ${article.link ? `<div style="font-size:11px;color:var(--muted);margin-top:6px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:#0a0a0a;">🔗 Article link appended on post: <a href="${article.link}" target="_blank" style="color:#60a5fa;word-break:break-all;">${article.link}</a></div>` : ''}
+      ${article.link ? `<div style="font-size:13px;color:var(--muted);margin-top:6px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:#0a0a0a;">🔗 Article link appended on post: <a href="${article.link}" target="_blank" style="color:#60a5fa;word-break:break-all;">${article.link}</a></div>` : ''}
       <div class="card-actions">${actionsHtml}</div>
     </div>`;
 }
@@ -502,10 +502,10 @@ function renderPerformance({ learner, scored, pending, totalScored, totalPosted 
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
       <div>
-        <div style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Learner State — LinkedIn</div>
-        <div style="font-size:20px;font-weight:700;">${totalScored} post${totalScored !== 1 ? 's' : ''} scored · ${totalPosted} total posted</div>
+        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Learner State — LinkedIn</div>
+        <div style="font-size:22px;font-weight:700;">${totalScored} post${totalScored !== 1 ? 's' : ''} scored · ${totalPosted} total posted</div>
       </div>
-      ${trend ? `<div style="font-size:13px;font-weight:600;color:${trend.color};background:${trend.color}22;padding:6px 14px;border-radius:999px;">${trend.label}</div>` : ''}
+      ${trend ? `<div style="font-size:14px;font-weight:600;color:${trend.color};background:${trend.color}22;padding:6px 16px;border-radius:999px;">${trend.label}</div>` : ''}
     </div>
 
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
@@ -514,7 +514,7 @@ function renderPerformance({ learner, scored, pending, totalScored, totalPosted 
       ${statBar('Channel priority', l.priority != null ? l.priority.toFixed(3) : '—', priPct, '#a78bfa', 'Drives how often engine picks LinkedIn')}
     </div>
 
-    ${!hasSome ? `<div style="margin-top:16px;font-size:13px;color:var(--muted);">⏳ Engagement scores are pulled 48–72h after each post is published. Check back after your first post has been live for 2 days.</div>` : ''}
+    ${!hasSome ? `<div style="margin-top:16px;font-size:14px;color:var(--muted);">⏳ Engagement scores are pulled 48–72h after each post is published. Check back after your first post has been live for 2 days.</div>` : ''}
     <div style="margin-top:16px;display:flex;gap:10px;">
       <button class="btn btn-outline btn-sm" onclick="syncEngagement()">↻ Pull engagement now</button>
     </div>
@@ -528,16 +528,16 @@ function renderPerformance({ learner, scored, pending, totalScored, totalPosted 
            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;">
              <div style="width:${pct(p.score,10)}%;height:100%;background:${scoreColor(p.score)};border-radius:3px;"></div>
            </div>
-           <span style="color:${scoreColor(p.score)};font-weight:600;font-size:13px;min-width:28px;">${p.score}</span>
+           <span style="color:${scoreColor(p.score)};font-weight:600;font-size:15px;min-width:28px;">${p.score}</span>
          </div>`
       : '<span style="color:var(--muted)">—</span>';
-    const link = p.linkedInUrl ? `<a href="${p.linkedInUrl}" target="_blank" style="color:#60a5fa;font-size:11px;">↗ View</a>` : '';
+    const link = p.linkedInUrl ? `<a href="${p.linkedInUrl}" target="_blank" style="color:#60a5fa;font-size:13px;">↗ View</a>` : '';
     return `<tr style="border-top:1px solid var(--border);">
-      <td style="padding:12px 8px;color:var(--muted);font-size:12px;white-space:nowrap;">${date}</td>
-      <td style="padding:12px 8px;font-size:13px;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${p.text.replace(/"/g,'')}">${p.text}</td>
-      <td style="padding:12px 8px;text-align:center;font-size:13px;">👍 ${p.likes}</td>
-      <td style="padding:12px 8px;text-align:center;font-size:13px;">💬 ${p.comments}</td>
-      <td style="padding:12px 8px;text-align:center;font-size:13px;">🔁 ${p.shares}</td>
+      <td style="padding:13px 8px;color:var(--muted);font-size:13px;white-space:nowrap;">${date}</td>
+      <td style="padding:13px 8px;font-size:14px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${p.text.replace(/"/g,'')}">${p.text}</td>
+      <td style="padding:13px 8px;text-align:center;font-size:14px;">👍 ${p.likes}</td>
+      <td style="padding:13px 8px;text-align:center;font-size:14px;">💬 ${p.comments}</td>
+      <td style="padding:13px 8px;text-align:center;font-size:14px;">🔁 ${p.shares}</td>
       <td style="padding:12px 8px;min-width:120px;">${bar}</td>
       <td style="padding:12px 8px;">${link}</td>
     </tr>`;
@@ -548,14 +548,14 @@ function renderPerformance({ learner, scored, pending, totalScored, totalPosted 
     <div style="font-size:15px;font-weight:600;margin-bottom:16px;">Post scores</div>
     <table style="width:100%;border-collapse:collapse;">
       <thead>
-        <tr style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;">
-          <th style="padding:0 8px 10px;text-align:left;font-weight:500;">Date</th>
-          <th style="padding:0 8px 10px;text-align:left;font-weight:500;">Post</th>
-          <th style="padding:0 8px 10px;text-align:center;font-weight:500;">Likes</th>
-          <th style="padding:0 8px 10px;text-align:center;font-weight:500;">Comments</th>
-          <th style="padding:0 8px 10px;text-align:center;font-weight:500;">Shares</th>
-          <th style="padding:0 8px 10px;font-weight:500;">Score</th>
-          <th style="padding:0 8px 10px;font-weight:500;"></th>
+        <tr style="color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;">
+          <th style="padding:0 8px 12px;text-align:left;font-weight:500;">Date</th>
+          <th style="padding:0 8px 12px;text-align:left;font-weight:500;">Post</th>
+          <th style="padding:0 8px 12px;text-align:center;font-weight:500;">Likes</th>
+          <th style="padding:0 8px 12px;text-align:center;font-weight:500;">Comments</th>
+          <th style="padding:0 8px 12px;text-align:center;font-weight:500;">Shares</th>
+          <th style="padding:0 8px 12px;font-weight:500;">Score</th>
+          <th style="padding:0 8px 12px;font-weight:500;"></th>
         </tr>
       </thead>
       <tbody>${tableRows}</tbody>
@@ -568,22 +568,22 @@ function renderPerformance({ learner, scored, pending, totalScored, totalPosted 
     const age  = p.postedAt ? Math.round((Date.now() - new Date(p.postedAt)) / 3600000) : null;
     const ready = age != null && age >= 48;
     return `<tr style="border-top:1px solid var(--border);">
-      <td style="padding:10px 8px;color:var(--muted);font-size:12px;">${date}</td>
-      <td style="padding:10px 8px;font-size:13px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.text}</td>
-      <td style="padding:10px 8px;font-size:12px;color:${ready ? 'var(--yellow)' : 'var(--muted)'};">${age != null ? (ready ? `Ready (${age}h old)` : `${age}h — pulls at 48h`) : '—'}</td>
+      <td style="padding:12px 8px;color:var(--muted);font-size:13px;">${date}</td>
+      <td style="padding:12px 8px;font-size:14px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.text}</td>
+      <td style="padding:12px 8px;font-size:13px;color:${ready ? 'var(--yellow)' : 'var(--muted)'};">${age != null ? (ready ? `Ready (${age}h old)` : `${age}h — pulls at 48h`) : '—'}</td>
     </tr>`;
   }).join('');
 
   const pendingTable = pending.length ? `
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;">
     <div style="font-size:15px;font-weight:600;margin-bottom:4px;">Awaiting engagement data</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">Scores are pulled automatically every 6 hours once posts are 48h old</div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:16px;">Scores are pulled automatically every 6 hours once posts are 48h old</div>
     <table style="width:100%;border-collapse:collapse;">
       <thead>
-        <tr style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;">
-          <th style="padding:0 8px 10px;text-align:left;font-weight:500;">Date</th>
-          <th style="padding:0 8px 10px;text-align:left;font-weight:500;">Post</th>
-          <th style="padding:0 8px 10px;text-align:left;font-weight:500;">Status</th>
+        <tr style="color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;">
+          <th style="padding:0 8px 12px;text-align:left;font-weight:500;">Date</th>
+          <th style="padding:0 8px 12px;text-align:left;font-weight:500;">Post</th>
+          <th style="padding:0 8px 12px;text-align:left;font-weight:500;">Status</th>
         </tr>
       </thead>
       <tbody>${pendingRows}</tbody>
@@ -595,8 +595,8 @@ function renderPerformance({ learner, scored, pending, totalScored, totalPosted 
 
 function statBar(label, value, pctVal, color, tooltip = '') {
   return `<div style="background:#0a0a0a;border:1px solid var(--border);border-radius:12px;padding:16px;">
-    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;" title="${tooltip}">${label}</div>
-    <div style="font-size:22px;font-weight:700;color:${color};margin-bottom:10px;">${value}</div>
+    <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;" title="${tooltip}">${label}</div>
+    <div style="font-size:24px;font-weight:700;color:${color};margin-bottom:10px;">${value}</div>
     <div style="height:6px;background:var(--border);border-radius:3px;">
       <div style="width:${pctVal}%;height:100%;background:${color};border-radius:3px;transition:width .4s;"></div>
     </div>
