@@ -41,7 +41,7 @@ export function getAuthUrl() {
     response_type: 'code',
     client_id: CLIENT_ID,
     redirect_uri: REDIRECT_URI,
-    scope: 'openid profile w_member_social r_member_social rw_ads r_ads',
+    scope: 'openid profile w_member_social rw_ads r_ads',
     state: 'gritnord-linkedin',
   });
   return `https://www.linkedin.com/oauth/v2/authorization?${params}`;
