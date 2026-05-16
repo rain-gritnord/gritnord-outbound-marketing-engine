@@ -93,9 +93,32 @@ async function fetchEngagement(postUrn) {
     };
   }
 
+  // ── Attempt 4: socialActions API — works with r_member_social scope ──────────
+  // Returns like/comment counts (not impressions) — better than nothing
+  const socialUrn = postUrn.startsWith('urn:li:share:') ? postUrn
+    : postUrn.startsWith('urn:li:ugcPost:') ? postUrn
+    : null;
+
+  if (socialUrn) {
+    const encoded = encodeURIComponent(socialUrn);
+    const r4 = await fetch(
+      `https://api.linkedin.com/v2/socialActions/${encoded}`,
+      { headers: { Authorization: `Bearer ${tokens.access_token}`, 'X-Restli-Protocol-Version': '2.0.0' } }
+    );
+    if (r4.ok) {
+      const d = await r4.json();
+      console.log(`[engagement] socialActions success for ${postUrn}`);
+      return {
+        likes:       d.likesSummary?.totalLikes                        ?? 0,
+        comments:    d.commentsSummary?.totalFirstLevelComments        ?? 0,
+        shares:      d.sharesSummary?.totalShares                      ?? 0,
+        impressions: null,
+        clicks:      null,
+      };
+    }
+  }
+
   // ── All endpoints blocked: LinkedIn requires Marketing Developer Platform ──
-  // This is a known LinkedIn restriction — post stats need partner API access.
-  // The Playwright scraper (engine/linkedin-scraper.js) is the automated workaround.
   console.log(`[engagement] All API endpoints blocked for ${postUrn} — marking as api-blocked`);
   throw new Error('api-blocked');
 }

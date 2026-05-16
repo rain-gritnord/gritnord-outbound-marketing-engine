@@ -6,6 +6,7 @@ import path from 'path';
 import crypto from 'crypto';
 import multer from 'multer';
 import * as XLSX from 'xlsx';
+import { readFileSync, readdirSync, renameSync, mkdirSync as fsMkdirSync, existsSync as fsExistsSync } from 'fs';
 
 import { generateContent, scoreContent, CHANNELS } from './engine/generator.js';
 import { recordScore, getPrioritizedChannels, getLearningState } from './engine/learner.js';
@@ -384,8 +385,12 @@ app.get('/auth/linkedin/callback', async (req, res) => {
 // GET /api/linkedin/status — connection status
 app.get('/api/linkedin/status', (req, res) => {
   const tokens = loadTokens();
+  // r_member_social scope lets us auto-fetch likes/comments/shares after posting
+  const scope = tokens?.scope || '';
+  const hasReadScope = scope.includes('r_member_social');
   res.json({
-    connected: isConnected(),
+    connected:    isConnected(),
+    hasReadScope,
     expiresAt: tokens?.expires_in
       ? new Date(tokens.savedAt + tokens.expires_in * 1000).toISOString()
       : null,
@@ -1455,6 +1460,104 @@ cron.schedule('0 8 * * *', async () => {
     console.log(`[cron] daily-publish — image: ${post.cover_image_url}`);
   } catch (err) {
     console.error('[cron] daily-publish — error:', err.message);
+  }
+});
+
+// ─── XLSX Drop Folder Watcher ────────────────────────────────────────────────
+// Rain drops a LinkedIn PostAnalytics_*.xlsx into data/analytics-drop/
+// The watcher picks it up, imports the metrics, and moves it to analytics-processed/
+
+const DROP_DIR       = path.join(__dirname, 'data', 'analytics-drop');
+const PROCESSED_DIR  = path.join(__dirname, 'data', 'analytics-processed');
+if (!fsExistsSync(DROP_DIR))      fsMkdirSync(DROP_DIR,      { recursive: true });
+if (!fsExistsSync(PROCESSED_DIR)) fsMkdirSync(PROCESSED_DIR, { recursive: true });
+
+function processDroppedXlsx(filename) {
+  const fullPath = path.join(DROP_DIR, filename);
+  try {
+    const buf = readFileSync(fullPath);
+    const wb  = XLSX.read(buf, { type: 'buffer' });
+    const ws  = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+    const headers = (rows[0] || []).map(h => String(h).toLowerCase().trim());
+    const values  = rows[1] || [];
+
+    const col = (name) => {
+      const i = headers.findIndex(h => h.includes(name));
+      return i >= 0 ? (parseInt(String(values[i]).replace(/,/g, ''), 10) || 0) : 0;
+    };
+
+    const impressions = col('impression');
+    const likes       = col('reaction');
+    const comments    = col('comment');
+    const shares      = col('repost');
+    const followers   = col('follower');
+
+    // Extract share ID from filename: PostAnalytics_RainVaana_{shareId}.xlsx
+    const numMatch = filename.match(/(\d{15,})/);
+    const shareNum = numMatch?.[1];
+
+    const queue = getLinkedInQueue();
+    let post = null;
+
+    if (shareNum) {
+      post = queue.find(p => {
+        const pNum = (p.linkedInId || '').replace(/urn:li:(share|ugcPost|activity):/i, '');
+        return pNum === shareNum;
+      });
+    }
+
+    if (!post) {
+      // Move to processed with error marker so it's not retried
+      const dest = path.join(PROCESSED_DIR, `UNMATCHED_${filename}`);
+      renameSync(fullPath, dest);
+      console.log(`[drop-watcher] ${filename}: no matching post found (shareId=${shareNum || 'unknown'})`);
+      return;
+    }
+
+    const metrics = { likes, comments, shares, impressions, followers, clicks: null };
+    const score   = engagementToScore(metrics);
+
+    recordScore('linkedin', score);
+    updateLinkedInPost(post.id, {
+      engagement:          metrics,
+      engagementScore:     score,
+      engagementScoredAt:  new Date().toISOString(),
+      engagementBlocked:   false,
+    });
+
+    const dest = path.join(PROCESSED_DIR, filename);
+    renameSync(fullPath, dest);
+
+    console.log(`[drop-watcher] ${filename}: impressions=${impressions} likes=${likes} comments=${comments} shares=${shares} → score=${score}`);
+  } catch (err) {
+    console.error(`[drop-watcher] ${filename} error:`, err.message);
+  }
+}
+
+// Scan drop folder on startup (catches files dropped while server was off)
+try {
+  const existing = readdirSync(DROP_DIR).filter(f => f.toLowerCase().endsWith('.xlsx'));
+  for (const f of existing) processDroppedXlsx(f);
+} catch {}
+
+// Poll every 30s for new files
+setInterval(() => {
+  try {
+    const files = readdirSync(DROP_DIR).filter(f => f.toLowerCase().endsWith('.xlsx'));
+    for (const f of files) processDroppedXlsx(f);
+  } catch {}
+}, 30_000);
+
+// GET /api/linkedin/engagement/drop-status — what's in the drop folder right now
+app.get('/api/linkedin/engagement/drop-status', (req, res) => {
+  try {
+    const pending   = readdirSync(DROP_DIR).filter(f => f.toLowerCase().endsWith('.xlsx'));
+    const processed = readdirSync(PROCESSED_DIR).filter(f => f.toLowerCase().endsWith('.xlsx'));
+    res.json({ pending, processed: processed.slice(-20) });
+  } catch {
+    res.json({ pending: [], processed: [] });
   }
 });
 

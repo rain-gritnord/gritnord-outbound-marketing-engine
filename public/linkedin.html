@@ -247,6 +247,9 @@
 <main>
   <div class="page-title">LinkedIn Post Queue</div>
   <div class="page-sub">Review and approve posts before they go live. 3 drafts generated Mon / Wed / Fri.</div>
+  <div style="display:inline-block;margin-top:8px;padding:7px 14px;background:#1c1c1c;border:1px solid rgba(255,255,255,0.1);border-radius:8px;font-size:12px;color:rgba(255,255,255,0.55);">
+    ⏱ Best posting time: <strong style="color:rgba(255,255,255,0.85)">Mon – Wed, 15:00 – 16:00 EEST</strong> &nbsp;·&nbsp; Validated by the 105K post (Mon 15:39 EEST)
+  </div>
 
   <div id="connect-banner" class="connect-banner" style="display:none">
     <div>
@@ -254,6 +257,15 @@
       <p>Connect once to enable one-click posting from this queue.</p>
     </div>
     <a href="/auth/linkedin" class="btn btn-primary">Connect LinkedIn</a>
+  </div>
+
+  <div id="scope-nudge" style="display:none;align-items:center;gap:12px;padding:12px 18px;margin-bottom:16px;background:#1a1400;border:1px solid #5c4a00;border-radius:12px;font-size:13px;">
+    <span style="font-size:16px;">⚡</span>
+    <div style="flex:1;">
+      <strong style="color:#fbbf24;">New: auto-fetch likes & comments after posting.</strong>
+      <span style="color:rgba(255,255,255,0.55);margin-left:6px;">Reconnect LinkedIn once to enable — takes 10 seconds.</span>
+    </div>
+    <a href="/auth/linkedin" style="padding:6px 16px;border-radius:999px;background:#fbbf24;color:#000;font-weight:700;font-size:12px;text-decoration:none;white-space:nowrap;">Reconnect →</a>
   </div>
 
   <div class="tabs">
@@ -290,9 +302,14 @@ async function checkStatus() {
       dot.classList.add('connected');
       txt.textContent = 'Connected';
       banner.style.display = 'none';
+      // Show reconnect nudge if missing r_member_social (auto likes/comments)
+      const nudge = document.getElementById('scope-nudge');
+      if (nudge) nudge.style.display = d.hasReadScope ? 'none' : 'flex';
     } else {
       txt.textContent = 'Not connected';
       banner.style.display = 'flex';
+      const nudge = document.getElementById('scope-nudge');
+      if (nudge) nudge.style.display = 'none';
     }
   } catch {}
 }
