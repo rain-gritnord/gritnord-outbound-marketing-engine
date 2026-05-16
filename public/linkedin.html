@@ -894,16 +894,19 @@ async function loadSuggestions(force = false) {
     }
 
     // Accepted guidelines already live
-    const acceptedIds = new Set((d.accepted || []).map(g => g.id));
+    const acceptedIds  = new Set((d.accepted || []).map(g => g.id));
+    const dismissedIds = new Set(JSON.parse(localStorage.getItem('sug_dismissed') || '[]'));
 
-    // Render pending suggestions
-    const pending = (d.suggestions || []).filter(s => !acceptedIds.has(s.id));
+    // Render pending suggestions (exclude accepted and locally dismissed)
+    const pending = (d.suggestions || []).filter(s => !acceptedIds.has(s.id) && !dismissedIds.has(s.id));
     const accepted = d.accepted || [];
 
     let html = '';
 
     if (pending.length) {
-      html += pending.map(s => `
+      html += pending.map(s => {
+        const payload = encodeURIComponent(JSON.stringify({ id: s.id, title: s.title, action: s.action, category: s.category }));
+        return `
         <div id="sug-${s.id}" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:12px;">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
             <div style="flex:1;">
@@ -916,11 +919,12 @@ async function loadSuggestions(force = false) {
               <div style="font-size:14px;line-height:1.55;color:var(--text);">${s.action}</div>
             </div>
             <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0;">
-              <button class="btn btn-green btn-sm" onclick="acceptSuggestion('${s.id}', ${JSON.stringify(s.title).replace(/'/g,"&#39;")}, ${JSON.stringify(s.action).replace(/'/g,"&#39;")}, '${s.category}')">✓ Accept</button>
+              <button class="btn btn-green btn-sm" data-sug="${payload}" onclick="acceptSuggestion(this)">✓ Accept</button>
               <button class="btn btn-outline btn-sm" onclick="dismissSuggestion('${s.id}')">✕ Dismiss</button>
             </div>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     } else {
       html += `<div style="padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:14px;color:var(--muted);margin-bottom:12px;">No new suggestions — all have been reviewed.</div>`;
     }
@@ -949,24 +953,31 @@ async function loadSuggestions(force = false) {
   }
 }
 
-async function acceptSuggestion(id, title, action, category) {
-  const btn = document.querySelector(`#sug-${id} .btn-green`);
-  if (btn) { btn.textContent = '…'; btn.disabled = true; }
-  await fetch('/api/linkedin/suggestions/accept', {
+async function acceptSuggestion(btn) {
+  const { id, title, action, category } = JSON.parse(decodeURIComponent(btn.dataset.sug));
+  btn.textContent = '…'; btn.disabled = true;
+  const r = await fetch('/api/linkedin/suggestions/accept', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id, title, action, category }),
   });
-  toast('Guideline accepted — applies to all future posts', 'success');
-  const el = document.getElementById(`sug-${id}`);
-  if (el) el.style.opacity = '0.3';
-  setTimeout(() => loadSuggestions(true), 600);
+  if (r.ok) {
+    toast('Guideline accepted — applies to all future posts', 'success');
+    const el = document.getElementById(`sug-${id}`);
+    if (el) { el.style.opacity = '0.3'; el.style.pointerEvents = 'none'; }
+    setTimeout(() => loadSuggestions(true), 800);
+  } else {
+    toast('Failed to save — try again', 'error');
+    btn.textContent = '✓ Accept'; btn.disabled = false;
+  }
 }
 
-async function dismissSuggestion(id) {
+function dismissSuggestion(id) {
+  // Persist dismissed IDs in localStorage so they don't reappear on reload
+  const dismissed = JSON.parse(localStorage.getItem('sug_dismissed') || '[]');
+  if (!dismissed.includes(id)) { dismissed.push(id); localStorage.setItem('sug_dismissed', JSON.stringify(dismissed)); }
   const el = document.getElementById(`sug-${id}`);
-  if (el) { el.style.opacity = '0.3'; el.style.pointerEvents = 'none'; }
-  // Just hide locally — not stored permanently so it reappears on next Claude run
+  if (el) { el.style.opacity = '0'; el.style.transition = 'opacity .2s'; setTimeout(() => el.remove(), 200); }
   toast('Dismissed', 'success');
 }
 
