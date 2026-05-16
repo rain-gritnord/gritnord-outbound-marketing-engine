@@ -267,6 +267,20 @@
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+
+  /* Content OS */
+  .cm-tab { padding:8px 16px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s; }
+  .cm-tab:hover { color:var(--text); }
+  .cm-tab.active { color:#a78bfa;border-bottom-color:#a78bfa; }
+  .cm-article-row { display:flex;align-items:flex-start;gap:14px;padding:14px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--surface);transition:border-color .15s; }
+  .cm-article-row:hover { border-color:#333; }
+  .cm-score-badge { min-width:34px;height:34px;border-radius:7px;background:rgba(167,139,250,.12);color:#a78bfa;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+  .cm-fmt-tab { padding:3px 10px;font-size:11px;border-radius:20px;cursor:pointer;border:1px solid var(--border);color:var(--muted);transition:all .15s;background:transparent; }
+  .cm-fmt-tab.active { border-color:#a78bfa;color:#a78bfa;background:rgba(167,139,250,.1); }
+  .cm-piece-card { background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px; }
+  .cm-content-pre { background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:13px;color:var(--text);line-height:1.7;width:100%;font-family:inherit;min-height:140px;white-space:pre-wrap;word-break:break-word; }
+  .cm-chip-draft { font-size:11px;background:rgba(107,114,128,.15);color:var(--muted);border-radius:20px;padding:2px 8px;font-weight:500; }
+  .cm-chip-sent  { font-size:11px;background:rgba(167,139,250,.12);color:#a78bfa;border-radius:20px;padding:2px 8px;font-weight:500; }
 </style>
 </head>
 <body>
@@ -310,6 +324,9 @@
       </a>
       <a href="/uc-acquisition.html" style="margin-top:8px">
         <span class="icon">🎯</span> UC Acquisition
+      </a>
+      <a onclick="showPage('content-os')" id="nav-content-os" style="margin-top:8px">
+        <span class="icon">✦</span> Content OS
       </a>
       <a href="/roadmap.html" style="margin-top:8px">
         <span class="icon">◈</span> Product Roadmap
@@ -521,6 +538,64 @@
       </div>
     </div>
 
+
+    <!-- ── Content OS ── -->
+    <div class="page" id="page-content-os">
+      <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <h1>Content OS</h1>
+          <p>One article → LinkedIn + Blog + Newsletter + Thread + AEO stat</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span id="cm-sub-badge" style="font-size:12px;color:var(--muted);"></span>
+          <button class="btn-primary" style="padding:7px 14px;border-radius:7px;font-size:13px;background:#a78bfa;color:#000;border:none;cursor:pointer;font-weight:600;" onclick="cmCompileNewsletter()">✦ Compile Newsletter</button>
+        </div>
+      </div>
+
+      <!-- Sub-tabs -->
+      <div style="display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:24px;">
+        <div class="cm-tab active" data-cm="queue" onclick="cmTab('queue')">Queue</div>
+        <div class="cm-tab" data-cm="pieces" onclick="cmTab('pieces')">Generated</div>
+        <div class="cm-tab" data-cm="newsletter" onclick="cmTab('newsletter')">Newsletter</div>
+        <div class="cm-tab" data-cm="subscribers" onclick="cmTab('subscribers')">Subscribers</div>
+      </div>
+
+      <!-- Queue -->
+      <div class="cm-section" id="cm-queue">
+        <div id="cm-queue-list"><div style="text-align:center;padding:40px;color:var(--muted);">Loading articles…</div></div>
+      </div>
+
+      <!-- Generated pieces -->
+      <div class="cm-section" id="cm-pieces" style="display:none;">
+        <div id="cm-pieces-list"><div style="text-align:center;padding:40px;color:var(--muted);">Nothing generated yet — go to Queue and click Generate All.</div></div>
+      </div>
+
+      <!-- Newsletter -->
+      <div class="cm-section" id="cm-newsletter" style="display:none;">
+        <div id="cm-nl-list"><div style="text-align:center;padding:40px;color:var(--muted);">No newsletters yet. Click "Compile Newsletter" above.</div></div>
+      </div>
+
+      <!-- Subscribers -->
+      <div class="cm-section" id="cm-subscribers" style="display:none;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px;">
+          <div style="font-weight:600;font-size:14px;color:var(--text);margin-bottom:12px;">Add Subscriber</div>
+          <div style="display:flex;gap:10px;align-items:flex-end;">
+            <div style="flex:1;">
+              <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Email</label>
+              <input id="cm-sub-email" type="email" placeholder="founder@company.com" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:7px;font-size:13px;" />
+            </div>
+            <div style="flex:0 0 150px;">
+              <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">First name</label>
+              <input id="cm-sub-name" type="text" placeholder="Rain" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:7px;font-size:13px;" />
+            </div>
+            <button onclick="cmAddSub()" style="padding:8px 16px;background:#a78bfa;color:#000;border:none;border-radius:7px;cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap;">Add</button>
+          </div>
+        </div>
+        <div id="cm-sub-list" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;">
+          <div style="text-align:center;padding:24px;color:var(--muted);">No subscribers yet.</div>
+        </div>
+      </div>
+    </div>
     </div><!-- /main-content -->
   </main>
 </div>
@@ -622,6 +697,7 @@ function renderMarkdown(text) {
 
 // ── Navigation ─────────────────────────────────────────────────────────────
 function showPage(name) {
+  if (name === 'content-os') cmInit();
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -1054,6 +1130,10 @@ function escHtml(s) {
   await loadOverview();
   checkStatus();
   setInterval(checkStatus, 30000);
+
+  // Handle hash navigation — e.g. /dashboard.html#content-os from nav.js
+  const hash = window.location.hash.replace('#', '');
+  if (hash) showPage(hash);
 })();
 
 function toggleTheme() {
@@ -1075,6 +1155,291 @@ function toggleTheme() {
     if (label) label.textContent = t === 'dark' ? 'Dark mode' : 'Light mode';
   });
 })();
+
+// ── Content OS ──────────────────────────────────────────────────────────────
+
+let cmPieces = [], cmQueue = [], cmNewsletters = [], cmSubscribers = [];
+let cmActiveFmts = {}; // pieceId → active format key
+const CM_FMT_LABELS = { linkedin:'💼 LinkedIn', blog:'📝 Blog', newsletter:'✉️ Newsletter', thread:'🐦 Thread', aeo:'🤖 AEO Stat' };
+
+async function cmApi(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(path, opts);
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || res.statusText); }
+  return res.json();
+}
+
+function cmTab(name) {
+  document.querySelectorAll('.cm-tab').forEach(t => t.classList.toggle('active', t.dataset.cm === name));
+  document.querySelectorAll('.cm-section').forEach(s => s.style.display = s.id === `cm-${name}` ? 'block' : 'none');
+  if (name === 'queue') cmLoadQueue();
+  if (name === 'pieces') cmLoadPieces();
+  if (name === 'newsletter') cmLoadNewsletter();
+  if (name === 'subscribers') cmLoadSubs();
+}
+
+// Called when Content OS page opens
+function cmInit() {
+  cmLoadQueue();
+  cmLoadSubs();
+}
+
+// ── Queue ──
+async function cmLoadQueue() {
+  const el = document.getElementById('cm-queue-list');
+  el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">Loading…</div>';
+  try {
+    cmQueue = await cmApi('GET', '/api/cm/queue');
+    cmRenderQueue();
+  } catch(e) {
+    el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">Error: ${e.message}</div>`;
+  }
+}
+
+function cmRenderQueue() {
+  const el = document.getElementById('cm-queue-list');
+  if (!cmQueue.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);"><div style="font-size:28px;margin-bottom:12px;">📰</div><div style="font-weight:600;color:var(--text);margin-bottom:6px;">Queue is empty</div><p style="font-size:13px;">Articles get pulled from the LinkedIn curation system. Generate some LinkedIn drafts first, or wait for the next cron cycle.</p></div>';
+    return;
+  }
+  el.innerHTML = cmQueue.map((a, i) => `
+    <div class="cm-article-row" id="cm-qrow-${i}">
+      <div class="cm-score-badge">${a.relevanceScore || '—'}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;color:var(--text);font-size:13px;margin-bottom:3px;line-height:1.4;">${cmEsc(a.title)}</div>
+        ${a.description ? `<div style="color:var(--muted);font-size:12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${cmEsc(a.description)}</div>` : ''}
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;">${cmEsc(a.source || '')}${a.link ? ` · <a href="${cmEsc(a.link)}" target="_blank" style="color:var(--muted);">↗</a>` : ''}</div>
+      </div>
+      <button onclick="cmGenerate(${i})" style="padding:6px 14px;background:#a78bfa;color:#000;border:none;border-radius:7px;cursor:pointer;font-weight:600;font-size:12px;white-space:nowrap;flex-shrink:0;">✦ Generate All</button>
+    </div>
+  `).join('');
+}
+
+async function cmGenerate(i) {
+  const article = cmQueue[i];
+  const row = document.getElementById(`cm-qrow-${i}`);
+  const btn = row.querySelector('button');
+  row.style.opacity = '0.5';
+  row.style.pointerEvents = 'none';
+  btn.innerHTML = '⟳ Generating…';
+  toast('Generating all formats — ~20s…');
+  try {
+    const result = await cmApi('POST', '/api/cm/generate', { article });
+    cmPieces.unshift(result);
+    toast('All formats ready!');
+    cmTab('pieces');
+  } catch(e) {
+    toast('Generate failed: ' + e.message);
+    row.style.opacity = '1';
+    row.style.pointerEvents = '';
+    btn.textContent = '✦ Generate All';
+  }
+}
+
+// ── Pieces ──
+async function cmLoadPieces() {
+  try {
+    cmPieces = await cmApi('GET', '/api/cm/pieces');
+    cmRenderPieces();
+  } catch(e) {
+    document.getElementById('cm-pieces-list').innerHTML = `<div style="color:var(--muted);padding:24px;">${e.message}</div>`;
+  }
+}
+
+function cmRenderPieces() {
+  const el = document.getElementById('cm-pieces-list');
+  if (!cmPieces.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">Nothing generated yet.</div>';
+    return;
+  }
+  el.innerHTML = cmPieces.map(p => {
+    const fmtKeys = Object.keys(p.formats || {});
+    const activeFmt = cmActiveFmts[p.id] || fmtKeys[0] || 'linkedin';
+    const fmt = p.formats?.[activeFmt] || {};
+    return `
+      <div class="cm-piece-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div>
+            <div style="font-weight:600;color:var(--text);font-size:14px;">${cmEsc(p.article?.title || 'Untitled')}</div>
+            <div style="font-size:12px;color:var(--muted);">${cmEsc(p.article?.source || '')} · ${cmTimeAgo(p.createdAt)}</div>
+          </div>
+          ${p.article?.link ? `<a href="${cmEsc(p.article.link)}" target="_blank" style="font-size:12px;color:var(--muted);">↗ Source</a>` : ''}
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+          ${fmtKeys.map(k => `<button class="cm-fmt-tab ${k === activeFmt ? 'active' : ''}" onclick="cmSetFmt('${p.id}','${k}')">${CM_FMT_LABELS[k] || k}</button>`).join('')}
+        </div>
+        ${fmt.error
+          ? `<div style="color:#ef4444;font-size:13px;">${cmEsc(fmt.error)}</div>`
+          : fmt.text
+          ? `<div class="cm-content-pre">${cmEsc(fmt.text)}</div>
+             <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end;">
+               <button onclick="cmCopy(${JSON.stringify(fmt.text)})" style="padding:5px 12px;border:1px solid var(--border);background:transparent;color:var(--text);border-radius:7px;cursor:pointer;font-size:12px;">Copy</button>
+               ${activeFmt === 'linkedin' ? `<button onclick="cmToLinkedIn('${p.id}')" style="padding:5px 12px;border:1px solid var(--border);background:transparent;color:var(--text);border-radius:7px;cursor:pointer;font-size:12px;">→ LinkedIn Queue</button>` : ''}
+             </div>`
+          : `<div style="color:var(--muted);font-size:13px;">Not generated</div>`
+        }
+      </div>
+    `;
+  }).join('');
+}
+
+function cmSetFmt(pieceId, fmt) { cmActiveFmts[pieceId] = fmt; cmRenderPieces(); }
+
+function cmCopy(text) {
+  navigator.clipboard.writeText(text).then(() => toast('Copied!'));
+}
+
+async function cmToLinkedIn(pieceId) {
+  const piece = cmPieces.find(p => p.id === pieceId);
+  if (!piece?.formats?.linkedin?.text) return;
+  try {
+    await cmApi('POST', '/api/linkedin/queue/save', { text: piece.formats.linkedin.text, article: piece.article || {} });
+    toast('Added to LinkedIn queue — approve it in LinkedIn tab');
+  } catch(e) {
+    cmCopy(piece.formats.linkedin.text);
+    toast('Copied to clipboard (queue save failed: ' + e.message + ')');
+  }
+}
+
+// ── Newsletter ──
+async function cmLoadNewsletter() {
+  try {
+    cmNewsletters = await cmApi('GET', '/api/cm/newsletter');
+    cmRenderNewsletter();
+  } catch(e) {
+    document.getElementById('cm-nl-list').innerHTML = `<div style="color:var(--muted);padding:24px;">${e.message}</div>`;
+  }
+}
+
+async function cmCompileNewsletter() {
+  toast("Compiling newsletter from this week's content…");
+  try {
+    const nl = await cmApi('POST', '/api/cm/newsletter/compile', {});
+    cmNewsletters.unshift(nl);
+    cmTab('newsletter');
+    cmRenderNewsletter();
+    toast('Newsletter compiled!');
+  } catch(e) { toast('Failed: ' + e.message); }
+}
+
+function cmRenderNewsletter() {
+  const el = document.getElementById('cm-nl-list');
+  if (!cmNewsletters.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">No newsletters yet. Click "Compile Newsletter" above.</div>';
+    return;
+  }
+  const nl = cmNewsletters[0];
+  const subjects = nl.subjects || [nl.selectedSubject || 'GTM intel'];
+  let selected = nl.selectedSubject || subjects[0];
+
+  el.innerHTML = `
+    <div class="cm-piece-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div>
+          <div style="font-weight:600;color:var(--text);font-size:14px;">Week ${nl.week} — ${nl.date}</div>
+          <div style="font-size:12px;color:var(--muted);">${nl.sentAt ? 'Sent to ' + nl.sentTo + ' subscribers' : 'Draft'}</div>
+        </div>
+        <span class="${nl.sentAt ? 'cm-chip-sent' : 'cm-chip-draft'}">${nl.sentAt ? 'Sent' : 'Draft'}</span>
+      </div>
+
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Subject line</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
+        ${subjects.map(s => `
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid ${s === selected ? '#a78bfa' : 'var(--border)'};border-radius:8px;cursor:pointer;background:${s === selected ? 'rgba(167,139,250,.08)' : 'transparent'};">
+            <input type="radio" name="nl-subj" ${s === selected ? 'checked' : ''} onchange="nl.selectedSubject='${s.replace(/'/g,"\'")}'" style="accent-color:#a78bfa;">
+            <span style="font-size:13px;color:var(--text);">${cmEsc(s)}</span>
+          </label>
+        `).join('')}
+      </div>
+
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Body preview</div>
+      <pre style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:12px;color:var(--text);line-height:1.7;max-height:320px;overflow-y:auto;white-space:pre-wrap;font-family:inherit;margin-bottom:14px;">${cmEsc(nl.body)}</pre>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="/api/cm/newsletter/${nl.id}/preview" target="_blank" style="padding:7px 14px;border:1px solid var(--border);border-radius:7px;font-size:13px;color:var(--text);text-decoration:none;">👁 Preview</a>
+        <button onclick="cmSendTest('${nl.id}')" style="padding:7px 14px;border:1px solid var(--border);border-radius:7px;font-size:13px;background:transparent;color:var(--text);cursor:pointer;">📧 Test → rain@gritnord.com</button>
+        <button onclick="cmSendAll('${nl.id}')" ${nl.sentAt ? 'disabled' : ''} style="padding:7px 14px;border:none;border-radius:7px;font-size:13px;background:${nl.sentAt ? '#1a2e1a' : '#22c55e'};color:${nl.sentAt ? '#22c55e' : '#000'};cursor:pointer;font-weight:600;">
+          ${nl.sentAt ? `✓ Sent (${nl.sentTo})` : '🚀 Send to All'}
+        </button>
+      </div>
+    </div>
+    ${cmNewsletters.length > 1 ? '<div style="font-size:12px;color:var(--muted);margin-top:8px;">' + cmNewsletters.slice(1).map(n => `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;"><span>Week ${n.week} — ${n.selectedSubject || n.subjects?.[0] || '—'}</span><span class="${n.sentAt ? 'cm-chip-sent' : 'cm-chip-draft'}">${n.sentAt ? 'Sent' : 'Draft'}</span></div>`).join('') + '</div>' : ''}
+  `;
+}
+
+async function cmSendTest(id) {
+  toast('Sending test to rain@gritnord.com…');
+  try {
+    await cmApi('POST', `/api/cm/newsletter/${id}/test`, { email: 'rain@gritnord.com' });
+    toast('Test sent — check your inbox');
+  } catch(e) { toast('Failed: ' + e.message); }
+}
+
+async function cmSendAll(id) {
+  const nl = cmNewsletters.find(n => n.id === id);
+  if (!confirm(`Send to ${cmSubscribers.length || '?'} subscribers?`)) return;
+  toast('Sending…');
+  try {
+    const res = await cmApi('POST', `/api/cm/newsletter/${id}/send`, { subject: nl?.selectedSubject });
+    if (nl) { nl.sentAt = new Date().toISOString(); nl.sentTo = res.sent; }
+    cmRenderNewsletter();
+    toast(`Sent to ${res.sent} subscribers`);
+  } catch(e) { toast('Failed: ' + e.message); }
+}
+
+// ── Subscribers ──
+async function cmLoadSubs() {
+  try {
+    cmSubscribers = await cmApi('GET', '/api/cm/subscribers');
+    cmRenderSubs();
+    const badge = document.getElementById('cm-sub-badge');
+    if (badge) badge.textContent = `${cmSubscribers.length} subscribers`;
+  } catch(e) {}
+}
+
+function cmRenderSubs() {
+  const el = document.getElementById('cm-sub-list');
+  if (!el) return;
+  if (!cmSubscribers.length) {
+    el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);">No subscribers yet.</div>';
+    return;
+  }
+  el.innerHTML = cmSubscribers.map(s => `
+    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;">
+      <span style="color:var(--text);">${cmEsc(s.firstName ? s.firstName + ' · ' : '')}${cmEsc(s.email)}</span>
+      <span style="color:var(--muted);font-size:11px;">${cmTimeAgo(s.subscribedAt)}</span>
+    </div>
+  `).join('');
+}
+
+async function cmAddSub() {
+  const email = document.getElementById('cm-sub-email')?.value?.trim();
+  const firstName = document.getElementById('cm-sub-name')?.value?.trim();
+  if (!email) { toast('Email required'); return; }
+  try {
+    cmSubscribers = await cmApi('POST', '/api/cm/subscribers', { email, firstName: firstName || '' });
+    document.getElementById('cm-sub-email').value = '';
+    document.getElementById('cm-sub-name').value = '';
+    cmRenderSubs();
+    const badge = document.getElementById('cm-sub-badge');
+    if (badge) badge.textContent = `${cmSubscribers.length} subscribers`;
+    toast(email + ' added');
+  } catch(e) { toast('Failed: ' + e.message); }
+}
+
+// ── Helpers ──
+function cmEsc(str) { return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function cmTimeAgo(iso) {
+  if (!iso) return '—';
+  const d = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(d / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return m + 'm ago';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + 'h ago';
+  return Math.floor(h/24) + 'd ago';
+}
 </script>
 </body>
 </html>

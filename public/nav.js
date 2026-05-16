@@ -12,6 +12,7 @@
     { label: 'LinkedIn Queue',  icon: 'in', href: '/linkedin.html',            group: 'Publish' },
     { label: 'X Queue',         icon: '𝕏',  href: '/twitter.html',             group: null },
     { label: 'UC Acquisition',  icon: '🎯', href: '/uc-acquisition.html',      group: 'Growth' },
+    { label: 'Content OS',      icon: '✦',  href: '/dashboard.html#content-os', group: null },
     { label: 'Product Roadmap', icon: '◈',  href: '/roadmap.html',             group: null },
     { label: 'Architecture V7', icon: '⬡',  href: '/architecture-v7.html',     group: null },
   ];

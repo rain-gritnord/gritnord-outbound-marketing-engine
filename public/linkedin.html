@@ -66,7 +66,7 @@
     .btn-red { background: #ef4444; color: #fff; }
     .btn-sm { padding: 7px 16px; font-size: 13px; }
 
-    main { max-width: 860px; margin: 0 auto; padding: 40px 24px; }
+    main { max-width: 1100px; margin: 0 auto; padding: 40px 32px; }
 
     .page-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
     .page-sub { color: var(--muted); font-size: 15px; margin-bottom: 32px; }
@@ -357,7 +357,7 @@ function renderCard(post) {
         <span>👍 ${post.engagement.likes} likes</span>
         <span>💬 ${post.engagement.comments} comments</span>
         <span>🔁 ${post.engagement.shares} shares</span>
-        ${post.engagementScore ? `<span style="color:var(--green);font-weight:600;">Score fed to learner: ${post.engagementScore}/10</span>` : ''}
+        ${post.engagementScore ? `<span style="color:#a78bfa;font-weight:600;">Score fed to learner: ${post.engagementScore}/10</span>` : ''}
        </div>` : '';
 
   const actionsHtml = post.status === 'posted'
@@ -376,7 +376,7 @@ function renderCard(post) {
       ${articleHtml}
       <textarea class="post-text" id="text-${post.id}" onkeyup="updateCount('${post.id}')">${post.text || ''}</textarea>
       <div class="char-count ${charClass}" id="count-${post.id}">${chars} chars</div>
-      ${article.link ? `<div style="font-size:13px;color:var(--muted);margin-top:6px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:#0a0a0a;">🔗 Article link appended on post: <a href="${article.link}" target="_blank" style="color:#60a5fa;word-break:break-all;">${article.link}</a></div>` : ''}
+      ${article.link ? `<div style="font-size:13px;color:var(--muted);margin-top:6px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:#0a0a0a;">🔗 Article link appended on post: <a href="${article.link}" target="_blank" style="color:#a78bfa;word-break:break-all;">${article.link}</a></div>` : ''}
       <div class="card-actions">${actionsHtml}</div>
     </div>`;
 }
@@ -477,9 +477,7 @@ async function loadPerformance() {
 
 function scoreColor(s) {
   if (s === null) return 'var(--muted)';
-  if (s >= 7) return 'var(--green)';
-  if (s >= 5) return 'var(--yellow)';
-  return '#ef4444';
+  return '#a78bfa';
 }
 
 function pct(n, max) { return Math.min(100, Math.round((n / max) * 100)); }
@@ -493,8 +491,8 @@ function trendLabel(scored) {
   const avgRecent = recent.reduce((a,b) => a+b,0) / recent.length;
   const avgOlder  = older.reduce((a,b) => a+b,0) / older.length;
   const diff = avgRecent - avgOlder;
-  if (diff > 0.5)  return { label: `↑ +${diff.toFixed(1)} vs earlier posts`, color: 'var(--green)' };
-  if (diff < -0.5) return { label: `↓ ${diff.toFixed(1)} vs earlier posts`, color: '#ef4444' };
+  if (diff > 0.5)  return { label: `↑ +${diff.toFixed(1)} vs earlier posts`, color: '#a78bfa' };
+  if (diff < -0.5) return { label: `↓ ${diff.toFixed(1)} vs earlier posts`, color: 'var(--muted)' };
   return { label: '→ Stable', color: 'var(--muted)' };
 }
 
@@ -505,7 +503,15 @@ function renderPerformance({ learner, scored, pending, totalScored, totalPosted 
 
   const avgPct = l.avgScore ? pct(l.avgScore, 10) : 0;
   const sucPct = l.successRate ? pct(l.successRate * 100, 100) : 50;
-  const priPct = l.priority   ? pct((l.priority - 0.1) / 1.9 * 100, 100) : 50;
+
+  // Total impressions across all scored posts
+  const totalImps = scored.reduce((sum, p) => sum + (p.engagement?.impressions || 0), 0);
+  const fmtImps = totalImps >= 1000000 ? `${(totalImps/1000000).toFixed(1)}M`
+                : totalImps >= 1000    ? `${(totalImps/1000).toFixed(1)}k`
+                : totalImps > 0        ? `${totalImps}`
+                : '—';
+  // Scale bar: 50k impressions = full bar for a ~5k follower account
+  const impsPct = totalImps > 0 ? pct(Math.min(totalImps, 50000), 50000) : 0;
 
   // Learner state card
   const learnerCard = `
@@ -519,14 +525,45 @@ function renderPerformance({ learner, scored, pending, totalScored, totalPosted 
     </div>
 
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
-      ${statBar('Avg engagement score', l.avgScore != null ? `${l.avgScore.toFixed(1)} / 10` : '—', avgPct, scoreColor(l.avgScore))}
-      ${statBar('Success rate', l.successRate != null ? `${Math.round(l.successRate * 100)}%` : '—', sucPct, '#60a5fa', 'Posts scoring ≥ 6/10')}
-      ${statBar('Channel priority', l.priority != null ? l.priority.toFixed(3) : '—', priPct, '#a78bfa', 'Drives how often engine picks LinkedIn')}
+      ${statBar(
+        'Avg post score',
+        l.avgScore != null ? `${l.avgScore.toFixed(1)} / 10` : '—',
+        avgPct,
+        '#a78bfa',
+        'Average score across all measured posts. 1 = almost no reach, 10 = viral. Based on impressions + reactions + comments.'
+      )}
+      ${statBar(
+        'Posts hitting target',
+        l.successRate != null ? `${Math.round(l.successRate * 100)}%` : '—',
+        sucPct,
+        '#a78bfa',
+        '% of posts that scored 6/10 or higher. Target is 50%+.'
+      )}
+      ${statBar(
+        'Total impressions',
+        fmtImps,
+        impsPct,
+        '#a78bfa',
+        'Sum of all impressions across scored posts. Reflects your real total reach on LinkedIn.'
+      )}
     </div>
 
-    ${!hasSome ? `<div style="margin-top:16px;font-size:14px;color:var(--muted);">⏳ Engagement scores are pulled 48–72h after each post is published. Check back after your first post has been live for 2 days.</div>` : ''}
-    <div style="margin-top:16px;display:flex;gap:10px;">
-      <button class="btn btn-outline btn-sm" onclick="syncEngagement()">↻ Pull engagement now</button>
+    ${!hasSome ? `<div style="margin-top:16px;font-size:13px;color:var(--muted);">Add impressions data using the Export button on any LinkedIn post → drop the file below.</div>` : ''}
+    <div style="margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <button id="sync-btn" onclick="syncEngagement()" style="display:inline-flex;align-items:center;gap:7px;padding:8px 18px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#fff;color:#000;transition:opacity 0.15s;">↻ Pull engagement now</button>
+      <a href="/bookmarklet.html" style="font-size:12px;color:var(--muted);text-decoration:none;padding:7px 14px;border:1px solid var(--border);border-radius:999px;">⚡ Bookmarklet setup</a>
+    </div>
+
+    <div id="xlsx-drop" ondragover="event.preventDefault()" ondrop="handleXlsxDrop(event)"
+      style="margin-top:16px;border:1.5px dashed var(--border);border-radius:10px;padding:14px 20px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .2s;"
+      onmouseenter="this.style.borderColor='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'"
+      onclick="document.getElementById('xlsx-file-input').click()">
+      <span style="font-size:18px;">📊</span>
+      <div>
+        <div style="font-size:13px;font-weight:600;">Drop LinkedIn analytics export here</div>
+        <div style="font-size:12px;color:var(--muted);">On any post → Export button → drag the .xlsx file here to import stats automatically</div>
+      </div>
+      <input type="file" id="xlsx-file-input" accept=".xlsx" style="display:none" onchange="handleXlsxFile(this.files[0])">
     </div>
   </div>`;
 
@@ -546,7 +583,7 @@ function renderPerformance({ learner, scored, pending, totalScored, totalPosted 
            <span style="color:${scoreColor(p.score)};font-weight:600;font-size:13px;min-width:28px;">${p.score}</span>
          </div>`
       : '<span style="color:var(--muted)">—</span>';
-    const link = p.linkedInUrl ? `<a href="${p.linkedInUrl}" target="_blank" style="color:#60a5fa;font-size:11px;">↗</a>` : '';
+    const link = p.linkedInUrl ? `<a href="${p.linkedInUrl}" target="_blank" style="color:#a78bfa;font-size:11px;">↗</a>` : '';
     const imp  = p.impressions != null ? p.impressions.toLocaleString() : '—';
     const clk  = p.clicks      != null ? p.clicks.toLocaleString()      : '—';
     return `<tr style="border-top:1px solid var(--border);">
@@ -585,30 +622,52 @@ function renderPerformance({ learner, scored, pending, totalScored, totalPosted 
   </div>` : '';
 
   // Pending (posted but not yet scored)
-  const pendingRows = pending.map(p => {
+  // LinkedIn API blocks all post stat endpoints — show fast inline entry for blocked posts
+  const blockedPosts = pending.filter(p => p.apiBlocked);
+  const waitingPosts = pending.filter(p => !p.apiBlocked);
+
+  const blockedRows = blockedPosts.map(p => {
+    const date = p.postedAt ? new Date(p.postedAt).toLocaleDateString('en-GB', { day:'numeric', month:'short' }) : '—';
+    const openBtn = p.linkedInUrl
+      ? `<a href="${p.linkedInUrl}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:6px;border:1px solid var(--border);color:var(--text);text-decoration:none;font-size:12px;font-weight:500;background:rgba(255,255,255,.04);">↗ Open post</a>`
+      : `<span style="font-size:12px;color:var(--muted);">No URL</span>`;
+    return `<tr style="border-top:1px solid var(--border);">
+      <td style="padding:10px 8px;color:var(--muted);font-size:13px;white-space:nowrap;">${date}</td>
+      <td style="padding:10px 8px;font-size:13px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.text}</td>
+      <td style="padding:10px 8px;">${openBtn}</td>
+    </tr>`;
+  }).join('');
+
+  const waitingRows = waitingPosts.map(p => {
     const date = p.postedAt ? new Date(p.postedAt).toLocaleDateString('en-GB', { day:'numeric', month:'short' }) : '—';
     const age  = p.postedAt ? Math.round((Date.now() - new Date(p.postedAt)) / 3600000) : null;
-    const ready = age != null && age >= 48;
     return `<tr style="border-top:1px solid var(--border);">
-      <td style="padding:12px 8px;color:var(--muted);font-size:13px;">${date}</td>
-      <td style="padding:12px 8px;font-size:14px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.text}</td>
-      <td style="padding:12px 8px;font-size:13px;color:${ready ? 'var(--yellow)' : 'var(--muted)'};">${age != null ? (ready ? `Ready (${age}h old)` : `${age}h — pulls at 48h`) : '—'}</td>
+      <td style="padding:10px 8px;color:var(--muted);font-size:13px;">${date}</td>
+      <td style="padding:10px 8px;font-size:13px;max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.text}</td>
+      <td style="padding:10px 8px;font-size:13px;color:var(--muted);">${age != null ? (age >= 48 ? `Checking…` : `${age}h — ready at 48h`) : '—'}</td>
     </tr>`;
   }).join('');
 
   const pendingTable = pending.length ? `
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;">
-    <div style="font-size:15px;font-weight:600;margin-bottom:4px;">Awaiting engagement data</div>
-    <div style="font-size:14px;color:var(--muted);margin-bottom:16px;">Scores are pulled automatically every 6 hours once posts are 48h old</div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-top:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div style="font-size:15px;font-weight:600;">Unscored posts</div>
+      ${blockedPosts.length ? `<a href="/bookmarklet.html" style="font-size:12px;color:var(--accent);text-decoration:none;padding:4px 12px;border:1px solid rgba(96,165,250,.3);border-radius:99px;">⚡ Install bookmarklet</a>` : ''}
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">
+      ${blockedPosts.length
+        ? 'LinkedIn API is restricted. Use the <strong style="color:var(--text);">⚡ Gritnord Stats</strong> bookmarklet — click it once while viewing any post to sync the numbers automatically.'
+        : 'Scores pulled automatically every 6h once posts reach 48h.'}
+    </div>
     <table style="width:100%;border-collapse:collapse;">
       <thead>
-        <tr style="color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;">
-          <th style="padding:0 8px 12px;text-align:left;font-weight:500;">Date</th>
-          <th style="padding:0 8px 12px;text-align:left;font-weight:500;">Post</th>
-          <th style="padding:0 8px 12px;text-align:left;font-weight:500;">Status</th>
+        <tr style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;">
+          <th style="padding:0 8px 10px;text-align:left;font-weight:500;width:70px;">Date</th>
+          <th style="padding:0 8px 10px;text-align:left;font-weight:500;">Post</th>
+          <th style="padding:0 8px 10px;text-align:left;font-weight:500;">Engagement</th>
         </tr>
       </thead>
-      <tbody>${pendingRows}</tbody>
+      <tbody>${blockedRows}${waitingRows}</tbody>
     </table>
   </div>` : '';
 
@@ -669,14 +728,14 @@ function renderImpressionsChart(data) {
 
   // Dots + tooltips (title)
   const dots = points.map(p =>
-    `<circle cx="${p.x}" cy="${p.y}" r="4" fill="#60a5fa" stroke="#0f0f0f" stroke-width="2"><title>${p.label}: ${p.val.toLocaleString()} views</title></circle>`
+    `<circle cx="${p.x}" cy="${p.y}" r="4" fill="#a78bfa" stroke="#0f0f0f" stroke-width="2"><title>${p.label}: ${p.val.toLocaleString()} views</title></circle>`
   );
 
   // Total & delta
   const total = vals.reduce((a,b) => a+b, 0);
   const delta = data.length >= 2 ? vals[vals.length-1] - vals[0] : null;
   const deltaStr = delta !== null ? (delta >= 0 ? `↑ +${delta.toLocaleString()}` : `↓ ${delta.toLocaleString()}`) : '';
-  const deltaColor = delta >= 0 ? 'var(--green)' : '#ef4444';
+  const deltaColor = delta >= 0 ? '#a78bfa' : 'var(--muted)';
 
   return `
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;">
@@ -690,8 +749,8 @@ function renderImpressionsChart(data) {
     <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;overflow:visible;">
       <defs>
         <linearGradient id="imp-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#60a5fa" stop-opacity="0.18"/>
-          <stop offset="100%" stop-color="#60a5fa" stop-opacity="0"/>
+          <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.18"/>
+          <stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/>
         </linearGradient>
       </defs>
       <!-- grid lines -->
@@ -699,7 +758,7 @@ function renderImpressionsChart(data) {
       <!-- area -->
       <path d="${areaPath}" fill="url(#imp-grad)"/>
       <!-- line -->
-      <polyline points="${polyline}" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      <polyline points="${polyline}" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
       <!-- labels -->
       ${yLabels.join('')}
       ${xLabels.join('')}
@@ -720,10 +779,86 @@ function statBar(label, value, pctVal, color, tooltip = '') {
 }
 
 async function syncEngagement() {
-  const r = await fetch('/api/linkedin/engagement/sync', { method: 'POST' });
-  const d = await r.json();
-  toast(`Scored ${d.scored} post(s)`, 'success');
-  loadPerformance();
+  const btn = document.getElementById('sync-btn');
+  if (btn) { btn.textContent = '↻ Pulling…'; btn.style.opacity = '0.6'; btn.disabled = true; }
+  try {
+    const r = await fetch('/api/linkedin/engagement/sync', { method: 'POST' });
+    const d = await r.json();
+    if (d.scored > 0) {
+      toast(`✓ Scored ${d.scored} post(s)`, 'success');
+      loadPerformance();
+    } else {
+      toast('No posts ready yet — check back after 48h', 'success');
+    }
+  } catch (err) {
+    toast('Sync failed: ' + err.message, 'error');
+  } finally {
+    if (btn) { btn.textContent = '↻ Pull engagement now'; btn.style.opacity = '1'; btn.disabled = false; }
+  }
+}
+
+// ── Engagement entry (for API-blocked posts) ──────────────────────────────────
+
+async function saveEngagement(postId, btn) {
+  const row = btn.closest('tr.eng-row');
+  const likes    = +row.querySelector('.eng-likes').value    || 0;
+  const comments = +row.querySelector('.eng-comments').value || 0;
+  const shares   = +row.querySelector('.eng-shares').value   || 0;
+
+  btn.textContent = '…';
+  btn.disabled = true;
+
+  try {
+    const r = await fetch('/api/linkedin/engagement/enter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: postId, likes, comments, shares }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || r.status);
+
+    // Replace row with success confirmation
+    row.innerHTML = `<td colspan="3" style="padding:10px 8px;font-size:13px;color:#a78bfa;">
+      ✓ Scored ${d.score}/10 — likes ${likes}, comments ${comments}, shares ${shares}
+    </td>`;
+
+    toast(`✓ Score ${d.score}/10 saved — learner updated`, 'success');
+    // Refresh performance data after a moment
+    setTimeout(loadPerformance, 800);
+  } catch (err) {
+    btn.textContent = 'Save';
+    btn.disabled = false;
+    toast('Save failed: ' + err.message, 'error');
+  }
+}
+
+// ── xlsx drag-and-drop import ─────────────────────────────────────────────────
+
+function handleXlsxDrop(e) {
+  e.preventDefault();
+  const file = e.dataTransfer?.files?.[0];
+  if (file) handleXlsxFile(file);
+}
+
+async function handleXlsxFile(file) {
+  if (!file || !file.name.endsWith('.xlsx')) return toast('Drop a LinkedIn .xlsx export file', 'error');
+  const drop = document.getElementById('xlsx-drop');
+  if (drop) { drop.style.borderColor = 'var(--accent)'; drop.querySelector('div div:first-child').textContent = '⏳ Importing…'; }
+
+  const fd = new FormData();
+  fd.append('file', file);
+
+  try {
+    const r = await fetch('/api/linkedin/engagement/xlsx', { method: 'POST', body: fd });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || r.status);
+    toast(`✓ Imported: score ${d.score}/10 — ${d.metrics.impressions?.toLocaleString() || 0} impressions, ${d.metrics.likes} reactions, ${d.metrics.comments} comments`, 'success');
+    setTimeout(loadPerformance, 600);
+  } catch (err) {
+    toast('Import failed: ' + err.message, 'error');
+  } finally {
+    if (drop) { drop.style.borderColor = ''; drop.querySelector('div div:first-child').textContent = 'Drop LinkedIn analytics export here'; }
+  }
 }
 
 // ── Suggestions ───────────────────────────────────────────────────────────────
@@ -770,7 +905,7 @@ async function loadSuggestions(force = false) {
             <div style="flex:1;">
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
                 <span style="font-size:11px;font-weight:600;color:var(--muted);background:#1a1a1a;border:1px solid var(--border);padding:3px 8px;border-radius:999px;letter-spacing:.04em;">${CATEGORY_LABEL[s.category] || s.category}</span>
-                ${s.impact === 'high' ? '<span style="font-size:11px;font-weight:600;color:var(--green);background:#052e1644;border:1px solid var(--green)44;padding:3px 8px;border-radius:999px;">High impact</span>' : ''}
+                ${s.impact === 'high' ? '<span style="font-size:11px;font-weight:600;color:#a78bfa;background:#a78bfa22;border:1px solid #a78bfa44;padding:3px 8px;border-radius:999px;">High impact</span>' : ''}
               </div>
               <div style="font-size:16px;font-weight:700;margin-bottom:6px;">${s.title}</div>
               <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">${s.insight}</div>
@@ -791,9 +926,9 @@ async function loadSuggestions(force = false) {
       html += `<div style="margin-top:20px;">
         <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">Active guidelines — applied to every post</div>
         ${accepted.map(g => `
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#0a0a0a;border:1px solid var(--green)33;border-radius:10px;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#0a0a0a;border:1px solid #a78bfa33;border-radius:10px;margin-bottom:8px;">
             <div style="display:flex;align-items:center;gap:10px;">
-              <span style="color:var(--green);font-size:16px;">✓</span>
+              <span style="color:#a78bfa;font-size:16px;">✓</span>
               <div>
                 <div style="font-size:14px;font-weight:600;">${g.title}</div>
                 <div style="font-size:12px;color:var(--muted);margin-top:2px;">${g.action || ''}</div>

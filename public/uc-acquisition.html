@@ -500,42 +500,82 @@ async function fireStep(candidateId, day) {
 
 function showFireResultModal(day, result) {
   const isLinkedIn = result.channel === 'linkedin-dm';
-  const isEmail = result.channel === 'email';
-  const isVoice = result.channel === 'whatsapp-voice' || result.channel === 'linkedin-voice';
+  const isEmail    = result.channel === 'email';
+  const isVoice    = result.channel === 'whatsapp-voice' || result.channel === 'linkedin-voice';
 
   let body = '';
-  if (result.skipped) {
-    body = `<div style="padding:16px;background:#1a0f00;border-radius:10px;color:var(--yellow);font-size:13px;">⚠ ${result.reason}</div>`;
-    if (result.script) body += `<div style="margin-top:12px;padding:14px;background:var(--input-bg);border-radius:10px;font-size:12px;color:var(--muted);white-space:pre-wrap;line-height:1.8;">${result.script}</div>`;
-  } else if (isLinkedIn) {
+
+  if (isLinkedIn) {
+    // ── LinkedIn DM ──────────────────────────────────────────────────────────
     const enrolled = result.enrolled;
     window.__fireModalMsg = result.message || '';
-    body = `<div style="padding:12px 14px;background:${enrolled ? '#001a0a' : '#0a0a14'};border-radius:10px;font-size:13px;color:${enrolled ? 'var(--green)' : 'var(--accent)'};margin-bottom:10px;">
-      ${enrolled ? '✓ Added to Lemlist LinkedIn campaign — will be outreached automatically' : 'ℹ LinkedIn DM — copy and send manually'}
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:10px;">
+    if (result.skipped) {
+      body = `<div style="padding:12px 14px;background:#1a0f00;border-radius:10px;font-size:13px;color:var(--yellow);margin-bottom:10px;">⚠ ${result.reason} — copy and send manually</div>`;
+    } else {
+      body = `<div style="padding:12px 14px;background:${enrolled ? '#001a0a' : '#0a0a14'};border-radius:10px;font-size:13px;color:${enrolled ? 'var(--green)' : 'var(--muted)'};margin-bottom:10px;">
+        ${enrolled ? '✓ Added to Lemlist LinkedIn campaign — will be outreached automatically' : 'ℹ LinkedIn DM — copy and send manually'}
+      </div>`;
+    }
+    body += `<div style="display:flex;gap:8px;margin-bottom:10px;">
       <button onclick="navigator.clipboard.writeText(window.__fireModalMsg).then(()=>toast('Copied!','success'))" style="background:var(--border);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 14px;cursor:pointer;font-family:inherit;font-size:12px;">Copy message</button>
       ${result.linkedInUrl ? `<a href="${result.linkedInUrl}" target="_blank" style="background:#0a66c2;color:#fff;border-radius:8px;padding:6px 14px;font-size:12px;text-decoration:none;">Open LinkedIn profile →</a>` : ''}
     </div>
-    <div style="padding:14px;background:var(--input-bg);border-radius:10px;font-size:12px;color:var(--muted);white-space:pre-wrap;line-height:1.8;">${(result.message || '').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
-    ${result.note ? `<div style="margin-top:10px;font-size:11px;color:var(--muted);">${result.note}</div>` : ''}`;
+    <div style="padding:14px;background:var(--input-bg);border-radius:10px;font-size:13px;color:var(--muted);white-space:pre-wrap;line-height:1.8;">${(result.message || '').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+    ${result.note ? `<div style="margin-top:8px;font-size:11px;color:var(--muted);">${result.note}</div>` : ''}`;
+
   } else if (isEmail) {
-    const sent = !result.skipped && result.id;
-    body = `<div style="padding:14px;background:${sent ? '#001a0a' : '#1a0f00'};border-radius:10px;font-size:13px;color:${sent ? 'var(--green)' : 'var(--yellow)'};">
-      ${sent ? `✓ Email sent — ID: ${result.id}` : `⚠ ${result.skipped ? 'Skipped: ' + result.reason : 'Unknown status'}`}
-    </div>
-    ${result.subject ? `<div style="margin-top:10px;font-size:11px;color:var(--muted);">Subject: <strong style="color:var(--text);">${result.subject}</strong> → ${result.to}</div>` : ''}`;
+    // ── Email (Lemlist) ──────────────────────────────────────────────────────
+    // Lemlist returns _id on the lead object — check lemlistId OR id
+    const lemlistOk = !!(result.lemlistId || result.id);
+    const skipped   = result.skipped;
+    const statusColor = lemlistOk ? 'var(--green)' : 'var(--yellow)';
+    const statusBg    = lemlistOk ? '#001a0a' : '#1a0f00';
+    const statusMsg   = lemlistOk
+      ? `✓ Added to Lemlist campaign — email will be sent on campaign schedule`
+      : skipped
+        ? `⚠ Skipped: ${result.reason}`
+        : `⚠ Lemlist not configured — copy email body below and send manually`;
+    body = `<div style="padding:12px 14px;background:${statusBg};border-radius:10px;font-size:13px;color:${statusColor};margin-bottom:10px;">${statusMsg}</div>`;
+    if (result.subject || result.to) {
+      body += `<div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Subject: <strong style="color:var(--text);">${result.subject || '—'}</strong> → ${result.to || '—'}</div>`;
+    }
+    if (result.html) {
+      window.__fireEmailBody = result.html.replace(/<[^>]+>/g, ' ').trim();
+      body += `<div style="display:flex;gap:8px;margin-bottom:10px;">
+        <button onclick="navigator.clipboard.writeText(window.__fireEmailBody).then(()=>toast('Email body copied!','success'))" style="background:var(--border);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 14px;cursor:pointer;font-family:inherit;font-size:12px;">Copy email body</button>
+      </div>
+      <div style="padding:14px;background:var(--input-bg);border-radius:10px;font-size:13px;color:var(--muted);line-height:1.8;max-height:200px;overflow-y:auto;">${result.html}</div>`;
+    }
+
   } else if (isVoice) {
-    body = result.voiceNoteUrl
-      ? `<div style="padding:14px;background:#001a0a;border-radius:10px;font-size:13px;color:var(--green);">✓ Voice note generated</div>
-         <div style="margin-top:10px;display:flex;gap:8px;">
-           <a href="${result.voiceNoteUrl}" target="_blank" style="background:var(--border);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 14px;font-size:12px;text-decoration:none;">Download audio</a>
-           ${result.phone ? `<span style="font-size:12px;color:var(--muted);padding:6px 0;">Send to ${result.phone} via WhatsApp</span>` : ''}
-         </div>`
-      : `<div style="padding:14px;background:#1a0f00;border-radius:10px;color:var(--yellow);font-size:13px;">⚠ ${result.reason || 'Voice note not generated'}</div>`;
-    if (result.script) body += `<div style="margin-top:12px;padding:14px;background:var(--input-bg);border-radius:10px;font-size:12px;color:var(--muted);white-space:pre-wrap;line-height:1.8;"><strong>Script:</strong>\n${result.script}</div>`;
+    // ── WhatsApp / Voice note ────────────────────────────────────────────────
+    const sent = !!(result.sid);
+    const hasUrl = !!(result.voiceNoteUrl);
+    if (sent) {
+      body = `<div style="padding:12px 14px;background:#001a0a;border-radius:10px;font-size:13px;color:var(--green);margin-bottom:10px;">✓ WhatsApp voice note sent — SID: ${result.sid}</div>`;
+    } else if (result.skipped) {
+      body = `<div style="padding:12px 14px;background:#1a0f00;border-radius:10px;font-size:13px;color:var(--yellow);margin-bottom:10px;">⚠ ${result.reason || 'WhatsApp skipped'}</div>`;
+    } else if (result.twilio_error) {
+      body = `<div style="padding:12px 14px;background:#1a0000;border-radius:10px;font-size:13px;color:#f87171;margin-bottom:10px;">✕ Twilio error: ${result.twilio_error}</div>`;
+    }
+    if (hasUrl) {
+      body += `<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+        <a href="${result.voiceNoteUrl}" target="_blank" style="background:var(--border);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 14px;font-size:12px;text-decoration:none;">▶ Play / download audio</a>
+        ${result.phone ? `<span style="font-size:12px;color:var(--muted);">→ ${result.phone}</span>` : ''}
+      </div>`;
+    }
+    if (result.script) {
+      body += `<div style="padding:14px;background:var(--input-bg);border-radius:10px;font-size:12px;color:var(--muted);white-space:pre-wrap;line-height:1.8;margin-top:8px;"><strong>Script:</strong>\n${result.script}</div>`;
+    }
+
+  } else if (result.skipped) {
+    // ── Generic skipped ──────────────────────────────────────────────────────
+    body = `<div style="padding:14px;background:#1a0f00;border-radius:10px;color:var(--yellow);font-size:13px;">⚠ ${result.reason || 'Step skipped'}</div>`;
+    if (result.script) body += `<div style="margin-top:10px;padding:14px;background:var(--input-bg);border-radius:10px;font-size:12px;color:var(--muted);white-space:pre-wrap;line-height:1.8;">${result.script}</div>`;
+
   } else {
-    body = `<pre style="font-size:11px;color:var(--muted);">${JSON.stringify(result, null, 2)}</pre>`;
+    // ── Unknown — show raw for debugging ────────────────────────────────────
+    body = `<pre style="font-size:11px;color:var(--muted);white-space:pre-wrap;word-break:break-all;">${JSON.stringify(result, null, 2)}</pre>`;
   }
 
   const existing = document.getElementById('fire-modal');

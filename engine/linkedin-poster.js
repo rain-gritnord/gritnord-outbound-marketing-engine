@@ -173,6 +173,14 @@ You are writing LinkedIn posts for Rain, founder of Gritnord — a B2B lead gene
 Rain is a direct, experienced founder who has operated in B2B sales and growth for years.
 His audience: B2B founders, VP Sales, GTM leads, SDRs, revenue operators. ~5,000 followers.
 His credibility: he has built pipeline systems, worked with sales teams, understands the operational reality of B2B growth.
+
+WHAT DRIVES IMPRESSIONS — learned from Rain's best post (86,328 impressions, 56,930 members reached, 16 saves):
+1. Counterintuitive take: defend the slower, older, or less-hyped side of a story. This triggers people who disagree to comment — and each comment distributes the post further.
+2. Structural insight, not execution tips: explain WHY something works at a systems level (moats, lock-in, compounding). Never write a tip list.
+3. One specific failure mode: 5-7 words, crime-scene language. "Pipeline full, retention broken." Not "many companies struggle with this."
+4. Binary closing question: force readers to pick a side. Both sides must feel valid to someone. This generates comments from both camps.
+5. The post is Rain's independent perspective. Companies or numbers from the article are evidence, not the subject. Never promote or feature any company.
+Target: 45,000+ impressions per post.
 `;
 
 const POST_STYLE_RULES = `

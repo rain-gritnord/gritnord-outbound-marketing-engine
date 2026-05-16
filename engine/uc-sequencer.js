@@ -138,8 +138,19 @@ async function sendWhatsAppVoiceNote({ phone, audioPath, audioUrl, script }) {
 // ─── Sequence step executors ──────────────────────────────────────────────────
 
 async function executeDay1(candidate, dossier) {
+  if (!candidate.videoUrl) {
+    // Block D1 if no video — the message would contain a placeholder which gets sent to the prospect
+    console.log(`[uc-seq] DAY 1 BLOCKED — no video URL on candidate ${candidate.id}. Generate the video first.`);
+    return {
+      channel: 'linkedin-dm',
+      skipped: true,
+      reason: 'No video URL — generate the video first (Video tab on the candidate card), then fire D1 again.',
+      message: (dossier.linkedInDM || '').replace('[CAL_LINK]', CAL_LINK),
+      linkedInUrl: candidate.linkedInUrl,
+    };
+  }
   const message = (dossier.linkedInDM || '').replace('[CAL_LINK]', CAL_LINK) +
-    (candidate.videoUrl ? `\n\nVideo: ${candidate.videoUrl}` : '\n\n[Video: generate first in UI]');
+    `\n\nVideo: ${candidate.videoUrl}`;
   return sendLinkedInDM({
     toLinkedInUrl: candidate.linkedInUrl,
     email: candidate.email,
@@ -181,19 +192,27 @@ async function executeDay2(candidate, dossier) {
 async function executeDay3(candidate, dossier) {
   if (!ELEVENLABS_API_KEY) {
     console.log(`[uc-seq] DAY 3 VOICE SKIPPED (no ELEVENLABS_API_KEY) for ${candidate.id}`);
-    return { skipped: true, reason: 'ELEVENLABS_API_KEY not set', script: dossier.voiceNoteScript };
+    return { channel: 'whatsapp-voice', skipped: true, reason: 'ELEVENLABS_API_KEY not set', script: dossier.voiceNoteScript };
   }
 
   const langCode = dossier.language?.elevenlabs || 'en';
   const voiceResult = await generateVoiceNoteOnly(dossier.voiceNoteScript, `${candidate.id}-d3`, langCode);
   console.log(`[uc-seq] Voice note generated: ${voiceResult.url}`);
 
-  return sendWhatsAppVoiceNote({
+  const waResult = await sendWhatsAppVoiceNote({
     phone: candidate.phone,
     audioPath: voiceResult.path,
     audioUrl: voiceResult.url,
     script: dossier.voiceNoteScript,
   });
+
+  return {
+    ...waResult,
+    channel: 'whatsapp-voice',
+    voiceNoteUrl: voiceResult.url,
+    script: dossier.voiceNoteScript,
+    phone: candidate.phone,
+  };
 }
 
 async function buildLocalizedEmail(candidate, dossier, type) {
@@ -254,14 +273,14 @@ async function executeDay7(candidate, dossier) {
     emailSubject: subject,
     emailBody: html,
   });
-  return { ...result, html, channel: 'email' };
+  return { ...result, html, subject, channel: 'email' };
 }
 
 async function executeDay10(candidate, dossier) {
   const lang = dossier.language || { code: 'en' };
   const message = lang.code === 'en'
-    ? `${candidate.firstName}, I sent you a video a week and a half ago about how we book meetings for B2B founders.\n\nStill relevant? ${CAL_LINK} — 15 minutes.`
-    : `${candidate.firstName}, saatsin sulle video poolteist nädalat tagasi selle kohta, kuidas me B2B asutajatele müügikoosolekuid broonitakse.\n\nKas see on veel aktuaalne? ${CAL_LINK} — 15 minutit.`;
+    ? `${candidate.firstName}, I sent you a short video and a voice message about how we build outbound meeting flow for B2B founders.\n\nStill worth a look? ${CAL_LINK} — 15 minutes.`
+    : `${candidate.firstName}, saatsin sulle eelmisel nädalal lühivideo ja häälsõnumi sellest, kuidas me B2B asutajatele müügikoosolekuid broneerime.\n\nKas on hetk? ${CAL_LINK} — 15 minutit.`;
   return sendLinkedInDM({ toLinkedInUrl: candidate.linkedInUrl, email: candidate.email, message, firstName: candidate.firstName, lastName: candidate.lastName });
 }
 
@@ -280,7 +299,7 @@ async function executeDay14(candidate, dossier) {
     emailSubject: subject,
     emailBody: html,
   });
-  return { ...result, html, channel: 'email' };
+  return { ...result, html, subject, channel: 'email' };
 }
 
 // ─── Main sequence runner ─────────────────────────────────────────────────────

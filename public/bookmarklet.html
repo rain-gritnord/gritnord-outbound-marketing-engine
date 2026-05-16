@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gritnord LinkedIn Bookmarklet</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111;
+      --border: rgba(255,255,255,.08);
+      --text: #f0f0f0;
+      --muted: #666;
+      --accent: #60a5fa;
+      --green: #4ade80;
+      --yellow: #facc15;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+    }
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .sub { font-size: 14px; color: var(--muted); margin-bottom: 32px; }
+
+    .step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 28px;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+      font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-content h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .step-content p  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+    /* The draggable bookmarklet button */
+    .bookmarklet-wrap {
+      background: #0d1117;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      margin: 8px 0;
+    }
+    .bookmarklet-wrap p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .bm-btn {
+      display: inline-block;
+      padding: 10px 22px;
+      background: #0a66c2;
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      border: 2px solid rgba(255,255,255,.2);
+      cursor: grab;
+      user-select: none;
+    }
+    .bm-btn:hover { background: #0952a5; }
+
+    .how {
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 8px;
+    }
+    .how p { font-size: 13px; color: var(--muted); line-height: 1.7; }
+    .how strong { color: var(--text); }
+
+    .safety {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    .safety h3 { font-size: 13px; font-weight: 600; color: var(--green); margin-bottom: 10px; }
+    .safety ul { list-style: none; }
+    .safety li {
+      font-size: 13px;
+      color: var(--muted);
+      padding: 4px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+    .safety li::before { content: '✓'; color: var(--green); position: absolute; left: 0; }
+
+    .back { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 24px; color: var(--muted); font-size: 13px; text-decoration: none; }
+    .back:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+<div class="card">
+  <a href="/linkedin.html" class="back">← Back to LinkedIn</a>
+
+  <h1>LinkedIn Engagement Bookmarklet</h1>
+  <p class="sub">One click on any LinkedIn post you've published — engagement syncs to Gritnord automatically. No typing.</p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <h3>Drag the button below into your bookmarks bar</h3>
+      <p>Make sure your bookmarks bar is visible (⌘+Shift+B in Chrome / Safari).</p>
+      <div class="bookmarklet-wrap">
+        <p>Drag this button to your bookmarks bar ↓</p>
+        <a class="bm-btn" id="bm-link" href="#">⚡ Gritnord Stats</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <h3>Open the analytics page for any post</h3>
+      <p>Go to your LinkedIn profile or feed → click the impression count under any post you've published → it opens the analytics summary page. URL looks like:<br>
+      <code style="font-size:12px;color:var(--accent);">linkedin.com/analytics/post-summary/urn:li:activity:XXXXX/</code><br><br>
+      This page shows Impressions, Reactions, Comments, Reposts and Followers gained — all the data Gritnord needs.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <h3>Click the bookmarklet</h3>
+      <p>A small popup appears from localhost:3000 showing the captured score. It closes automatically in 3 seconds. Done.</p>
+      <div class="how">
+        <p>
+          <strong>What it reads:</strong> reactions count, comments count, reposts count — already loaded in your browser.<br>
+          <strong>What it sends:</strong> those 3 numbers + the post URN → <code style="font-size:12px;">localhost:3000</code><br>
+          <strong>What Gritnord does:</strong> converts to a score, feeds the AI learner, shows in Performance tab.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="safety">
+    <h3>Safe for your LinkedIn account</h3>
+    <ul>
+      <li>Makes zero requests to LinkedIn servers — reads only what your browser already loaded</li>
+      <li>Only activates on <code style="font-size:12px;">linkedin.com/feed/update/</code> pages — nowhere else</li>
+      <li>LinkedIn sees a normal human visiting a post — because that's exactly what's happening</li>
+      <li>No credentials, no tokens, no LinkedIn API calls</li>
+      <li>Data goes only to <code style="font-size:12px;">localhost:3000</code> — your own machine</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+// Build the bookmarklet code — injected at runtime so it picks up the current host
+const ENDPOINT = window.location.origin + '/api/linkedin/engagement/enter';
+
+const BASE = window.location.origin; // e.g. http://localhost:3000
+
+const code = `(function(){
+  if(window.location.hostname!=='www.linkedin.com'){
+    return alert('Gritnord: LinkedIn only');
+  }
+  var path=window.location.pathname;
+  var onAnalytics=path.includes('/analytics/post-summary/');
+  var onFeed=path.includes('/feed/update/')||path.includes('/posts/');
+  if(!onAnalytics&&!onFeed){
+    return alert('Gritnord: Use this on a LinkedIn post analytics page.\\n\\nGo to any post → click the impression count → opens analytics/post-summary/ page → click bookmarklet.');
+  }
+
+  var txt=document.body.innerText;
+
+  function pn(s){
+    if(!s)return 0;
+    s=s.replace(/,/g,'').trim();
+    if(/k$/i.test(s))return Math.round(parseFloat(s)*1000);
+    return parseInt(s,10)||0;
+  }
+  function find(rxs){
+    for(var i=0;i<rxs.length;i++){var m=txt.match(rxs[i]);if(m)return pn(m[1]);}
+    return 0;
+  }
+
+  var likes,comments,shares,imps,followers;
+
+  if(onAnalytics){
+    // Analytics page has clean labelled data — very reliable
+    // Layout: number on one line, label below OR label | number in a row
+    imps      = find([/(\\d[\\d,]+)\\s*\\n\\s*Impressions/,/Impressions\\s*[\\n|]\\s*(\\d[\\d,]+)/]);
+    likes     = find([/Reactions\\s*\\n?\\s*(\\d+)/,/(\\d+)\\s*\\n?\\s*Reactions/]);
+    comments  = find([/Comments\\s*\\n?\\s*(\\d+)/,/(\\d+)\\s*\\n?\\s*Comments/]);
+    shares    = find([/Reposts\\s*\\n?\\s*(\\d+)/,/(\\d+)\\s*\\n?\\s*Reposts/]);
+    followers = find([/Followers gained from this post\\s*\\n?\\s*(\\d+)/,/(\\d+)\\s*\\n?\\s*Followers gained/]);
+    // Also extract share URN from URL if present (analytics URL has activity URN — we send it for server hint)
+  } else {
+    // Feed post page — less reliable but workable
+    imps      = find([/[Pp]ost impressions?\\s*\\n?\\s*(\\d[\\d,]*k?)/]);
+    likes     = find([/(\\d[\\d,]*\\.?\\d*k?)\\s*\\n?\\s*[Rr]eaction/,/(\\d[\\d,]*)\\s+[Ll]ike/]);
+    comments  = find([/(\\d[\\d,]*\\.?\\d*k?)\\s*\\n?\\s*[Cc]omment/]);
+    shares    = find([/(\\d[\\d,]*\\.?\\d*k?)\\s*\\n?\\s*[Rr]epost/]);
+    followers = 0;
+  }
+
+  // Post text for server-side matching
+  var postText='';
+  try{
+    if(onAnalytics){
+      // Analytics page shows post preview text — grab it
+      var preview=document.querySelector('.analytics-post-summary__post-text, [data-test-id="post-preview-text"]');
+      if(preview) postText=preview.innerText.slice(0,100).trim();
+    }
+    if(!postText){
+      var els=Array.from(document.querySelectorAll('span[dir="ltr"],p[dir="ltr"]'))
+        .filter(function(e){return e.innerText.trim().length>40;})
+        .sort(function(a,b){return b.innerText.length-a.innerText.length;});
+      if(els[0])postText=els[0].innerText.slice(0,100).trim();
+    }
+  }catch(e){}
+
+  var p=new URLSearchParams({
+    textSnippet: postText,
+    likes:       likes||0,
+    comments:    comments||0,
+    shares:      shares||0,
+    impressions: imps||0,
+    followers:   followers||0,
+    source:      onAnalytics?'analytics':'feed'
+  });
+  var popup=window.open('${BASE}/bookmarklet-sync?'+p.toString(),'gritnord','width=420,height=220,top=80,left='+Math.max(0,screen.width-460));
+  if(!popup) alert('Gritnord: Allow popups from localhost:3000 in Chrome settings.');
+})();`;
+
+document.getElementById('bm-link').href = 'javascript:' + code;
+</script>
+</body>
+</html>

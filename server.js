@@ -4,6 +4,8 @@ import cron from 'node-cron';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import crypto from 'crypto';
+import multer from 'multer';
+import * as XLSX from 'xlsx';
 
 import { generateContent, scoreContent, CHANNELS } from './engine/generator.js';
 import { recordScore, getPrioritizedChannels, getLearningState } from './engine/learner.js';
@@ -25,8 +27,14 @@ import { researchUCCandidate, batchResearchUCCandidates } from './engine/uc-rese
 import { generateKineticVideo } from './engine/video-generator.js';
 import { tickSequences, startUCSequence, fireSequenceStep } from './engine/uc-sequencer.js';
 import { syncCandidateToAudience, syncEmailsToLinkedInAudience } from './engine/linkedin-audiences.js';
-import { fetchAndLearnFromEngagement, fetchFollowerCount } from './engine/linkedin-engagement.js';
+import { fetchAndLearnFromEngagement, fetchFollowerCount, engagementToScore } from './engine/linkedin-engagement.js';
 import { generateSuggestions } from './engine/suggestion-engine.js';
+import {
+  getCMPieces, getCMNewsletter, getCMSubscribers,
+  saveCMPiece, updateCMPiece, addSubscriber, saveNewsletter,
+  generateAllFormats, compileWeeklyNewsletter,
+} from './engine/content-engine.js';
+import { sendNewsletter, sendTestNewsletter, previewNewsletterHtml } from './engine/newsletter.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -72,8 +80,8 @@ function setSessionCookie(res, data) {
   res.setHeader('Set-Cookie', `grtn_session=${token}; HttpOnly; Path=/; Max-Age=${7 * 24 * 3600}; SameSite=Lax`);
 }
 
-const PROTECTED = new Set(['/dashboard.html', '/linkedin.html', '/twitter.html', '/roadmap.html', '/architecture-v7.html', '/uc-acquisition.html']);
-const AUTH_PUBLIC = new Set(['/login.html', '/auth/login', '/auth/logout', '/auth/google', '/auth/google/callback', '/auth/linkedin', '/auth/linkedin/callback']);
+const PROTECTED = new Set(['/dashboard.html', '/linkedin.html', '/twitter.html', '/roadmap.html', '/architecture-v7.html', '/uc-acquisition.html', '/content-marketing.html']);
+const AUTH_PUBLIC = new Set(['/login.html', '/auth/login', '/auth/logout', '/auth/google', '/auth/google/callback', '/auth/linkedin', '/auth/linkedin/callback', '/bookmarklet-sync']);
 
 function authMiddleware(req, res, next) {
   if (AUTH_PUBLIC.has(req.path) || (!PROTECTED.has(req.path) && !req.path.startsWith('/api/'))) return next();
@@ -82,6 +90,8 @@ function authMiddleware(req, res, next) {
   if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Unauthorized' });
   res.redirect('/login.html?next=' + encodeURIComponent(req.path));
 }
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
 app.use(cors());
 app.use(express.json());
@@ -501,6 +511,205 @@ app.get('/api/linkedin/followers', async (req, res) => {
   res.json({ current, history });
 });
 
+// OPTIONS preflight for bookmarklet CORS
+app.options('/api/linkedin/engagement/enter', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.sendStatus(204);
+});
+
+// GET /bookmarklet-sync — popup opened by bookmarklet from LinkedIn
+// No auth required — localhost only, data flows in only (no reads exposed)
+// Query params: textSnippet, likes, comments, shares, impressions, urlUrn
+app.get('/bookmarklet-sync', (req, res) => {
+  const { textSnippet = '', urlUrn = '', likes = 0, comments = 0, shares = 0, impressions } = req.query;
+
+  const queue = getLinkedInQueue();
+  let post = null;
+
+  // Match by text snippet (most reliable — activity URN ≠ share URN)
+  if (textSnippet) {
+    const snippet = textSnippet.slice(0, 80).toLowerCase().replace(/\s+/g, ' ').trim();
+    post = queue
+      .filter(p => p.status === 'posted' && p.text)
+      .find(p => {
+        const t = (p.text || '').slice(0, 80).toLowerCase().replace(/\s+/g, ' ').trim();
+        return t.startsWith(snippet.slice(0, 55)) || snippet.startsWith(t.slice(0, 55));
+      });
+  }
+
+  const htmlPage = (ok, msg, score) => `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Gritnord</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:${ok ? '#0a1a0a' : '#1a0a0a'};color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    height:100vh;text-align:center;padding:24px;}
+  .icon{font-size:36px;margin-bottom:12px;}
+  .title{font-size:16px;font-weight:700;margin-bottom:6px;color:${ok ? '#4ade80' : '#f87171'};}
+  .sub{font-size:13px;color:#888;line-height:1.5;}
+  .score{font-size:28px;font-weight:800;color:${ok ? '#4ade80' : '#f87171'};margin:8px 0;}
+</style>
+</head>
+<body>
+<div>
+  <div class="icon">${ok ? '✅' : '❌'}</div>
+  <div class="title">${ok ? 'Gritnord synced' : 'Not found'}</div>
+  ${ok && score ? `<div class="score">${score}/10</div>` : ''}
+  <div class="sub">${msg}</div>
+  <div class="sub" style="margin-top:12px;color:#555;font-size:11px;">This window closes automatically…</div>
+</div>
+<script>setTimeout(function(){window.close();},3500);</script>
+</body></html>`;
+
+  if (!post) {
+    return res.send(htmlPage(false, 'Post not found in Gritnord queue.<br>Make sure it was posted via Gritnord and is at least 48h old.', null));
+  }
+
+  const metrics = {
+    likes:       +likes,
+    comments:    +comments,
+    shares:      +shares,
+    impressions: impressions ? +impressions : null,
+    clicks:      null,
+  };
+  const score = engagementToScore(metrics);
+
+  recordScore('linkedin', score);
+  updateLinkedInPost(post.id, {
+    engagement:         metrics,
+    engagementScore:    score,
+    engagementScoredAt: new Date().toISOString(),
+    engagementBlocked:  false,
+  });
+
+  console.log(`[bookmarklet] ${post.id}: likes=${likes} comments=${comments} shares=${shares} impressions=${impressions||'?'} → score=${score}`);
+
+  const impText = metrics.impressions ? ` · ${(+impressions).toLocaleString()} impressions` : '';
+  res.send(htmlPage(true,
+    `${+likes} reactions · ${+comments} comments · ${+shares} reposts${impText}`,
+    score
+  ));
+});
+
+// POST /api/linkedin/engagement/xlsx — parse LinkedIn PostAnalytics export file
+// LinkedIn export filename: PostAnalytics_RainVaana_{shareId}.xlsx
+// The share ID in the filename matches our linkedInId field exactly
+app.post('/api/linkedin/engagement/xlsx', upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+  try {
+    const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+    // LinkedIn export format: row 0 = headers, row 1 = values
+    // Typical columns: Date, Post, Impressions, Members reached, Reactions, Comments, Reposts, Followers gained
+    const headers = (rows[0] || []).map(h => String(h).toLowerCase().trim());
+    const values  = rows[1] || [];
+
+    const col = (name) => {
+      const i = headers.findIndex(h => h.includes(name));
+      return i >= 0 ? (parseInt(String(values[i]).replace(/,/g, ''), 10) || 0) : 0;
+    };
+
+    const impressions = col('impression');
+    const likes       = col('reaction');
+    const comments    = col('comment');
+    const shares      = col('repost');
+    const followers   = col('follower');
+
+    // Extract share URN from filename: PostAnalytics_RainVaana_{shareId}.xlsx
+    const fname = req.file.originalname || '';
+    const numMatch = fname.match(/(\d{15,})/);
+    const shareNum = numMatch?.[1];
+
+    const queue = getLinkedInQueue();
+    let post = null;
+
+    if (shareNum) {
+      post = queue.find(p => {
+        const pNum = (p.linkedInId || '').replace(/urn:li:(share|ugcPost|activity):/i, '');
+        return pNum === shareNum;
+      });
+    }
+
+    if (!post) return res.status(404).json({ error: `Post not found (share ID: ${shareNum || 'unknown'})` });
+
+    const metrics = { likes, comments, shares, impressions, followers, clicks: null };
+    const score = engagementToScore(metrics);
+
+    recordScore('linkedin', score);
+    updateLinkedInPost(post.id, {
+      engagement: metrics, engagementScore: score,
+      engagementScoredAt: new Date().toISOString(), engagementBlocked: false,
+    });
+
+    console.log(`[xlsx-import] ${post.id}: impressions=${impressions} likes=${likes} comments=${comments} shares=${shares} followers=${followers} → score=${score}`);
+    res.json({ success: true, score, metrics, postId: post.id });
+  } catch (err) {
+    console.error('[xlsx-import]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/linkedin/engagement/enter — receive engagement data from bookmarklet or UI
+// Body: { id?, linkedInId?, likes, comments, shares, impressions?, clicks? }
+// Accepts either our internal id OR the LinkedIn URN (linkedInId) — bookmarklet uses linkedInId
+app.post('/api/linkedin/engagement/enter', (req, res) => {
+  // Allow bookmarklet calls from linkedin.com (same machine, different origin)
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+
+  const { id, linkedInId, textSnippet, urlUrn, likes = 0, comments = 0, shares = 0, impressions = null, clicks = null } = req.body;
+  if (!id && !linkedInId && !textSnippet) return res.status(400).json({ error: 'id, linkedInId, or textSnippet required' });
+
+  const queue = getLinkedInQueue();
+  let post;
+
+  if (id) {
+    post = queue.find(p => p.id === id);
+  } else if (linkedInId) {
+    // Match by LinkedIn URN — strip prefix, compare numeric ID only
+    const numId = linkedInId.replace(/urn:li:(share|ugcPost|activity):/i, '');
+    post = queue.find(p => {
+      const pNum = (p.linkedInId || '').replace(/urn:li:(share|ugcPost|activity):/i, '');
+      return pNum === numId && pNum !== '';
+    });
+  }
+
+  // Bookmarklet sends textSnippet + urlUrn — match by text (most reliable across URN type changes)
+  if (!post && textSnippet) {
+    const snippet = textSnippet.slice(0, 80).toLowerCase().replace(/\s+/g, ' ').trim();
+    post = queue
+      .filter(p => p.status === 'posted' && p.text)
+      .find(p => {
+        const t = (p.text || '').slice(0, 80).toLowerCase().replace(/\s+/g, ' ').trim();
+        // Match if 70%+ of snippet aligns with stored text start
+        return t.startsWith(snippet.slice(0, 60)) || snippet.startsWith(t.slice(0, 60));
+      });
+  }
+
+  if (!post) return res.status(404).json({ error: 'Post not found — make sure it was posted via Gritnord' });
+
+  const metrics = { likes: +likes, comments: +comments, shares: +shares, impressions, clicks };
+  const score = engagementToScore(metrics);
+
+  recordScore('linkedin', score);
+  updateLinkedInPost(post.id, {   // fix: always use post.id, not req.body.id
+    engagement:          metrics,
+    engagementScore:     score,
+    engagementScoredAt:  new Date().toISOString(),
+    engagementBlocked:   false,
+  });
+
+  console.log(`[engagement/enter] ${post.id}: likes=${likes} comments=${comments} shares=${shares} impressions=${impressions||'?'} → score=${score}`);
+  res.json({ success: true, score, metrics });
+});
+
 // GET /api/linkedin/analytics — learning state + all scored posts for performance tab
 app.get('/api/linkedin/analytics', (req, res) => {
   const weights  = getLearningState();
@@ -531,11 +740,13 @@ app.get('/api/linkedin/analytics', (req, res) => {
   const posted = queue
     .filter(p => p.status === 'posted' && !p.engagementScoredAt)
     .map(p => ({
-      id:      p.id,
-      text:    (p.text || '').slice(0, 120) + ((p.text || '').length > 120 ? '…' : ''),
-      postedAt: p.postedAt,
-      source:   p.article?.source || null,
-      topic:    p.article?.topic  || null,
+      id:              p.id,
+      text:            (p.text || '').slice(0, 120) + ((p.text || '').length > 120 ? '…' : ''),
+      postedAt:        p.postedAt,
+      source:          p.article?.source  || null,
+      topic:           p.article?.topic   || null,
+      linkedInUrl:     p.linkedInUrl      || null,
+      apiBlocked:      p.engagementBlocked ?? false,
     }));
 
   res.json({
@@ -549,6 +760,25 @@ app.get('/api/linkedin/analytics', (req, res) => {
     totalScored:  scored.length,
     totalPosted:  scored.length + posted.length,
   });
+});
+
+
+// Save pre-written text directly to LinkedIn queue (from Content OS)
+app.post('/api/linkedin/queue/save', (req, res) => {
+  const { text, article } = req.body;
+  if (!text) return res.status(400).json({ error: 'text required' });
+  const draft = {
+    id: newId(),
+    text,
+    article: article || {},
+    imageUrl: article?.image || null,
+    status: 'draft',
+    topic: article?.topic || 'gtm',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  saveLinkedInDraft(draft);
+  res.json(draft);
 });
 
 // DELETE /api/linkedin/queue/:id — discard draft
@@ -867,6 +1097,174 @@ app.post('/api/twitter/approve/:id', async (req, res) => {
 app.delete('/api/twitter/queue/:id', (req, res) => {
   deleteTwitterPost(req.params.id);
   res.json({ success: true });
+});
+
+// ─── Content Marketing OS ─────────────────────────────────────────────────────
+
+// List all generated content pieces
+app.get('/api/cm/pieces', (req, res) => {
+  try {
+    const pieces = getCMPieces();
+    res.json(pieces);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Generate all formats for an article
+app.post('/api/cm/generate', async (req, res) => {
+  const { article, formats } = req.body;
+  if (!article?.title) return res.status(400).json({ error: 'article.title required' });
+
+  try {
+    const result = await generateAllFormats({
+      article,
+      formats: formats || ['linkedin', 'blog', 'newsletter', 'thread', 'aeo'],
+    });
+    res.json(result);
+  } catch (err) {
+    console.error('[cm] generate error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update a content piece (e.g. mark format as approved/published)
+app.patch('/api/cm/pieces/:id', (req, res) => {
+  const updated = updateCMPiece(req.params.id, req.body);
+  if (!updated) return res.status(404).json({ error: 'Not found' });
+  res.json(updated);
+});
+
+// Get articles ready for content generation — uses already-curated LinkedIn queue (fast, no RSS fetch)
+// Falls back to live fetch only if queue is empty
+app.get('/api/cm/queue', async (req, res) => {
+  try {
+    // Use already-scored articles from the LinkedIn queue (instant, cached)
+    const liQueue = getLinkedInQueue();
+    const alreadyGenerated = new Set(getCMPieces().map(p => p.article?.link).filter(Boolean));
+
+    // Pull articles from queue items that have an article attached and relevance >= 4
+    const fromQueue = liQueue
+      .filter(p => p.article?.title && (p.article.relevanceScore || 0) >= 4 && !alreadyGenerated.has(p.article?.link))
+      .map(p => p.article)
+      .filter((a, i, arr) => arr.findIndex(b => b.link === a.link) === i) // dedupe
+      .slice(0, 15);
+
+    if (fromQueue.length > 0) {
+      return res.json(fromQueue);
+    }
+
+    // Fallback: live fetch if queue is empty (with timeout protection)
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    try {
+      const articles = await curateArticles({ count: 10 });
+      clearTimeout(timeout);
+      const filtered = articles.filter(a => (a.relevanceScore || 0) >= 4 && !alreadyGenerated.has(a.link));
+      res.json(filtered);
+    } catch (fetchErr) {
+      clearTimeout(timeout);
+      res.json([]); // Return empty rather than error — UI handles this gracefully
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// List newsletters
+app.get('/api/cm/newsletter', (req, res) => {
+  res.json(getCMNewsletter());
+});
+
+// Compile weekly newsletter from the week's generated pieces
+app.post('/api/cm/newsletter/compile', async (req, res) => {
+  try {
+    const pieces = getCMPieces().filter(p => {
+      if (!p.createdAt) return false;
+      const age = Date.now() - new Date(p.createdAt).getTime();
+      return age < 7 * 24 * 60 * 60 * 1000; // last 7 days
+    });
+
+    // Find top LinkedIn post this week
+    const liQueue = getLinkedInQueue();
+    const thisWeekPosts = liQueue.filter(p => {
+      if (!p.publishedAt) return false;
+      const age = Date.now() - new Date(p.publishedAt).getTime();
+      return age < 7 * 24 * 60 * 60 * 1000;
+    });
+    const topPost = thisWeekPosts.sort((a, b) =>
+      (b.engagementScore || 0) - (a.engagementScore || 0)
+    )[0] || null;
+
+    const nl = await compileWeeklyNewsletter({ pieces, topLinkedInPost: topPost });
+    res.json(nl);
+  } catch (err) {
+    console.error('[cm] newsletter compile error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update newsletter (e.g. select subject, edit body)
+app.patch('/api/cm/newsletter/:id', (req, res) => {
+  try {
+    const db = getCMNewsletter();
+    const idx = db.findIndex(n => n.id === req.params.id);
+    if (idx < 0) return res.status(404).json({ error: 'Not found' });
+    // We use saveNewsletter which prepends — just return updated
+    res.json({ ...db[idx], ...req.body });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Preview newsletter as HTML
+app.get('/api/cm/newsletter/:id/preview', (req, res) => {
+  try {
+    const html = previewNewsletterHtml(req.params.id === 'latest' ? undefined : req.params.id);
+    res.send(html);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Send test newsletter (to rain@gritnord.com)
+app.post('/api/cm/newsletter/:id/test', async (req, res) => {
+  try {
+    const result = await sendTestNewsletter({
+      newsletterId: req.params.id === 'latest' ? undefined : req.params.id,
+      email: req.body.email || 'rain@gritnord.com',
+    });
+    res.json(result);
+  } catch (err) {
+    console.error('[cm] test send error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Send newsletter to all subscribers
+app.post('/api/cm/newsletter/:id/send', async (req, res) => {
+  try {
+    const result = await sendNewsletter({
+      newsletterId: req.params.id === 'latest' ? undefined : req.params.id,
+      subjectOverride: req.body.subject,
+    });
+    res.json(result);
+  } catch (err) {
+    console.error('[cm] send error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Subscribers
+app.get('/api/cm/subscribers', (req, res) => {
+  res.json(getCMSubscribers());
+});
+
+app.post('/api/cm/subscribers', (req, res) => {
+  const { email, firstName } = req.body;
+  if (!email) return res.status(400).json({ error: 'email required' });
+  const subs = addSubscriber(email, firstName || '');
+  res.json(subs);
 });
 
 // ─── Cron Jobs ───────────────────────────────────────────────────────────────

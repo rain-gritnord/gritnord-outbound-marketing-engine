@@ -88,7 +88,15 @@ export async function generateKineticVideo(script, contactId, languageCode = 'en
   await generateVoice(script, audioPath, languageCode);
 
   if (!hasFfmpeg()) {
-    return { type: 'audio', path: audioPath, url: `/media/${contactId}-voice.mp3`, language: languageCode };
+    // No ffmpeg — return audio only, but upload to Supabase so the URL is publicly accessible
+    let publicUrl = `/media/${contactId}-voice.mp3`;
+    try {
+      publicUrl = await uploadToSupabase(audioPath, `${contactId}-voice.mp3`);
+      console.log(`[video-gen] No ffmpeg — audio uploaded to Supabase: ${publicUrl}`);
+    } catch (err) {
+      console.warn('[video-gen] Supabase upload failed for audio fallback:', err.message);
+    }
+    return { type: 'audio', path: audioPath, url: publicUrl, language: languageCode };
   }
 
   // 2. Split script into lines of ~6 words for kinetic text
