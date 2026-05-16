@@ -675,7 +675,8 @@ function renderPerformance({ learner, scored, pending, totalScored, totalPosted 
     </table>
   </div>` : '';
 
-  // Suggestions panel (loaded separately, async)
+  // Suggestions panel — split into two independent zones so refreshing suggestions
+  // never wipes the active guidelines, and vice versa.
   const suggestionsPanel = `
   <div id="suggestions-panel" style="margin-top:24px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
@@ -688,7 +689,8 @@ function renderPerformance({ learner, scored, pending, totalScored, totalPosted 
         <button class="btn btn-outline btn-sm" onclick="loadSuggestions(true)">↻ Refresh</button>
       </div>
     </div>
-    <div id="suggestions-body"><div class="loading" style="padding:32px 0;text-align:center;color:var(--muted);">Analysing your posts…</div></div>
+    <div id="suggestions-list"><div style="padding:24px 0;text-align:center;color:var(--muted);font-size:13px;">Analysing your posts with Claude…</div></div>
+    <div id="guidelines-list" style="margin-top:20px;"></div>
   </div>`;
 
   return learnerCard + table + pendingTable + suggestionsPanel;
@@ -882,30 +884,48 @@ const CATEGORY_LABEL = {
 // Cache suggestions so accept/dismiss can look them up by ID without HTML encoding tricks
 const _sugCache = {};
 
+function renderGuidelines(accepted) {
+  const gl = document.getElementById('guidelines-list');
+  if (!gl) return;
+  if (!accepted.length) { gl.innerHTML = ''; return; }
+  gl.innerHTML = `
+    <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">Active guidelines — applied to every post</div>
+    ${accepted.map(g => `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#0a0a0a;border:1px solid #a78bfa33;border-radius:10px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="color:#a78bfa;font-size:14px;">✓</span>
+          <div>
+            <div style="font-size:13px;font-weight:600;">${g.title}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">${g.action || ''}</div>
+          </div>
+        </div>
+        <button onclick="removeGuideline('${g.id}')" style="font-size:11px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:6px;padding:3px 10px;cursor:pointer;flex-shrink:0;">Remove</button>
+      </div>`).join('')}`;
+}
+
 async function loadSuggestions(force = false) {
-  const body = document.getElementById('suggestions-body');
-  if (!body) return;
-  if (!force && body.dataset.loaded) return;
-  body.dataset.loaded = '1';
-  body.innerHTML = '<div style="padding:24px 0;text-align:center;color:var(--muted);font-size:13px;">Analysing your posts with Claude…</div>';
+  const list = document.getElementById('suggestions-list');
+  if (!list) return;
+  if (!force && list.dataset.loaded) return;
+  list.dataset.loaded = '1';
+  list.innerHTML = '<div style="padding:24px 0;text-align:center;color:var(--muted);font-size:13px;">Analysing your posts with Claude…</div>';
 
   try {
     const r = await fetch('/api/linkedin/suggestions');
     if (!r.ok) throw new Error(`${r.status}`);
     const d = await r.json();
 
+    // Always render guidelines separately — they never block on the Claude call
+    renderGuidelines(d.accepted || []);
+
     if (d.reason && !d.suggestions?.length) {
-      body.innerHTML = `<div style="padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:14px;color:var(--muted);">⏳ ${d.reason}</div>`;
+      list.innerHTML = `<div style="padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:14px;color:var(--muted);">⏳ ${d.reason}</div>`;
       return;
     }
 
-    // Accepted guidelines already live
     const acceptedIds  = new Set((d.accepted || []).map(g => g.id));
     const dismissedIds = new Set(JSON.parse(localStorage.getItem('sug_dismissed') || '[]'));
-
-    // Render pending suggestions (exclude accepted and locally dismissed)
     const pending = (d.suggestions || []).filter(s => !acceptedIds.has(s.id) && !dismissedIds.has(s.id));
-    const accepted = d.accepted || [];
 
     let html = '';
 
@@ -934,27 +954,9 @@ async function loadSuggestions(force = false) {
       html += `<div style="padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:14px;color:var(--muted);margin-bottom:12px;">No new suggestions — all have been reviewed.</div>`;
     }
 
-    // Active guidelines
-    if (accepted.length) {
-      html += `<div style="margin-top:20px;">
-        <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">Active guidelines — applied to every post</div>
-        ${accepted.map(g => `
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#0a0a0a;border:1px solid #a78bfa33;border-radius:10px;margin-bottom:8px;">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span style="color:#a78bfa;font-size:16px;">✓</span>
-              <div>
-                <div style="font-size:14px;font-weight:600;">${g.title}</div>
-                <div style="font-size:12px;color:var(--muted);margin-top:2px;">${g.action || ''}</div>
-              </div>
-            </div>
-            <button class="btn btn-outline btn-sm" style="font-size:11px;" onclick="removeGuideline('${g.id}')">Remove</button>
-          </div>`).join('')}
-      </div>`;
-    }
-
-    body.innerHTML = html;
+    list.innerHTML = html || '<div style="padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:14px;color:var(--muted);">No new suggestions — all reviewed.</div>';
   } catch (err) {
-    body.innerHTML = `<div style="padding:20px;font-size:13px;color:#ef4444;">Failed to load suggestions: ${err.message}</div>`;
+    list.innerHTML = `<div style="padding:20px;font-size:13px;color:#ef4444;">Failed to load suggestions: ${err.message}</div>`;
   }
 }
 
@@ -970,9 +972,12 @@ async function acceptSuggestion(id) {
       body: JSON.stringify({ id: s.id, title: s.title, action: s.action, category: s.category }),
     });
     if (r.ok) {
-      toast('Guideline accepted — applies to all future posts', 'success');
+      // Remove only this card — nothing else changes
       const el = document.getElementById(`sug-${id}`);
-      if (el) { el.style.opacity = '0'; el.style.transition = 'opacity .2s'; setTimeout(() => el.remove(), 250); }
+      if (el) { el.style.transition = 'opacity .2s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 250); }
+      // Refresh just the guidelines zone (fast — no Claude call)
+      fetch('/api/linkedin/suggestions').then(r => r.json()).then(d => renderGuidelines(d.accepted || [])).catch(() => {});
+      toast('Guideline accepted — applies to all future posts', 'success');
     } else {
       const err = await r.json().catch(() => ({}));
       toast('Failed: ' + (err.error || r.status), 'error');
@@ -988,7 +993,7 @@ function dismissSuggestion(id) {
   const dismissed = JSON.parse(localStorage.getItem('sug_dismissed') || '[]');
   if (!dismissed.includes(id)) { dismissed.push(id); localStorage.setItem('sug_dismissed', JSON.stringify(dismissed)); }
   const el = document.getElementById(`sug-${id}`);
-  if (el) { el.style.opacity = '0'; el.style.transition = 'opacity .2s'; setTimeout(() => el.remove(), 200); }
+  if (el) { el.style.transition = 'opacity .2s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 200); }
   toast('Dismissed', 'success');
 }
 
@@ -1001,7 +1006,8 @@ function resetDismissed() {
 async function removeGuideline(id) {
   await fetch(`/api/linkedin/suggestions/accept/${id}`, { method: 'DELETE' });
   toast('Guideline removed', 'success');
-  loadSuggestions(true);
+  // Only refresh the guidelines zone — suggestions list stays untouched
+  fetch('/api/linkedin/suggestions').then(r => r.json()).then(d => renderGuidelines(d.accepted || [])).catch(() => {});
 }
 
 init();
