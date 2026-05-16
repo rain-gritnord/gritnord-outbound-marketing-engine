@@ -972,8 +972,7 @@ async function acceptSuggestion(id) {
     if (r.ok) {
       toast('Guideline accepted — applies to all future posts', 'success');
       const el = document.getElementById(`sug-${id}`);
-      if (el) { el.style.opacity = '0'; el.style.transition = 'opacity .2s'; setTimeout(() => el.remove(), 200); }
-      setTimeout(() => loadSuggestions(true), 800);
+      if (el) { el.style.opacity = '0'; el.style.transition = 'opacity .2s'; setTimeout(() => el.remove(), 250); }
     } else {
       const err = await r.json().catch(() => ({}));
       toast('Failed: ' + (err.error || r.status), 'error');
