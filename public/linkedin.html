@@ -683,7 +683,10 @@ function renderPerformance({ learner, scored, pending, totalScored, totalPosted 
         <div style="font-size:18px;font-weight:700;">AI Improvement Suggestions</div>
         <div style="font-size:14px;color:var(--muted);margin-top:3px;">Based on your real engagement data. Accept to apply to all future posts.</div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="loadSuggestions(true)">↻ Refresh</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline btn-sm" onclick="resetDismissed()" title="Restore dismissed suggestions">↺ Reset</button>
+        <button class="btn btn-outline btn-sm" onclick="loadSuggestions(true)">↻ Refresh</button>
+      </div>
     </div>
     <div id="suggestions-body"><div class="loading" style="padding:32px 0;text-align:center;color:var(--muted);">Analysing your posts…</div></div>
   </div>`;
@@ -876,6 +879,9 @@ const CATEGORY_LABEL = {
   format:     '📐 Format',
 };
 
+// Cache suggestions so accept/dismiss can look them up by ID without HTML encoding tricks
+const _sugCache = {};
+
 async function loadSuggestions(force = false) {
   const body = document.getElementById('suggestions-body');
   if (!body) return;
@@ -904,9 +910,9 @@ async function loadSuggestions(force = false) {
     let html = '';
 
     if (pending.length) {
-      html += pending.map(s => {
-        const payload = encodeURIComponent(JSON.stringify({ id: s.id, title: s.title, action: s.action, category: s.category }));
-        return `
+      // Populate cache so handlers can look up by ID without any HTML encoding
+      pending.forEach(s => { _sugCache[s.id] = s; });
+      html += pending.map(s => `
         <div id="sug-${s.id}" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:12px;">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
             <div style="flex:1;">
@@ -919,12 +925,11 @@ async function loadSuggestions(force = false) {
               <div style="font-size:14px;line-height:1.55;color:var(--text);">${s.action}</div>
             </div>
             <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0;">
-              <button class="btn btn-green btn-sm" data-sug="${payload}" onclick="acceptSuggestion(this)">✓ Accept</button>
+              <button class="btn btn-green btn-sm" onclick="acceptSuggestion('${s.id}')">✓ Accept</button>
               <button class="btn btn-outline btn-sm" onclick="dismissSuggestion('${s.id}')">✕ Dismiss</button>
             </div>
           </div>
-        </div>`;
-      }).join('');
+        </div>`).join('');
     } else {
       html += `<div style="padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:14px;color:var(--muted);margin-bottom:12px;">No new suggestions — all have been reviewed.</div>`;
     }
@@ -953,32 +958,45 @@ async function loadSuggestions(force = false) {
   }
 }
 
-async function acceptSuggestion(btn) {
-  const { id, title, action, category } = JSON.parse(decodeURIComponent(btn.dataset.sug));
-  btn.textContent = '…'; btn.disabled = true;
-  const r = await fetch('/api/linkedin/suggestions/accept', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, title, action, category }),
-  });
-  if (r.ok) {
-    toast('Guideline accepted — applies to all future posts', 'success');
-    const el = document.getElementById(`sug-${id}`);
-    if (el) { el.style.opacity = '0.3'; el.style.pointerEvents = 'none'; }
-    setTimeout(() => loadSuggestions(true), 800);
-  } else {
-    toast('Failed to save — try again', 'error');
-    btn.textContent = '✓ Accept'; btn.disabled = false;
+async function acceptSuggestion(id) {
+  const s = _sugCache[id];
+  if (!s) { toast('Suggestion data missing — click Refresh first', 'error'); return; }
+  const btn = document.querySelector(`#sug-${id} .btn-green`);
+  if (btn) { btn.textContent = '…'; btn.disabled = true; }
+  try {
+    const r = await fetch('/api/linkedin/suggestions/accept', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: s.id, title: s.title, action: s.action, category: s.category }),
+    });
+    if (r.ok) {
+      toast('Guideline accepted — applies to all future posts', 'success');
+      const el = document.getElementById(`sug-${id}`);
+      if (el) { el.style.opacity = '0'; el.style.transition = 'opacity .2s'; setTimeout(() => el.remove(), 200); }
+      setTimeout(() => loadSuggestions(true), 800);
+    } else {
+      const err = await r.json().catch(() => ({}));
+      toast('Failed: ' + (err.error || r.status), 'error');
+      if (btn) { btn.textContent = '✓ Accept'; btn.disabled = false; }
+    }
+  } catch (e) {
+    toast('Network error — ' + e.message, 'error');
+    if (btn) { btn.textContent = '✓ Accept'; btn.disabled = false; }
   }
 }
 
 function dismissSuggestion(id) {
-  // Persist dismissed IDs in localStorage so they don't reappear on reload
   const dismissed = JSON.parse(localStorage.getItem('sug_dismissed') || '[]');
   if (!dismissed.includes(id)) { dismissed.push(id); localStorage.setItem('sug_dismissed', JSON.stringify(dismissed)); }
   const el = document.getElementById(`sug-${id}`);
   if (el) { el.style.opacity = '0'; el.style.transition = 'opacity .2s'; setTimeout(() => el.remove(), 200); }
   toast('Dismissed', 'success');
+}
+
+function resetDismissed() {
+  localStorage.removeItem('sug_dismissed');
+  loadSuggestions(true);
+  toast('Dismissed suggestions restored', 'success');
 }
 
 async function removeGuideline(id) {
