@@ -600,6 +600,38 @@ app.get('/bookmarklet-sync', (req, res) => {
   ));
 });
 
+// LinkedIn PostAnalytics XLSX parser
+// Format: vertical — col A = label, col B = value (e.g. ['Impressions', '45377'])
+function parseLinkedInXlsx(buffer) {
+  const wb   = XLSX.read(buffer, { type: 'buffer' });
+  const ws   = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+  // Build label → value map from all rows
+  const map = {};
+  for (const row of rows) {
+    const label = String(row[0] || '').toLowerCase().trim();
+    const val   = String(row[1] || '').replace(/,/g, '').trim();
+    if (label) map[label] = parseInt(val, 10) || 0;
+  }
+
+  const get = (...keys) => {
+    for (const k of keys) {
+      const hit = Object.keys(map).find(l => l.includes(k));
+      if (hit !== undefined) return map[hit];
+    }
+    return 0;
+  };
+
+  return {
+    impressions: get('impression'),
+    likes:       get('reaction'),
+    comments:    get('comment'),
+    shares:      get('repost'),
+    followers:   get('followers gained'),
+  };
+}
+
 // POST /api/linkedin/engagement/xlsx — parse LinkedIn PostAnalytics export file
 // LinkedIn export filename: PostAnalytics_RainVaana_{shareId}.xlsx
 // The share ID in the filename matches our linkedInId field exactly
@@ -607,45 +639,19 @@ app.post('/api/linkedin/engagement/xlsx', upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
   try {
-    const wb = XLSX.read(req.file.buffer, { type: 'buffer' });
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-
-    // LinkedIn export format: row 0 = headers, row 1 = values
-    // Typical columns: Date, Post, Impressions, Members reached, Reactions, Comments, Reposts, Followers gained
-    const headers = (rows[0] || []).map(h => String(h).toLowerCase().trim());
-    const values  = rows[1] || [];
-
-    const col = (name) => {
-      const i = headers.findIndex(h => h.includes(name));
-      return i >= 0 ? (parseInt(String(values[i]).replace(/,/g, ''), 10) || 0) : 0;
-    };
-
-    const impressions = col('impression');
-    const likes       = col('reaction');
-    const comments    = col('comment');
-    const shares      = col('repost');
-    const followers   = col('follower');
-
-    // Extract share URN from filename: PostAnalytics_RainVaana_{shareId}.xlsx
-    const fname = req.file.originalname || '';
-    const numMatch = fname.match(/(\d{15,})/);
+    const { impressions, likes, comments, shares, followers } = parseLinkedInXlsx(req.file.buffer);
+    const numMatch = (req.file.originalname || '').match(/(\d{15,})/);
     const shareNum = numMatch?.[1];
 
     const queue = getLinkedInQueue();
-    let post = null;
-
-    if (shareNum) {
-      post = queue.find(p => {
-        const pNum = (p.linkedInId || '').replace(/urn:li:(share|ugcPost|activity):/i, '');
-        return pNum === shareNum;
-      });
-    }
+    const post  = shareNum
+      ? queue.find(p => (p.linkedInId || '').replace(/urn:li:(share|ugcPost|activity):/i, '') === shareNum)
+      : null;
 
     if (!post) return res.status(404).json({ error: `Post not found (share ID: ${shareNum || 'unknown'})` });
 
     const metrics = { likes, comments, shares, impressions, followers, clicks: null };
-    const score = engagementToScore(metrics);
+    const score   = engagementToScore(metrics);
 
     recordScore('linkedin', score);
     updateLinkedInPost(post.id, {
@@ -1475,38 +1481,15 @@ if (!fsExistsSync(PROCESSED_DIR)) fsMkdirSync(PROCESSED_DIR, { recursive: true }
 function processDroppedXlsx(filename) {
   const fullPath = path.join(DROP_DIR, filename);
   try {
-    const buf = readFileSync(fullPath);
-    const wb  = XLSX.read(buf, { type: 'buffer' });
-    const ws  = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    const { impressions, likes, comments, shares, followers } = parseLinkedInXlsx(readFileSync(fullPath));
 
-    const headers = (rows[0] || []).map(h => String(h).toLowerCase().trim());
-    const values  = rows[1] || [];
-
-    const col = (name) => {
-      const i = headers.findIndex(h => h.includes(name));
-      return i >= 0 ? (parseInt(String(values[i]).replace(/,/g, ''), 10) || 0) : 0;
-    };
-
-    const impressions = col('impression');
-    const likes       = col('reaction');
-    const comments    = col('comment');
-    const shares      = col('repost');
-    const followers   = col('follower');
-
-    // Extract share ID from filename: PostAnalytics_RainVaana_{shareId}.xlsx
     const numMatch = filename.match(/(\d{15,})/);
     const shareNum = numMatch?.[1];
 
     const queue = getLinkedInQueue();
-    let post = null;
-
-    if (shareNum) {
-      post = queue.find(p => {
-        const pNum = (p.linkedInId || '').replace(/urn:li:(share|ugcPost|activity):/i, '');
-        return pNum === shareNum;
-      });
-    }
+    const post  = shareNum
+      ? queue.find(p => (p.linkedInId || '').replace(/urn:li:(share|ugcPost|activity):/i, '') === shareNum)
+      : null;
 
     if (!post) {
       // Move to processed with error marker so it's not retried
