@@ -125,9 +125,10 @@ function parseRSSItems(xml) {
 
     const pubDate = block.match(/<pubDate>(.*?)<\/pubDate>/)?.[1]?.trim() || '';
 
-    // Extract image from media:content or enclosure
-    const image = (block.match(/<media:content[^>]+url="([^"]+)"/)?.[1]) ||
-                  (block.match(/<enclosure[^>]+url="([^"]+)"/)?.[1]) || null;
+    // Extract image from media:content or enclosure (reject non-image files)
+    const rawImg = (block.match(/<media:content[^>]+url="([^"]+)"/)?.[1]) ||
+                   (block.match(/<enclosure[^>]+url="([^"]+)"/)?.[1]) || null;
+    const image = rawImg && /\.(mp3|mp4|wav|ogg|m4a|pdf|webm)(\?|$)/i.test(rawImg) ? null : rawImg;
 
     if (title && link && link.startsWith('http')) {
       items.push({ title, link, description, pubDate, image });
@@ -146,6 +147,8 @@ async function fetchOGImage(url) {
     const html = await res.text();
     const og = html.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/)?.[1] ||
                html.match(/<meta[^>]+content="([^"]+)"[^>]+property="og:image"/)?.[1];
+    // Reject audio/video/non-image URLs (e.g. Substack podcasts return .mp3)
+    if (og && /\.(mp3|mp4|wav|ogg|m4a|pdf|webm)(\?|$)/i.test(og)) return null;
     return og || null;
   } catch {
     return null;

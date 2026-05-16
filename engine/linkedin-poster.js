@@ -245,6 +245,8 @@ Output only the post text. No title, no intro, no meta-commentary.`;
     messages: [{ role: 'user', content: prompt }],
   });
 
-  const text = response.content.find(b => b.type === 'text')?.text?.trim() ?? '';
+  let text = response.content.find(b => b.type === 'text')?.text?.trim() ?? '';
+  // Strip any "Topic tag: X" or "Scenario: X" prefix Claude occasionally adds
+  text = text.replace(/^(topic tag|scenario|category|type)\s*:\s*\S+\s*/i, '').trim();
   return text;
 }
