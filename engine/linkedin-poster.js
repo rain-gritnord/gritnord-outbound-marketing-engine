@@ -170,33 +170,63 @@ export async function postToLinkedIn({ text, imageUrl }) {
 
 const RAIN_CONTEXT = `
 You are writing LinkedIn posts for Rain, founder of Gritnord — a B2B lead generation and GTM intelligence platform.
-Rain is a direct, experienced founder who has operated in B2B sales and growth for years.
-His audience: B2B founders, VP Sales, GTM leads, SDRs, revenue operators. ~5,000 followers.
-His credibility: he has built pipeline systems, worked with sales teams, understands the operational reality of B2B growth.
+His audience: B2B founders, VP Sales, GTM leads, revenue operators. ~5,000 followers.
+Target: 50,000+ impressions per post. Benchmark: Rain's best post hit 110,110 impressions, 73,597 members reached, 83 reactions, 16 comments, 20 saves. Here is exactly why it worked — apply every mechanism below.
 
-WHAT DRIVES IMPRESSIONS — learned from Rain's best post (105,000+ impressions, 70,000+ members reached, 50 new followers, 20 new connections):
-1. Counterintuitive take: defend the slower, older, or less-hyped side of a story. This triggers people who disagree to comment — and each comment distributes the post further.
-2. Structural insight, not execution tips: explain WHY something works at a systems level (moats, lock-in, compounding). Never write a tip list.
-3. One specific failure mode: 5-7 words, crime-scene language. "Pipeline full, retention broken." Not "many companies struggle with this."
-4. Binary closing question: force readers to pick a side. Both sides must feel valid to someone. This generates comments from both camps.
-5. The post is Rain's independent perspective. Companies or numbers from the article are evidence, not the subject. Never promote or feature any company.
-Target: 45,000+ impressions per post.
+THE 7 MECHANISMS THAT DROVE 110K IMPRESSIONS (forensically verified):
+
+1. LINE 1 IS A DATA BOMB WITH A BUILT-IN CONTRADICTION.
+"Anthropic hit $31B ARR in 4 years. Salesforce took 19."
+One sentence. One real verifiable fact. One cognitive dissonance. Forces the reader to ask "how is this possible?" — which drives the "See more" click. The numbers must be real, specific, and sourced from the article. No vague claims. Two data points in contrast, two short sentences.
+
+2. LINE 2 DEFUSES THE OBVIOUS INTERPRETATION — THEN FLIPS IT.
+"That stat sounds like a paradigm shift. And it is. But not for the reason most people think."
+This pattern interrupt is what drove 20 saves and 9 sends. It promises the reader a smarter take than the original article. It signals: I've thought about this more deeply than you have. Use this exact move or a close variant every post.
+
+3. PARAGRAPH 1: THE DEEPER MECHANISM, NOT THE SURFACE READING.
+Name a specific company, product, or structural dynamic. Explain WHY it works at a systems level — workflow lock-in, compounding, moat, durability. Never write "many companies struggle with this." Write the one thing the article missed.
+
+4. PARAGRAPH 2: WHAT THE DATA DOESN'T SAY.
+The counterintuitive insight. The thing the original source got wrong or left out. This is Rain's real-world B2B GTM perspective — pipeline mechanics, founder-led sales, enterprise buying behavior. One sharp observation, 2-3 sentences max.
+
+5. THE CLOSING QUESTION IS ICP-SPECIFIC AND UNCOMFORTABLE.
+"Are you building something people depend on, or something they're still figuring out how to use?"
+Not "Thoughts?" Not "What do you think?" Force the reader — a founder or revenue leader — to evaluate their own business honestly. Slightly uncomfortable = people answer in their head (dwell time) or publicly (comments). Both sides of the question must feel valid to someone.
+
+6. NAME THE COMPANIES THE ICP CARES ABOUT.
+The 110K post named Salesforce, Anthropic, OpenAI — the exact enterprise SaaS stack Rain's ICP uses daily. Salesforce employees saw a post about their product and engaged. 18% of all viewers were Salesforce employees. Name specific companies from the article — not to promote them, but because their employees and customers are Rain's audience.
+
+7. RAIN'S PERSPECTIVE IS THE PRODUCT.
+The article is raw material. Rain's reframe is the value. Never summarize the article. Never promote the source. Use the data as evidence for Rain's insight, which must be valuable even if the reader has never heard of the company in the article.
 `;
 
 const POST_STYLE_RULES = `
-STYLE RULES — study the most viral founder posts on LinkedIn:
-- First line is everything. It must stop the scroll. Bold claim, surprising insight, or counterintuitive take.
-- Never start with "I'm excited to share", "Thrilled to announce", "Great article", "Just read this".
+STRUCTURE — follow this exact sequence (proven by the 110K post):
+
+LINE 1: [Real data point from article]. [Benchmark or contrast in one sentence.]
+Two short sentences. Both must be specific numbers. No adjectives, no fluff.
+
+LINE 2: That [sounds/looks/feels] like [obvious conclusion]. And it is. But not for the reason most people think.
+(Or a close variant that promises a non-obvious take. This line is mandatory.)
+
+PARAGRAPH 1 (2-3 sentences): The deeper mechanism. WHY it works structurally. Name a specific company or dynamic.
+
+PARAGRAPH 2 (2-3 sentences): What the data doesn't say. Rain's real-world GTM angle. The thing the article missed.
+
+CLOSING QUESTION (1 sentence): Force the ICP to evaluate their own business. Uncomfortable. Binary. ICP-specific.
+Not "What do you think?" — something that makes a VP Sales or founder pause.
+
+HASHTAGS: 2 max at the very end. Both must match the exact topic. Often better with none.
+
+FORMATTING RULES:
 - Short sentences. One idea per line. Generous white space between paragraphs.
-- Maximum 3 paragraphs. Each paragraph max 3 lines.
-- NO emoji bullets. NO numbered lists with emoji. NO "🔥 Top 5 things".
-- NO em dashes (—) or hyphens in the middle of sentences. Use a period or rewrite the sentence instead. Only use a hyphen if grammar strictly requires it.
-- At most 1-2 hashtags at the very end, only if genuinely useful. Often none.
-- End with a question or invitation to debate. Not a CTA to buy anything.
-- Sound like a sharp, direct operator. Not a marketer. Not a coach. Not a guru.
-- Total length: 700–900 characters including spaces. Tight. Every word earns its place. The best post was 802 characters.
-- Write in first person, but don't make it about Rain — make it about the insight.
+- NO em dashes. NO emoji bullets. NO numbered lists. NO "🔥 Top 5 things".
+- Never start with "I'm excited", "Thrilled", "Great article", "Just read".
+- Sound like a sharp, direct operator. Not a marketer. Not a guru.
+- Total length: 780–860 characters including spaces. The 110K post was 806 chars. Cut ruthlessly if over 860.
+- Write in first person but make it about the insight, not about Rain.
 `;
+
 
 export async function generateLinkedInPost({ article, postType = 'reshare', additionalContext = '' }) {
   // Pull any accepted improvement guidelines and inject them
@@ -219,13 +249,14 @@ Summary: ${article.description}
 
 ${POST_STYLE_RULES}
 ${guidelineBlock}
-TASK: Write a post that:
-1. Opens with Rain's hot take or the most interesting angle from the article
-2. Adds one insight or pushback that the article doesn't cover — Rain's real-world experience angle
-3. Ends by asking the audience a sharp question related to this topic
-4. Naturally reference the article in context (not as "check out this great piece")
+TASK: Follow the proven structure exactly:
+1. LINE 1: Two contrasting data points from the article. Real numbers. Two short sentences.
+2. LINE 2: Acknowledge the obvious read, then flip it. "But not for the reason most people think." or equivalent.
+3. PARAGRAPH 1: The deeper structural mechanism. Name a specific company from the article or ecosystem.
+4. PARAGRAPH 2: What the article missed. Rain's real GTM/B2B perspective.
+5. CLOSING QUESTION: ICP-specific, uncomfortable, binary. Forces a VP Sales or founder to reflect on their own business.
 
-${additionalContext ? `IMPORTANT ANGLE GUIDANCE: ${additionalContext}\n` : ''}Output only the post text. No title, no intro, no meta-commentary.`;
+${additionalContext ? `ANGLE GUIDANCE: ${additionalContext}\n` : ''}Output only the post text. No title, no intro, no meta-commentary. No "Topic tag:" prefix.`;
   } else {
     prompt = `${RAIN_CONTEXT}
 
@@ -233,10 +264,14 @@ Write an original LinkedIn post on this topic: "${article.title}"
 
 ${POST_STYLE_RULES}
 ${guidelineBlock}
-TASK: Write an original post where Rain shares a direct insight, counterintuitive observation, or tactical lesson from his experience building B2B pipeline and running Gritnord.
-End with a question that sparks comments from founders and sales leaders.
+TASK: Follow the proven structure:
+1. LINE 1: A specific data point or observation that creates cognitive dissonance. Two short sentences with a contrast.
+2. LINE 2: Acknowledge the obvious read, then flip it. "But not for the reason most people think." or equivalent.
+3. PARAGRAPH 1: The structural mechanism behind the observation. WHY it works or fails at a systems level.
+4. PARAGRAPH 2: Rain's direct GTM/B2B experience angle. What most people miss.
+5. CLOSING QUESTION: Forces a founder or VP Sales to evaluate their own business. Uncomfortable. Binary.
 
-Output only the post text. No title, no intro, no meta-commentary.`;
+Output only the post text. No title, no intro, no meta-commentary. No "Topic tag:" prefix.`;
   }
 
   const response = await client.messages.create({
