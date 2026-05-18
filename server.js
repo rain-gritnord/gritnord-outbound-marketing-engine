@@ -434,7 +434,14 @@ app.post('/api/linkedin/generate', async (req, res) => {
         ? 'Focus on the GTM, sales, pipeline, or customer acquisition angle. Avoid making this about AI as a trend — make it about getting customers and growing revenue.'
         : 'This is the weekly AI-related post. Tie the AI angle back to practical B2B sales impact.';
 
-      const text = await generateLinkedInPost({ article, postType, additionalContext: topicHint });
+      let text;
+      try {
+        text = await generateLinkedInPost({ article, postType, additionalContext: topicHint });
+      } catch (err) {
+        console.warn(`[linkedin/generate] Skipping article "${article.title}": ${err.message}`);
+        continue; // skip this article, try next one
+      }
+
       const draft = {
         id: newId(),
         text,

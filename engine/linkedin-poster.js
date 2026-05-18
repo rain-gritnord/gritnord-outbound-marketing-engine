@@ -268,6 +268,10 @@ Rewrite the entire post now with a correct Line 1.`,
     });
     const retryText = retryResponse.content.find(b => b.type === 'text')?.text?.trim() ?? text;
     text = retryText.replace(/^(topic tag|scenario|category|type)\s*:\s*\S+\s*/i, '').trim();
+    // Check CANNOT_GENERATE again after retry
+    if (text.startsWith('CANNOT_GENERATE')) {
+      throw new Error('CANNOT_GENERATE: article lacks two relevant confrontable numbers');
+    }
   }
 
   // Enforce 860-char hard ceiling — Claude consistently ignores the prompt instruction.
