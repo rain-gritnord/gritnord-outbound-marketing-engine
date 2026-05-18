@@ -3,6 +3,7 @@
 
 const RSS_SOURCES = [
   // ── B2B sales & GTM — highest signal for Rain's audience ─────────────────
+  { name: 'SaaStr',          url: 'https://www.saastr.com/feed/' },
   { name: 'OpenView',        url: 'https://openviewpartners.com/feed/' },
   { name: 'Predictable Rev', url: 'https://predictablerevenue.com/feed' },
   { name: 'Winning by Design', url: 'https://winnbydesign.com/feed/' },
