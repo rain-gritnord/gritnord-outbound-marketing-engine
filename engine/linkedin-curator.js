@@ -93,6 +93,19 @@ const BLOCKED_KEYWORDS = [
   'divorce', 'lawsuit', 'scandal',
 ];
 
+// Articles that are pure announcements with no data — CEO hires, awards, appointments, partnerships
+// These never contain two confrontable numbers so they cannot satisfy Line 1 of the post structure.
+const DATALESS_PATTERNS = [
+  /appoints?\s+(new\s+)?(ceo|cto|cfo|coo|vp|chief|head|director)/i,
+  /names?\s+(new\s+)?(ceo|cto|cfo|coo|vp|chief|head|director)/i,
+  /welcomes?\s+(new\s+)?(ceo|cto|cfo|coo|vp|chief|head|director)/i,
+  /joins?\s+as\s+(ceo|cto|cfo|coo|vp|chief|head|director)/i,
+  /wins?\s+(award|prize|recognition|deal)/i,
+  /named\s+(best|top|leader|winner)/i,
+  /partners?\s+with\b/i,
+  /announces?\s+partnership/i,
+];
+
 function scoreArticle(title, description = '') {
   const text = (title + ' ' + description).toLowerCase();
 
@@ -100,10 +113,20 @@ function scoreArticle(title, description = '') {
     if (text.includes(blocked)) return -1;
   }
 
+  // Reject pure announcement articles — they have no confrontable data for Line 1
+  for (const pattern of DATALESS_PATTERNS) {
+    if (pattern.test(title)) return -1;
+  }
+
   let score = 0;
   for (const kw of RELEVANT_KEYWORDS) {
     if (text.includes(kw)) score++;
   }
+
+  // Boost articles that contain specific numbers — these are far more likely to support Line 1
+  const numberCount = (text.match(/\d[\d,.]*\s*(%|m|b|k|million|billion|thousand|arr|mrr)/gi) ?? []).length;
+  score += Math.min(numberCount * 2, 6);
+
   return score;
 }
 

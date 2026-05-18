@@ -176,12 +176,13 @@ Benchmark: Rain's best post hit 110K impressions. Below is the exact structure a
 ━━━ MANDATORY STRUCTURE (5 elements, in this order) ━━━
 
 ELEMENT 1 — LINE 1: DATA BOMB
-Two sentences. Both must contain a specific number or metric. The numbers must contradict each other to create cognitive dissonance.
-✓ CORRECT: "Anthropic hit $31B ARR in 4 years. Salesforce took 19."
-✓ CORRECT: "Enterprises waste 35% of cloud spend on idle resources. Greenpixie raised £4.7M to fix it."
+Two sentences. Both must contain a specific number or metric. The numbers must contradict each other and BOTH must be directly relevant to this article's specific topic.
+✓ CORRECT: "Anthropic hit $31B ARR in 4 years. Salesforce took 19." — both numbers are about the same topic (ARR growth speed).
+✓ CORRECT: "Enterprises waste 35% of cloud spend on idle resources. Greenpixie raised £4.7M to fix it." — both numbers are about the same situation.
 ✗ WRONG: "BirdyChat raised €1.7M. Slack solved internal. External is still broken." — three sentences, only one number.
-✗ WRONG: "Most teams added AI in 2024. Almost none updated their contracts." — a year is not a metric, no contrast number.
-If the article lacks two confrontable numbers, use a known industry benchmark as the second number — but it must be real.
+✗ WRONG: "Most teams added AI in 2024. Almost none updated their contracts." — a year is not a metric.
+✗ WRONG: Grabbing random famous numbers (Salesforce ARR, Tesla revenue) that have nothing to do with the article's topic. The numbers must come from or be directly relevant to this article's specific situation.
+If the article does not contain two relevant confrontable numbers, say CANNOT_GENERATE and nothing else.
 
 ELEMENT 2 — LINE 2: PATTERN INTERRUPT (mandatory)
 Acknowledge the obvious conclusion, then flip it.
@@ -239,6 +240,11 @@ Output only the post text. No title, no intro, no meta-commentary. No "Topic tag
   let text = response.content.find(b => b.type === 'text')?.text?.trim() ?? '';
   // Strip any "Topic tag: X" or "Scenario: X" prefix Claude occasionally adds
   text = text.replace(/^(topic tag|scenario|category|type)\s*:\s*\S+\s*/i, '').trim();
+
+  // If Claude signals the article has no confrontable numbers, reject it
+  if (text.startsWith('CANNOT_GENERATE')) {
+    throw new Error('CANNOT_GENERATE: article lacks two relevant confrontable numbers');
+  }
 
   // Rule 1 validation: Line 1 must contain at least 2 distinct numbers/metrics.
   // A number is any digit sequence, optionally preceded by $£€ or followed by % B M K.
