@@ -1,5 +1,5 @@
 // Curates articles from top B2B/founder sources for LinkedIn posts
-// Rule: max 1 article per source in final selection — prevents any single source dominating
+// Rule: max 1 article per domain. Source diversity is NOT enforced — structure quality wins.
 
 const RSS_SOURCES = [
   // ── B2B sales & GTM — highest signal for Rain's audience ─────────────────
@@ -182,17 +182,17 @@ export async function curateArticles({ count = 3, usedLinks = [] } = {}) {
     }
   }
 
-  // Deduplicate: max 1 article per source name AND per domain
-  const seenSources = new Set();
+  // Deduplicate: max 1 article per domain (same URL = same article)
+  // Source diversity is intentionally NOT enforced — structure quality wins.
+  // If one source consistently has data-rich articles that fit the 7-mechanism
+  // format, we use it even if it appears more than once in the batch.
   const seenDomains = new Set();
   const deduped = allArticles
     .sort((a, b) => b.relevanceScore - a.relevanceScore)
     .filter(a => {
-      if (seenSources.has(a.source)) return false;
       try {
         const domain = new URL(a.link).hostname;
         if (seenDomains.has(domain)) return false;
-        seenSources.add(a.source);
         seenDomains.add(domain);
         return true;
       } catch { return false; }
