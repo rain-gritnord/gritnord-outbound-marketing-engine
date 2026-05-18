@@ -408,13 +408,17 @@ app.post('/api/linkedin/generate', async (req, res) => {
   try {
     // Pass already-queued article links so we never repeat the same article/image
     const existingQueue = getLinkedInQueue();
-    const usedLinks = existingQueue.map(p => p.article?.link).filter(Boolean);
+    // Only block links that are active drafts or posted — ignore broken/undefined-status items
+    const activeStatuses = new Set(['draft', 'posted', 'scheduled']);
+    const usedLinks = existingQueue
+      .filter(p => activeStatuses.has(p.status))
+      .map(p => p.article?.link).filter(Boolean);
 
     const articles = await curateArticles({ count: 3, usedLinks });
     const drafts = [];
 
-    // Track links already in the queue (including existing drafts) to prevent duplicates
-    const existingLinks = new Set(existingQueue.map(p => p.article?.link).filter(Boolean));
+    // Prevent duplicates within this generation run only (not across all history)
+    const existingLinks = new Set(usedLinks);
 
     for (const article of articles) {
       // Skip if a draft already exists for this article (prevents double-generation on repeated clicks)
