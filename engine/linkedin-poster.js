@@ -168,67 +168,47 @@ export async function postToLinkedIn({ text, imageUrl }) {
 
 // ─── Post generation ─────────────────────────────────────────────────────────
 
-const RAIN_CONTEXT = `
-You are writing LinkedIn posts for Rain, founder of Gritnord — a B2B lead generation and GTM intelligence platform.
-His audience: B2B founders, VP Sales, GTM leads, revenue operators. ~5,000 followers.
-Target: 50,000+ impressions per post. Benchmark: Rain's best post hit 110,110 impressions, 73,597 members reached, 83 reactions, 16 comments, 20 saves. Here is exactly why it worked — apply every mechanism below.
+const POST_PROMPT = `
+You are writing a LinkedIn post for Rain, founder of Gritnord — a B2B lead generation and GTM intelligence platform.
+Audience: B2B founders, VP Sales, GTM leads, revenue operators. ~5,000 followers.
+Benchmark: Rain's best post hit 110K impressions. Below is the exact structure and rules that drove it. Follow every rule without exception.
 
-THE 7 MECHANISMS THAT DROVE 110K IMPRESSIONS (forensically verified):
+━━━ MANDATORY STRUCTURE (5 elements, in this order) ━━━
 
-1. LINE 1 IS A DATA BOMB WITH A BUILT-IN CONTRADICTION.
-"Anthropic hit $31B ARR in 4 years. Salesforce took 19."
-One sentence. One real verifiable fact. One cognitive dissonance. Forces the reader to ask "how is this possible?" — which drives the "See more" click. The numbers must be real, specific, and sourced from the article. No vague claims. Two data points in contrast, two short sentences.
+ELEMENT 1 — LINE 1: DATA BOMB
+Two sentences. Both must contain a specific number or metric. The numbers must contradict each other to create cognitive dissonance.
+✓ CORRECT: "Anthropic hit $31B ARR in 4 years. Salesforce took 19."
+✓ CORRECT: "Enterprises waste 35% of cloud spend on idle resources. Greenpixie raised £4.7M to fix it."
+✗ WRONG: "BirdyChat raised €1.7M. Slack solved internal. External is still broken." — three sentences, only one number.
+✗ WRONG: "Most teams added AI in 2024. Almost none updated their contracts." — a year is not a metric, no contrast number.
+If the article lacks two confrontable numbers, use a known industry benchmark as the second number — but it must be real.
 
-2. LINE 2 DEFUSES THE OBVIOUS INTERPRETATION — THEN FLIPS IT.
-"That stat sounds like a paradigm shift. And it is. But not for the reason most people think."
-This pattern interrupt is what drove 20 saves and 9 sends. It promises the reader a smarter take than the original article. It signals: I've thought about this more deeply than you have. Use this exact move or a close variant every post.
+ELEMENT 2 — LINE 2: PATTERN INTERRUPT (mandatory)
+Acknowledge the obvious conclusion, then flip it.
+Template: "That sounds like [X]. And it is. But not for the reason most people think."
+This line is not optional. Every post must have it.
 
-3. PARAGRAPH 1: THE DEEPER MECHANISM, NOT THE SURFACE READING.
-Name a specific company, product, or structural dynamic. Explain WHY it works at a systems level — workflow lock-in, compounding, moat, durability. Never write "many companies struggle with this." Write the one thing the article missed.
+ELEMENT 3 — PARAGRAPH 1: THE DEEPER MECHANISM (2–3 sentences)
+Explain WHY it works at a structural level — lock-in, compounding, moat, timing.
+Name a company Rain's ICP already knows and uses: Salesforce, HubSpot, AWS, Snowflake, Datadog, Gong, OpenAI, Anthropic, Microsoft, Google.
+Do NOT use the startup from the article as the anchor name. Use it as supporting evidence only.
+The 110K post named Salesforce — 18% of viewers were Salesforce employees who engaged because it was about their product.
 
-4. PARAGRAPH 2: WHAT THE DATA DOESN'T SAY.
-The counterintuitive insight. The thing the original source got wrong or left out. This is Rain's real-world B2B GTM perspective — pipeline mechanics, founder-led sales, enterprise buying behavior. One sharp observation, 2-3 sentences max.
+ELEMENT 4 — PARAGRAPH 2: WHAT THE DATA DOESN'T SAY (2–3 sentences)
+The counterintuitive insight the article missed. Rain's real-world B2B GTM angle: pipeline mechanics, founder-led sales, enterprise buying behavior. One sharp observation.
 
-5. THE CLOSING QUESTION IS ICP-SPECIFIC AND UNCOMFORTABLE.
-"Are you building something people depend on, or something they're still figuring out how to use?"
-Not "Thoughts?" Not "What do you think?" Force the reader — a founder or revenue leader — to evaluate their own business honestly. Slightly uncomfortable = people answer in their head (dwell time) or publicly (comments). Both sides of the question must feel valid to someone.
+ELEMENT 5 — CLOSING QUESTION (1 sentence)
+Force the reader — a VP Sales or founder — to evaluate their own business. Binary. Slightly uncomfortable. Both sides must feel valid.
+Not "Thoughts?" or "What do you think?" — something that makes them pause.
 
-6. NAME THE COMPANIES THE ICP CARES ABOUT.
-The 110K post named Salesforce, Anthropic, OpenAI — the exact enterprise SaaS stack Rain's ICP uses daily. Salesforce employees saw a post about their product and engaged. 18% of all viewers were Salesforce employees. Name specific companies from the article — not to promote them, but because their employees and customers are Rain's audience.
-
-7. RAIN'S PERSPECTIVE IS THE PRODUCT.
-The article is raw material. Rain's reframe is the value. Never summarize the article. Never promote the source. Use the data as evidence for Rain's insight, which must be valuable even if the reader has never heard of the company in the article.
-`;
-
-const POST_STYLE_RULES = `
-STRUCTURE — follow this exact sequence (proven by the 110K post):
-
-LINE 1: [Specific number from article]. [Second specific number that directly contrasts it.]
-Two short sentences. BOTH must contain a specific number or metric. No adjectives, no fluff.
-CORRECT: "Anthropic hit $31B ARR in 4 years. Salesforce took 19."
-CORRECT: "Enterprises waste 35% of cloud spend. Greenpixie raised £4.7M to fix it."
-WRONG: "BirdyChat raised €1.7M. Slack solved internal. External is still broken." — only one number, three sentences.
-WRONG: "Most teams added AI in 2024. Almost none updated their contracts." — a year is not a metric, no contrast number.
-
-LINE 2: That [sounds/looks/feels] like [obvious conclusion]. And it is. But not for the reason most people think.
-(Or a close variant that promises a non-obvious take. This line is mandatory.)
-
-PARAGRAPH 1 (2-3 sentences): The deeper mechanism. WHY it works structurally. Name a specific company or dynamic.
-
-PARAGRAPH 2 (2-3 sentences): What the data doesn't say. Rain's real-world GTM angle. The thing the article missed.
-
-CLOSING QUESTION (1 sentence): Force the ICP to evaluate their own business. Uncomfortable. Binary. ICP-specific.
-Not "What do you think?" — something that makes a VP Sales or founder pause.
-
-HASHTAGS: 2 max at the very end. Both must match the exact topic. Often better with none.
-
-FORMATTING RULES:
-- Short sentences. One idea per line. Generous white space between paragraphs.
-- NO em dashes. NO emoji bullets. NO numbered lists. NO "🔥 Top 5 things".
-- Never start with "I'm excited", "Thrilled", "Great article", "Just read".
-- Sound like a sharp, direct operator. Not a marketer. Not a guru.
-- Total length: 780–860 characters including spaces. The 110K post was 806 chars. Cut ruthlessly if over 860.
-- Write in first person but make it about the insight, not about Rain.
+━━━ FORMATTING RULES ━━━
+- Short sentences. One idea per line. Empty line between every element.
+- NO em dashes (—). Use a period or comma instead.
+- NO emoji. NO bullet lists. NO numbered lists.
+- Never open with "I", "We", "I'm excited", "Thrilled", "Great article".
+- Tone: sharp, direct operator. Not a marketer. Not a guru.
+- Hashtags: 2 maximum at the very end. Often better with none.
+- Length: 780–860 characters including spaces. The 110K post was 806 chars.
 `;
 
 
@@ -239,73 +219,16 @@ export async function generateLinkedInPost({ article, postType = 'reshare', addi
     ? `\nACCEPTED IMPROVEMENT RULES (apply every post — Rain approved these based on real engagement data):\n${guidelines.map((g, i) => `${i + 1}. ${g.title}: ${g.action}`).join('\n')}\n`
     : '';
 
-  let prompt = '';
+  const articleBlock = postType === 'reshare'
+    ? `ARTICLE:\nTitle: ${article.title}\nSource: ${article.source}\nSummary: ${article.description}`
+    : `TOPIC: "${article.title}"`;
 
-  if (postType === 'reshare') {
-    prompt = `${RAIN_CONTEXT}
-
-Write a LinkedIn post sharing this article with Rain's perspective:
-
-Title: ${article.title}
-Source: ${article.source}
-URL: ${article.link}
-Summary: ${article.description}
-
-${POST_STYLE_RULES}
+  const prompt = `${POST_PROMPT}
 ${guidelineBlock}
-HARD CONSTRAINTS — violating any of these makes the post unusable:
-
-CONSTRAINT 1 — LINE 1 MUST HAVE TWO SPECIFIC NUMBERS IN DIRECT CONFRONTATION.
-Not one number. Not a year. Two metrics that contradict each other.
-CORRECT: "Anthropic hit $31B ARR in 4 years. Salesforce took 19."
-CORRECT: "Enterprises waste 35% of cloud spend. Greenpixie just raised £4.7M to fix it."
-WRONG: "Most SaaS teams added AI features in 2024. Almost none updated their contracts." (2024 is not a metric, no confrontation)
-WRONG: "BirdyChat raised €1.7M. Slack solved internal. External is still broken." (three sentences, second number missing)
-If the article does not contain two confrontable numbers, invent the confrontation from known benchmarks — but both numbers must be real and verifiable.
-
-CONSTRAINT 2 — NAME A COMPANY THE ICP USES DAILY in PARAGRAPH 1.
-Not the startup in the article. A name Rain's audience (VP Sales, founders) already has in their stack or reads about every week: Salesforce, HubSpot, AWS, Snowflake, Datadog, Gong, OpenAI, Anthropic, Microsoft, Google.
-Use the startup as supporting evidence, not as the anchor.
-
-CONSTRAINT 3 — MAXIMUM 860 CHARACTERS INCLUDING SPACES AND HASHTAGS.
-Count before outputting. If over 860, cut from PARAGRAPH 1 first, then PARAGRAPH 2. Never cut LINE 1 or LINE 2. The 110K post was 806 chars. Ruthless brevity is the mechanism, not a preference.
-
-TASK: Follow the proven structure exactly:
-1. LINE 1: Two contrasting numbers. Two short sentences. Both real and verifiable. (See CONSTRAINT 1)
-2. LINE 2: Acknowledge the obvious read, then flip it. "But not for the reason most people think." or equivalent.
-3. PARAGRAPH 1: The deeper structural mechanism. Name a company the ICP knows daily. (See CONSTRAINT 2)
-4. PARAGRAPH 2: What the article missed. Rain's real GTM/B2B perspective.
-5. CLOSING QUESTION: ICP-specific, uncomfortable, binary. Forces a VP Sales or founder to reflect on their own business.
-
-${additionalContext ? `ANGLE GUIDANCE: ${additionalContext}\n` : ''}Output only the post text. No title, no intro, no meta-commentary. No "Topic tag:" prefix.`;
-  } else {
-    prompt = `${RAIN_CONTEXT}
-
-Write an original LinkedIn post on this topic: "${article.title}"
-
-${POST_STYLE_RULES}
-${guidelineBlock}
-HARD CONSTRAINTS — violating any of these makes the post unusable:
-
-CONSTRAINT 1 — LINE 1 MUST HAVE TWO SPECIFIC NUMBERS IN DIRECT CONFRONTATION.
-Not one number. Not a year. Two metrics that contradict each other.
-CORRECT: "Anthropic hit $31B ARR in 4 years. Salesforce took 19."
-WRONG: "Most SaaS teams added AI in 2024. Almost none updated their contracts." (year is not a metric)
-
-CONSTRAINT 2 — NAME A COMPANY THE ICP USES DAILY in PARAGRAPH 1.
-Salesforce, HubSpot, AWS, Snowflake, Datadog, Gong, OpenAI, Anthropic, Microsoft, Google.
-
-CONSTRAINT 3 — MAXIMUM 860 CHARACTERS INCLUDING SPACES AND HASHTAGS. Count before outputting. Cut from PARAGRAPH 1 first.
-
-TASK: Follow the proven structure:
-1. LINE 1: Two contrasting numbers. Two short sentences. Both real and verifiable.
-2. LINE 2: Acknowledge the obvious read, then flip it. "But not for the reason most people think." or equivalent.
-3. PARAGRAPH 1: The structural mechanism. Name a company the ICP knows daily.
-4. PARAGRAPH 2: Rain's direct GTM/B2B angle. What most people miss.
-5. CLOSING QUESTION: Forces a founder or VP Sales to evaluate their own business. Uncomfortable. Binary.
+${articleBlock}
+${additionalContext ? `\nANGLE: ${additionalContext}` : ''}
 
 Output only the post text. No title, no intro, no meta-commentary. No "Topic tag:" prefix.`;
-  }
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
