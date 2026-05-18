@@ -413,7 +413,17 @@ app.post('/api/linkedin/generate', async (req, res) => {
     const articles = await curateArticles({ count: 3, usedLinks });
     const drafts = [];
 
+    // Track links already in the queue (including existing drafts) to prevent duplicates
+    const existingLinks = new Set(existingQueue.map(p => p.article?.link).filter(Boolean));
+
     for (const article of articles) {
+      // Skip if a draft already exists for this article (prevents double-generation on repeated clicks)
+      if (existingLinks.has(article.link)) {
+        console.log(`[linkedin/generate] Skipping duplicate: ${article.link}`);
+        continue;
+      }
+      existingLinks.add(article.link);
+
       // AI articles → 'reshare' with AI angle; GTM articles → 'reshare' with sales/pipeline angle
       const postType = 'reshare';
       const topicHint = article.topic === 'gtm'

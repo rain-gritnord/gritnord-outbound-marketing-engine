@@ -312,5 +312,33 @@ Output only the post text. No title, no intro, no meta-commentary. No "Topic tag
   let text = response.content.find(b => b.type === 'text')?.text?.trim() ?? '';
   // Strip any "Topic tag: X" or "Scenario: X" prefix Claude occasionally adds
   text = text.replace(/^(topic tag|scenario|category|type)\s*:\s*\S+\s*/i, '').trim();
+
+  // Enforce 860-char hard ceiling — Claude consistently ignores the prompt instruction.
+  // If over limit, ask Claude to trim only the middle paragraphs, keeping Line 1, Line 2, and closing intact.
+  if (text.length > 860) {
+    console.log(`[poster] Post is ${text.length} chars — trimming to 860`);
+    const trimResponse = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 512,
+      messages: [{
+        role: 'user',
+        content: `This LinkedIn post is ${text.length} characters. Trim it to under 860 characters total (including spaces and hashtags).
+
+STRICT RULES:
+- Keep Line 1 (first two sentences with the data points) UNCHANGED.
+- Keep Line 2 ("That sounds like..." or equivalent) UNCHANGED.
+- Keep the closing question UNCHANGED.
+- Only cut sentences from the middle paragraphs. Remove whole sentences, do not truncate mid-sentence.
+- Output only the final post. No commentary.
+
+POST:
+${text}`,
+      }],
+    });
+    const trimmed = trimResponse.content.find(b => b.type === 'text')?.text?.trim() ?? text;
+    if (trimmed.length <= 860) text = trimmed;
+    else text = text.slice(0, 857) + '...'; // last-resort hard cut
+  }
+
   return text;
 }
