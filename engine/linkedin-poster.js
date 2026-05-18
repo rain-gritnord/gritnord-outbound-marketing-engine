@@ -203,8 +203,12 @@ The article is raw material. Rain's reframe is the value. Never summarize the ar
 const POST_STYLE_RULES = `
 STRUCTURE — follow this exact sequence (proven by the 110K post):
 
-LINE 1: [Real data point from article]. [Benchmark or contrast in one sentence.]
-Two short sentences. Both must be specific numbers. No adjectives, no fluff.
+LINE 1: [Specific number from article]. [Second specific number that directly contrasts it.]
+Two short sentences. BOTH must contain a specific number or metric. No adjectives, no fluff.
+CORRECT: "Anthropic hit $31B ARR in 4 years. Salesforce took 19."
+CORRECT: "Enterprises waste 35% of cloud spend. Greenpixie raised £4.7M to fix it."
+WRONG: "BirdyChat raised €1.7M. Slack solved internal. External is still broken." — only one number, three sentences.
+WRONG: "Most teams added AI in 2024. Almost none updated their contracts." — a year is not a metric, no contrast number.
 
 LINE 2: That [sounds/looks/feels] like [obvious conclusion]. And it is. But not for the reason most people think.
 (Or a close variant that promises a non-obvious take. This line is mandatory.)
@@ -312,6 +316,30 @@ Output only the post text. No title, no intro, no meta-commentary. No "Topic tag
   let text = response.content.find(b => b.type === 'text')?.text?.trim() ?? '';
   // Strip any "Topic tag: X" or "Scenario: X" prefix Claude occasionally adds
   text = text.replace(/^(topic tag|scenario|category|type)\s*:\s*\S+\s*/i, '').trim();
+
+  // Rule 1 validation: Line 1 must contain at least 2 distinct numbers/metrics.
+  // A number is any digit sequence, optionally preceded by $£€ or followed by % B M K.
+  // If only 1 found, regenerate once with an explicit correction instruction.
+  const line1 = text.split('\n')[0] ?? '';
+  const numbersInLine1 = line1.match(/[$£€]?\d[\d,.]*[BMK%]?/g) ?? [];
+  if (numbersInLine1.length < 2) {
+    console.log(`[poster] Rule 1 fail — Line 1 has ${numbersInLine1.length} number(s): "${line1}" — retrying`);
+    const retryResponse = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1024,
+      messages: [{
+        role: 'user',
+        content: `${prompt}
+
+CRITICAL: Your previous attempt failed Rule 1. Line 1 was: "${line1}"
+It contains only ${numbersInLine1.length} number(s). Rule 1 requires EXACTLY 2 sentences in Line 1, each with a specific number that contrasts the other.
+Example: "Anthropic hit $31B ARR in 4 years. Salesforce took 19."
+Rewrite the entire post now with a correct Line 1.`,
+      }],
+    });
+    const retryText = retryResponse.content.find(b => b.type === 'text')?.text?.trim() ?? text;
+    text = retryText.replace(/^(topic tag|scenario|category|type)\s*:\s*\S+\s*/i, '').trim();
+  }
 
   // Enforce 860-char hard ceiling — Claude consistently ignores the prompt instruction.
   // If over limit, ask Claude to trim only the middle paragraphs, keeping Line 1, Line 2, and closing intact.
