@@ -249,10 +249,27 @@ Summary: ${article.description}
 
 ${POST_STYLE_RULES}
 ${guidelineBlock}
+HARD CONSTRAINTS — violating any of these makes the post unusable:
+
+CONSTRAINT 1 — LINE 1 MUST HAVE TWO SPECIFIC NUMBERS IN DIRECT CONFRONTATION.
+Not one number. Not a year. Two metrics that contradict each other.
+CORRECT: "Anthropic hit $31B ARR in 4 years. Salesforce took 19."
+CORRECT: "Enterprises waste 35% of cloud spend. Greenpixie just raised £4.7M to fix it."
+WRONG: "Most SaaS teams added AI features in 2024. Almost none updated their contracts." (2024 is not a metric, no confrontation)
+WRONG: "BirdyChat raised €1.7M. Slack solved internal. External is still broken." (three sentences, second number missing)
+If the article does not contain two confrontable numbers, invent the confrontation from known benchmarks — but both numbers must be real and verifiable.
+
+CONSTRAINT 2 — NAME A COMPANY THE ICP USES DAILY in PARAGRAPH 1.
+Not the startup in the article. A name Rain's audience (VP Sales, founders) already has in their stack or reads about every week: Salesforce, HubSpot, AWS, Snowflake, Datadog, Gong, OpenAI, Anthropic, Microsoft, Google.
+Use the startup as supporting evidence, not as the anchor.
+
+CONSTRAINT 3 — MAXIMUM 860 CHARACTERS INCLUDING SPACES AND HASHTAGS.
+Count before outputting. If over 860, cut from PARAGRAPH 1 first, then PARAGRAPH 2. Never cut LINE 1 or LINE 2. The 110K post was 806 chars. Ruthless brevity is the mechanism, not a preference.
+
 TASK: Follow the proven structure exactly:
-1. LINE 1: Two contrasting data points from the article. Real numbers. Two short sentences.
+1. LINE 1: Two contrasting numbers. Two short sentences. Both real and verifiable. (See CONSTRAINT 1)
 2. LINE 2: Acknowledge the obvious read, then flip it. "But not for the reason most people think." or equivalent.
-3. PARAGRAPH 1: The deeper structural mechanism. Name a specific company from the article or ecosystem.
+3. PARAGRAPH 1: The deeper structural mechanism. Name a company the ICP knows daily. (See CONSTRAINT 2)
 4. PARAGRAPH 2: What the article missed. Rain's real GTM/B2B perspective.
 5. CLOSING QUESTION: ICP-specific, uncomfortable, binary. Forces a VP Sales or founder to reflect on their own business.
 
@@ -264,11 +281,23 @@ Write an original LinkedIn post on this topic: "${article.title}"
 
 ${POST_STYLE_RULES}
 ${guidelineBlock}
+HARD CONSTRAINTS — violating any of these makes the post unusable:
+
+CONSTRAINT 1 — LINE 1 MUST HAVE TWO SPECIFIC NUMBERS IN DIRECT CONFRONTATION.
+Not one number. Not a year. Two metrics that contradict each other.
+CORRECT: "Anthropic hit $31B ARR in 4 years. Salesforce took 19."
+WRONG: "Most SaaS teams added AI in 2024. Almost none updated their contracts." (year is not a metric)
+
+CONSTRAINT 2 — NAME A COMPANY THE ICP USES DAILY in PARAGRAPH 1.
+Salesforce, HubSpot, AWS, Snowflake, Datadog, Gong, OpenAI, Anthropic, Microsoft, Google.
+
+CONSTRAINT 3 — MAXIMUM 860 CHARACTERS INCLUDING SPACES AND HASHTAGS. Count before outputting. Cut from PARAGRAPH 1 first.
+
 TASK: Follow the proven structure:
-1. LINE 1: A specific data point or observation that creates cognitive dissonance. Two short sentences with a contrast.
+1. LINE 1: Two contrasting numbers. Two short sentences. Both real and verifiable.
 2. LINE 2: Acknowledge the obvious read, then flip it. "But not for the reason most people think." or equivalent.
-3. PARAGRAPH 1: The structural mechanism behind the observation. WHY it works or fails at a systems level.
-4. PARAGRAPH 2: Rain's direct GTM/B2B experience angle. What most people miss.
+3. PARAGRAPH 1: The structural mechanism. Name a company the ICP knows daily.
+4. PARAGRAPH 2: Rain's direct GTM/B2B angle. What most people miss.
 5. CLOSING QUESTION: Forces a founder or VP Sales to evaluate their own business. Uncomfortable. Binary.
 
 Output only the post text. No title, no intro, no meta-commentary. No "Topic tag:" prefix.`;
