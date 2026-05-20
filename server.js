@@ -414,13 +414,17 @@ app.post('/api/linkedin/generate', async (req, res) => {
       .filter(p => activeStatuses.has(p.status))
       .map(p => p.article?.link).filter(Boolean);
 
-    const articles = await curateArticles({ count: 3, usedLinks });
+    // Request 10 candidates — many will be rejected by CANNOT_GENERATE or Rule 1.
+    // We keep generating until we have 3 posts or exhaust all candidates.
+    const articles = await curateArticles({ count: 10, usedLinks });
     const drafts = [];
 
     // Prevent duplicates within this generation run only (not across all history)
     const existingLinks = new Set(usedLinks);
 
     for (const article of articles) {
+      if (drafts.length >= 3) break; // stop once we have 3 good posts
+
       // Skip if a draft already exists for this article (prevents double-generation on repeated clicks)
       if (existingLinks.has(article.link)) {
         console.log(`[linkedin/generate] Skipping duplicate: ${article.link}`);

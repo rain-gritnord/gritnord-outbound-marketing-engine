@@ -93,17 +93,23 @@ const BLOCKED_KEYWORDS = [
   'divorce', 'lawsuit', 'scandal',
 ];
 
-// Articles that are pure announcements with no data — CEO hires, awards, appointments, partnerships
-// These never contain two confrontable numbers so they cannot satisfy Line 1 of the post structure.
+// Articles with no confrontable numbers — CEO hires, opinion pieces, listicles, advice posts.
+// These cannot satisfy Line 1 (two contrasting numbers) so they are blocked at curation.
 const DATALESS_PATTERNS = [
+  // Executive appointments
   /appoints?\s+(new\s+)?(ceo|cto|cfo|coo|vp|chief|head|director)/i,
   /names?\s+(new\s+)?(ceo|cto|cfo|coo|vp|chief|head|director)/i,
   /welcomes?\s+(new\s+)?(ceo|cto|cfo|coo|vp|chief|head|director)/i,
   /joins?\s+as\s+(ceo|cto|cfo|coo|vp|chief|head|director)/i,
+  // Awards / recognition
   /wins?\s+(award|prize|recognition|deal)/i,
   /named\s+(best|top|leader|winner)/i,
+  // Partnerships with no data
   /partners?\s+with\b/i,
   /announces?\s+partnership/i,
+  // Opinion / advice / listicle titles — no data to extract
+  /^(how\s+to|why\s+you|dear\s+saastr|top\s+\d|best\s+\d|\d+\s+ways|\d+\s+tips|\d+\s+reasons|what\s+is\s+a|the\s+\d+\s+best)/i,
+  /\?\s*$/,  // titles that are just questions have no data
 ];
 
 function scoreArticle(title, description = '') {
