@@ -127,10 +127,9 @@ export async function postToLinkedIn({ text, imageUrl }) {
 
   const personUrn = await getPersonUrn();
 
-  let mediaAsset = null;
-  if (imageUrl) {
-    try { mediaAsset = await uploadImageToLinkedIn(imageUrl, personUrn); } catch {}
-  }
+  // Do not upload images — LinkedIn's native link preview (from the URL in post text)
+  // always produces a cleaner result than manually uploaded OG image thumbnails.
+  const mediaAsset = null;
 
   const body = {
     author: personUrn,
