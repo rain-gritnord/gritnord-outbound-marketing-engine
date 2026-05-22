@@ -82,7 +82,7 @@ function setSessionCookie(res, data) {
 }
 
 const PROTECTED = new Set(['/dashboard.html', '/linkedin.html', '/twitter.html', '/roadmap.html', '/architecture-v7.html', '/uc-acquisition.html', '/content-marketing.html']);
-const AUTH_PUBLIC = new Set(['/login.html', '/auth/login', '/auth/logout', '/auth/google', '/auth/google/callback', '/auth/linkedin', '/auth/linkedin/callback', '/bookmarklet-sync']);
+const AUTH_PUBLIC = new Set(['/login.html', '/auth/login', '/auth/logout', '/auth/google', '/auth/google/callback', '/auth/linkedin', '/auth/linkedin/callback', '/bookmarklet-sync', '/api/product-data.js', '/api/product-brief/download', '/product-brief.html']);
 
 function authMiddleware(req, res, next) {
   if (AUTH_PUBLIC.has(req.path) || (!PROTECTED.has(req.path) && !req.path.startsWith('/api/'))) return next();
@@ -1566,6 +1566,231 @@ app.get('/api/linkedin/engagement/drop-status', (req, res) => {
     res.json({ pending, processed: processed.slice(-20) });
   } catch {
     res.json({ pending: [], processed: [] });
+  }
+});
+
+// ─── Product Data API ────────────────────────────────────────────────────────
+
+const PRODUCT_DATA_PATH = path.join(__dirname, 'data', 'product-data.json');
+
+app.get('/api/product-data.js', (req, res) => {
+  try {
+    const data = JSON.parse(readFileSync(PRODUCT_DATA_PATH, 'utf8'));
+    const js = `window.GRITNORD = ${JSON.stringify(data, null, 2)};`;
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.send(js);
+  } catch (err) {
+    console.error('[product-data] Failed to read product-data.json:', err.message);
+    res.status(500).send('// Error loading product data');
+  }
+});
+
+app.get('/api/product-brief/download', async (req, res) => {
+  try {
+    const {
+      Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+      AlignmentType, HeadingLevel, BorderStyle, WidthType, VerticalAlign,
+    } = await import('docx');
+
+    const data = JSON.parse(readFileSync(PRODUCT_DATA_PATH, 'utf8'));
+
+    const statusColor = (status) => {
+      if (status === 'live')     return '22c55e';
+      if (status === 'building') return 'eab308';
+      return '6b7280';
+    };
+
+    const statusLabel = (status) => {
+      if (status === 'live')     return 'LIVE';
+      if (status === 'building') return 'BUILDING';
+      return 'PLANNED';
+    };
+
+    const thin = { style: BorderStyle.SINGLE, size: 1, color: 'e5e7eb' };
+    const noBorder = { style: BorderStyle.NONE, size: 0, color: 'ffffff' };
+
+    // ── Section heading helper ──
+    const sectionHeading = (text) => new Paragraph({
+      text,
+      heading: HeadingLevel.HEADING_2,
+      spacing: { before: 400, after: 200 },
+    });
+
+    // ── Module table ──
+    const moduleRows = [
+      new TableRow({
+        tableHeader: true,
+        children: ['Module', 'Description', 'Stack', 'Status'].map(h =>
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: h, bold: true, size: 20 })] })],
+            shading: { type: 'clear', fill: 'f3f4f6' },
+            borders: { top: thin, bottom: thin, left: thin, right: thin },
+          })
+        ),
+      }),
+      ...data.modules.map(m => new TableRow({
+        children: [
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: `${m.icon} ${m.name}`, bold: true, size: 18 })] })],
+            borders: { top: thin, bottom: thin, left: thin, right: thin },
+          }),
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: m.description, size: 18 })] })],
+            borders: { top: thin, bottom: thin, left: thin, right: thin },
+          }),
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: (m.stack || []).join(', '), size: 18 })] })],
+            borders: { top: thin, bottom: thin, left: thin, right: thin },
+          }),
+          new TableCell({
+            children: [new Paragraph({
+              children: [new TextRun({ text: statusLabel(m.status), bold: true, color: statusColor(m.status), size: 18 })],
+            })],
+            borders: { top: thin, bottom: thin, left: thin, right: thin },
+          }),
+        ],
+      })),
+    ];
+
+    // ── Roadmap table ──
+    const roadmapRows = [
+      new TableRow({
+        tableHeader: true,
+        children: ['Phase', 'Name', 'Deliverables', 'Quarter / Status'].map(h =>
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: h, bold: true, size: 20 })] })],
+            shading: { type: 'clear', fill: 'f3f4f6' },
+            borders: { top: thin, bottom: thin, left: thin, right: thin },
+          })
+        ),
+      }),
+      ...data.roadmap.map(r => new TableRow({
+        children: [
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: `Phase ${r.phase}`, bold: true, size: 18 })] })],
+            borders: { top: thin, bottom: thin, left: thin, right: thin },
+          }),
+          new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text: r.name, size: 18 })] })],
+            borders: { top: thin, bottom: thin, left: thin, right: thin },
+          }),
+          new TableCell({
+            children: r.deliverables.map(d => new Paragraph({
+              children: [new TextRun({ text: `• ${d}`, size: 18 })],
+              spacing: { after: 60 },
+            })),
+            borders: { top: thin, bottom: thin, left: thin, right: thin },
+          }),
+          new TableCell({
+            children: [
+              new Paragraph({ children: [new TextRun({ text: r.quarter, bold: true, size: 18 })] }),
+              new Paragraph({ children: [new TextRun({ text: statusLabel(r.status), color: statusColor(r.status), size: 18 })] }),
+            ],
+            borders: { top: thin, bottom: thin, left: thin, right: thin },
+          }),
+        ],
+      })),
+    ];
+
+    const doc = new Document({
+      sections: [{
+        children: [
+          // ── Cover ──
+          new Paragraph({
+            children: [new TextRun({ text: 'Gritnord Platform', bold: true, size: 56, color: '111827' })],
+            spacing: { before: 800, after: 200 },
+          }),
+          new Paragraph({
+            children: [new TextRun({ text: data.meta.tagline, size: 24, color: '6b7280', italics: true })],
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            children: [new TextRun({ text: `Version ${data.meta.version} · Updated ${data.meta.updated}`, size: 20, color: '9ca3af' })],
+            spacing: { after: 800 },
+          }),
+
+          // ── What is Gritnord ──
+          sectionHeading('What is Gritnord'),
+          new Paragraph({ children: [new TextRun({ text: data.meta.description1, size: 22 })], spacing: { after: 200 } }),
+          new Paragraph({ children: [new TextRun({ text: data.meta.description2, size: 22 })], spacing: { after: 400 } }),
+
+          // ── Key Numbers ──
+          sectionHeading('Key Numbers'),
+          ...data.stats.map(s => new Paragraph({
+            children: [
+              new TextRun({ text: `${s.value}  `, bold: true, size: 24, color: '111827' }),
+              new TextRun({ text: s.label, size: 22, color: '6b7280' }),
+            ],
+            spacing: { after: 120 },
+          })),
+
+          // ── Platform Modules ──
+          sectionHeading('Platform Modules'),
+          new Table({
+            rows: moduleRows,
+            width: { size: 100, type: WidthType.PERCENTAGE },
+          }),
+
+          // ── Roadmap ──
+          sectionHeading('Product Roadmap'),
+          new Table({
+            rows: roadmapRows,
+            width: { size: 100, type: WidthType.PERCENTAGE },
+          }),
+
+          // ── Tech Stack ──
+          sectionHeading('Current Tech Stack'),
+          new Paragraph({ children: [new TextRun({ text: 'Backend', bold: true, size: 22 })], spacing: { before: 200, after: 100 } }),
+          ...[
+            'Node.js / Express — server + API',
+            'JSON flat-file DB (data/*.json)',
+            'Claude Sonnet 4.6 — generation, research, suggestions',
+            'Anthropic SDK',
+            'Multer — file uploads (xlsx)',
+            'XLSX package — LinkedIn analytics parsing',
+          ].map(t => new Paragraph({ children: [new TextRun({ text: `• ${t}`, size: 20 })], spacing: { after: 80 } })),
+          new Paragraph({ children: [new TextRun({ text: 'Integrations', bold: true, size: 22 })], spacing: { before: 200, after: 100 } }),
+          ...[
+            'LinkedIn OAuth — write posts, fetch profile',
+            'LinkedIn UGC API — posting (w_member_social scope)',
+            'Google OAuth — auth',
+            'Twilio — WhatsApp outreach (sandbox)',
+            'RSS feeds — article curation',
+            'Clay + Apollo + BetterContact — DC research pipeline',
+            'HubSpot — CRM sync',
+            'Resend — email delivery',
+          ].map(t => new Paragraph({ children: [new TextRun({ text: `• ${t}`, size: 20 })], spacing: { after: 80 } })),
+          new Paragraph({ children: [new TextRun({ text: 'Planned', bold: true, size: 22 })], spacing: { before: 200, after: 100 } }),
+          ...[
+            'Lovable — client-facing UI (UC dashboard, lead magnet)',
+            'Supabase — multi-tenant data layer',
+            'Stripe — €500/meeting billing',
+            'Cal.com — meeting booking',
+            'ElevenLabs — no-show voice calls',
+            'Make.com — automation orchestration',
+          ].map(t => new Paragraph({ children: [new TextRun({ text: `• ${t}`, size: 20 })], spacing: { after: 80 } })),
+
+          // ── Contact ──
+          sectionHeading('Contact'),
+          new Paragraph({
+            children: [new TextRun({ text: 'rain@gritnord.com', size: 22, color: '6366f1' })],
+            spacing: { before: 200, after: 100 },
+          }),
+          new Paragraph({
+            children: [new TextRun({ text: 'gritnord.com', size: 22, color: '6366f1' })],
+          }),
+        ],
+      }],
+    });
+
+    const buffer = await Packer.toBuffer(doc);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', 'attachment; filename="Gritnord_Product_Brief.docx"');
+    res.send(buffer);
+  } catch (err) {
+    console.error('[product-brief/download] Error generating DOCX:', err);
+    res.status(500).json({ error: 'Failed to generate DOCX', detail: err.message });
   }
 });
 

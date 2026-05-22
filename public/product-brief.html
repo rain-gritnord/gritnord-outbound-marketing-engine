@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Brief — Gritnord</title>
+  <link rel="icon" type="image/png" href="/GN_FAV-03.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="/api/product-data.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #000;
+      --surface: #0a0a0a;
+      --card: #0f0f0f;
+      --border: #1a1a1a;
+      --text: #f0f0f0;
+      --muted: #555;
+      --muted2: #888;
+      --purple: #a78bfa;
+      --purple-dim: #a78bfa18;
+      --purple-border: #a78bfa33;
+      --green: #22c55e;
+      --amber: #eab308;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 60px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .nav-logo { font-size: 14px; font-weight: 800; letter-spacing: -0.4px; color: var(--text); text-decoration: none; }
+    .nav-links { display: flex; gap: 6px; align-items: center; }
+    .nav-link { font-size: 12px; color: var(--muted2); text-decoration: none; padding: 4px 12px; border: 1px solid var(--border); border-radius: 9999px; transition: color 0.15s, border-color 0.15s; }
+    .nav-link:hover { color: var(--text); border-color: #333; }
+    .nav-link.active { color: var(--text); border-color: #333; }
+    .btn-download {
+      font-size: 12px; font-weight: 600; color: var(--bg); background: var(--text);
+      padding: 5px 14px; border-radius: 9999px; border: none; cursor: pointer;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+      transition: opacity 0.15s;
+    }
+    .btn-download:hover { opacity: 0.85; }
+
+    /* ── Hero ── */
+    .hero { max-width: 800px; margin: 0 auto; padding: 72px 40px 60px; text-align: center; }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 5px 14px; border-radius: 9999px;
+      border: 1px solid var(--border);
+      font-size: 11px; font-weight: 600; color: var(--muted2);
+      text-transform: uppercase; letter-spacing: 0.8px;
+      margin-bottom: 24px;
+    }
+    .hero h1 { font-size: clamp(32px, 5vw, 56px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.08; margin-bottom: 18px; }
+    .grad {
+      background: linear-gradient(135deg, #e879f9 0%, #f97316 30%, #a855f7 65%, #3b82f6 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero p { font-size: 16px; color: var(--muted2); max-width: 520px; margin: 0 auto; }
+    .holo { width: 100%; height: 2px; background: linear-gradient(90deg, transparent 0%, #e879f9 15%, #f97316 30%, #a855f7 50%, #3b82f6 70%, #06b6d4 85%, transparent 100%); opacity: 0.5; }
+
+    /* ── Page body ── */
+    .page { max-width: 1080px; margin: 0 auto; padding: 56px 40px 80px; }
+
+    /* ── Section ── */
+    .section { margin-bottom: 60px; }
+    .section-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
+      color: var(--muted); margin-bottom: 24px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ── What is Gritnord ── */
+    .what-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .what-p { font-size: 15px; color: var(--muted2); line-height: 1.75; }
+    @media (max-width: 700px) { .what-grid { grid-template-columns: 1fr; } }
+
+    /* ── How it works ── */
+    .steps { display: flex; flex-direction: column; gap: 0; max-width: 680px; }
+    .step {
+      display: flex; align-items: flex-start; gap: 20px;
+      padding: 20px 0; border-bottom: 1px solid var(--border);
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%;
+      background: var(--surface); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; color: var(--muted2);
+    }
+    .step-body h4 { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .step-body p { font-size: 13px; color: var(--muted2); }
+
+    /* ── Module cards ── */
+    .status-group { margin-bottom: 40px; }
+    .status-group-label {
+      font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+      margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
+    }
+    .status-group-label .dot { width: 7px; height: 7px; border-radius: 50%; }
+    .dot-live  { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .dot-building { background: var(--amber); }
+    .dot-planned { background: #3f3f46; }
+
+    .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+    .mod-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 20px 22px;
+      display: flex; flex-direction: column; gap: 12px;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .mod-card:hover { border-color: #2a2a2a; transform: translateY(-2px); }
+    .mod-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .mod-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: var(--card); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .mod-status {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 999px; white-space: nowrap;
+    }
+    .status-live    { background: #0f2c1a; color: var(--green); }
+    .status-building { background: #1c1500; color: var(--amber); }
+    .status-planned { background: #111; color: var(--muted2); }
+    .mod-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .mod-desc { font-size: 12px; color: var(--muted2); line-height: 1.6; }
+    .mod-stack { display: flex; flex-wrap: wrap; gap: 5px; margin-top: auto; }
+    .stack-tag {
+      padding: 2px 8px; border-radius: 4px;
+      font-size: 10px; font-weight: 500; color: var(--muted2);
+      background: var(--card); border: 1px solid var(--border);
+    }
+
+    /* ── Roadmap ── */
+    .roadmap-row { display: flex; flex-direction: column; gap: 12px; }
+    .roadmap-item {
+      display: grid; grid-template-columns: 60px 1fr auto;
+      align-items: center; gap: 20px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px 20px;
+    }
+    .roadmap-phase { font-size: 22px; font-weight: 800; color: var(--muted); letter-spacing: -0.03em; }
+    .roadmap-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .roadmap-deliverables { font-size: 12px; color: var(--muted2); }
+    .roadmap-right { text-align: right; flex-shrink: 0; }
+    .roadmap-quarter { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .roadmap-pill {
+      display: inline-flex; font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; padding: 3px 8px; border-radius: 999px;
+    }
+    .pill-live { background: #0f2c1a; color: var(--green); }
+    .pill-building { background: #1c1500; color: var(--amber); }
+    .pill-planned { background: #111; color: var(--muted2); }
+
+    /* ── Stats strip ── */
+    .stats-strip {
+      display: flex; gap: 1px;
+      border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+    }
+    .stat-cell {
+      flex: 1; padding: 24px 20px;
+      background: var(--card); text-align: center;
+      border-right: 1px solid var(--border);
+    }
+    .stat-cell:last-child { border-right: none; }
+    .stat-num {
+      font-size: 28px; font-weight: 800; letter-spacing: -0.04em;
+      background: linear-gradient(135deg, #e879f9, #3b82f6);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      margin-bottom: 4px;
+    }
+    .stat-lbl { font-size: 11px; color: var(--muted2); }
+
+    /* ── Commercial context table ── */
+    .context-table { width: 100%; border-collapse: collapse; }
+    .context-table td, .context-table th { padding: 12px 16px; border: 1px solid var(--border); font-size: 13px; }
+    .context-table th { background: var(--surface); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted2); }
+    .context-table tr:nth-child(even) td { background: var(--surface); }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border); padding: 28px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      color: var(--muted); font-size: 12px;
+    }
+    .footer-logo { font-weight: 800; color: var(--text); font-size: 13px; }
+    .footer-right { display: flex; gap: 20px; }
+    .footer-link { color: var(--muted2); text-decoration: none; }
+    .footer-link:hover { color: var(--text); }
+
+    @media (max-width: 768px) {
+      nav, .page, footer { padding-left: 20px; padding-right: 20px; }
+      .hero { padding: 48px 20px 40px; }
+      .stats-strip { flex-wrap: wrap; }
+      .stat-cell { min-width: 50%; border-bottom: 1px solid var(--border); }
+      .roadmap-item { grid-template-columns: 40px 1fr; }
+      .roadmap-right { grid-column: 2; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/dashboard.html" class="nav-logo">Gritnord</a>
+  <div class="nav-links">
+    <a href="/dashboard.html" class="nav-link">Dashboard</a>
+    <a href="/architecture-v7.html" class="nav-link">Architecture</a>
+    <a href="/roadmap.html" class="nav-link">Roadmap</a>
+    <a href="/product-brief.html" class="nav-link active">Product Brief</a>
+    <a href="/api/product-brief/download" class="btn-download">↓ Download DOCX</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">⬡ <span id="hero-version">V7</span> · Product Brief</div>
+  <h1>The <span class="grad">Gritnord Platform</span></h1>
+  <p id="hero-tagline">End-to-end AI-powered B2B meeting engine.</p>
+</div>
+
+<div class="holo"></div>
+
+<div class="page">
+
+  <!-- ── What is Gritnord ── -->
+  <div class="section">
+    <div class="section-label">What is Gritnord</div>
+    <div class="what-grid">
+      <p class="what-p" id="what-p1"></p>
+      <p class="what-p" id="what-p2"></p>
+    </div>
+  </div>
+
+  <!-- ── How it works ── -->
+  <div class="section">
+    <div class="section-label">How it works</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>UC Onboarding</h4>
+          <p>The Unique Customer (UC) defines their Ideal Customer Profile (ICP) — industry, company size, pain points, geography. Claude extracts and locks this into a structured JSON used by all downstream systems.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>DC Research Pipeline</h4>
+          <p>The ICP is sent to Clay via webhook. Apollo finds 250 matching Dream Customer (DC) companies per batch. BetterContact enriches with email and mobile. Claude scores each 0–100 against the ICP.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>Content Engine generates awareness</h4>
+          <p>30+ RSS feeds curated daily. Claude generates LinkedIn posts in Rain's voice with 8 learned guidelines. Auto-posted via LinkedIn API. Engagement tracked and fed back to the learning engine.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>30-Day 8-Channel Outreach Sequence</h4>
+          <p>Each DC enters a coordinated 8-touch sequence: paid social → LinkedIn DM → HeyGen video → BDR call → voice note → WhatsApp → BDR call 2 → breakup message. Every touch references the last.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h4>Meeting Booking & Gate</h4>
+          <p>DCs who respond book via Cal.com with an ICP-gate qualification form. Routing assigns the correct UC. Confirmation + reminder sequences fire automatically.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <h4>No-Show Prevention</h4>
+          <p>T-24h and T-2h reminders via email + WhatsApp. If DC doesn't join at T+3min, ElevenLabs places an AI voice call and offers 3 reschedule slots via Make.com.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">7</div>
+        <div class="step-body">
+          <h4>Billing & Flywheel</h4>
+          <p>Admin marks meeting held → Stripe fires €500 charge. 48h later, the DC receives a pitch: "Want meetings like this?" — converting DC to UC at zero acquisition cost. The flywheel spins.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Stats ── -->
+  <div class="section">
+    <div class="section-label">Key numbers</div>
+    <div class="stats-strip" id="stats-strip"></div>
+  </div>
+
+  <!-- ── Platform Modules ── -->
+  <div class="section">
+    <div class="section-label">Platform modules</div>
+    <div id="modules-live" class="status-group"></div>
+    <div id="modules-building" class="status-group"></div>
+    <div id="modules-planned" class="status-group"></div>
+  </div>
+
+  <!-- ── Roadmap ── -->
+  <div class="section">
+    <div class="section-label">Product roadmap</div>
+    <div class="roadmap-row" id="roadmap-row"></div>
+  </div>
+
+  <!-- ── Commercial context ── -->
+  <div class="section">
+    <div class="section-label">Commercial model</div>
+    <table class="context-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Value</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Revenue per meeting</td>
+          <td><strong>€500</strong></td>
+          <td>Charged per meeting held, not booked</td>
+        </tr>
+        <tr>
+          <td>Gross margin target</td>
+          <td><strong>83%</strong></td>
+          <td>Content cost €2–10/meeting at scale</td>
+        </tr>
+        <tr>
+          <td>UCs to reach €1M ARR</td>
+          <td><strong>23</strong></td>
+          <td>At 4 meetings/UC/month average</td>
+        </tr>
+        <tr>
+          <td>DC contacts per batch</td>
+          <td><strong>250</strong></td>
+          <td>Clay + Apollo per ICP run</td>
+        </tr>
+        <tr>
+          <td>Outreach channels</td>
+          <td><strong>8</strong></td>
+          <td>Over 30-day coordinated sequence</td>
+        </tr>
+        <tr>
+          <td>Content cost / meeting</td>
+          <td><strong>€2–10</strong></td>
+          <td>After 3+ months of compounding</td>
+        </tr>
+        <tr>
+          <td>UC Onboarding fee</td>
+          <td><strong>€3,500</strong></td>
+          <td>One-time setup + ICP extraction</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<footer>
+  <span class="footer-logo">Gritnord</span>
+  <div class="footer-right">
+    <a href="mailto:rain@gritnord.com" class="footer-link">rain@gritnord.com</a>
+    <a href="https://gritnord.com" class="footer-link" target="_blank">gritnord.com</a>
+    <a href="/api/product-brief/download" class="footer-link">Download DOCX</a>
+  </div>
+</footer>
+
+<script>
+(function() {
+  function ready(fn) {
+    if (typeof window.GRITNORD !== 'undefined') { fn(); }
+    else { setTimeout(() => ready(fn), 30); }
+  }
+
+  ready(function() {
+    const G = window.GRITNORD;
+
+    // Hero
+    document.getElementById('hero-version').textContent = G.meta.version;
+    document.getElementById('hero-tagline').textContent = G.meta.tagline;
+
+    // What is
+    document.getElementById('what-p1').textContent = G.meta.description1;
+    document.getElementById('what-p2').textContent = G.meta.description2;
+
+    // Stats
+    const statsEl = document.getElementById('stats-strip');
+    statsEl.innerHTML = G.stats.map(s => `
+      <div class="stat-cell">
+        <div class="stat-num">${s.value}</div>
+        <div class="stat-lbl">${s.label}</div>
+      </div>
+    `).join('');
+
+    // Modules grouped by status
+    const statusOrder = ['live', 'building', 'planned'];
+    const statusMeta = {
+      live:     { label: 'Live', dotClass: 'dot-live', badgeClass: 'status-live', pillText: '● Live' },
+      building: { label: 'Building', dotClass: 'dot-building', badgeClass: 'status-building', pillText: '◐ Building' },
+      planned:  { label: 'Planned', dotClass: 'dot-planned', badgeClass: 'status-planned', pillText: '○ Planned' },
+    };
+
+    statusOrder.forEach(status => {
+      const mods = G.modules.filter(m => m.status === status);
+      const container = document.getElementById(`modules-${status}`);
+      if (!container || mods.length === 0) { if (container) container.style.display = 'none'; return; }
+      const sm = statusMeta[status];
+      container.innerHTML = `
+        <div class="status-group-label">
+          <span class="dot ${sm.dotClass}"></span>
+          ${sm.label} — ${mods.length} module${mods.length !== 1 ? 's' : ''}
+        </div>
+        <div class="modules-grid">
+          ${mods.map(m => `
+            <div class="mod-card">
+              <div class="mod-card-top">
+                <div class="mod-icon">${m.icon}</div>
+                <div class="mod-status ${sm.badgeClass}">${sm.pillText}</div>
+              </div>
+              <div>
+                <div class="mod-name">${m.name}</div>
+                <div class="mod-desc">${m.description}</div>
+              </div>
+              <div class="mod-stack">
+                ${(m.stack || []).map(s => `<span class="stack-tag">${s}</span>`).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    });
+
+    // Roadmap
+    const roadmapEl = document.getElementById('roadmap-row');
+    const pillClass = { live: 'pill-live', building: 'pill-building', planned: 'pill-planned' };
+    const pillLabel = { live: 'Live', building: 'Building', planned: 'Planned' };
+    roadmapEl.innerHTML = G.roadmap.map(r => `
+      <div class="roadmap-item">
+        <div class="roadmap-phase">P${r.phase}</div>
+        <div>
+          <div class="roadmap-name">${r.name}</div>
+          <div class="roadmap-deliverables">${r.deliverables.slice(0, 3).join(' · ')}${r.deliverables.length > 3 ? ' …' : ''}</div>
+        </div>
+        <div class="roadmap-right">
+          <div class="roadmap-quarter">${r.quarter}</div>
+          <span class="roadmap-pill ${pillClass[r.status]}">${pillLabel[r.status]}</span>
+        </div>
+      </div>
+    `).join('');
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -6,6 +6,7 @@
   <title>Product &amp; Architecture — Gritnord</title>
   <link rel="icon" type="image/png" href="/GN_FAV-03.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="/api/product-data.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -168,7 +169,7 @@
   <!-- ── Current metrics ─────────────────────────────────────────────────── -->
   <div class="section">
     <div class="section-label">What we know from real data</div>
-    <div class="metrics">
+    <div class="metrics" id="arch-metrics">
       <div class="metric"><div class="val">45k</div><div class="lbl">Best post impressions (8/10 score)</div></div>
       <div class="metric"><div class="val">367</div><div class="lbl">Worst post impressions (2.6/10 score)</div></div>
       <div class="metric"><div class="val">~5k</div><div class="lbl">LinkedIn followers</div></div>
@@ -181,87 +182,13 @@
   <!-- ── What's live ─────────────────────────────────────────────────────── -->
   <div class="section">
     <div class="section-label">Live — working today</div>
-    <div class="modules">
+    <div class="modules" id="modules-live"></div>
+  </div>
 
-      <div class="module live">
-        <div class="module-status status-live">● Live</div>
-        <h3>LinkedIn Content Engine</h3>
-        <p>Full loop from article curation to posted content with engagement learning.</p>
-        <ul>
-          <li>RSS feed curation — scores articles by B2B/GTM relevance</li>
-          <li>Claude generates posts using Rain's voice + 8 learned guidelines</li>
-          <li>Manual approval before posting</li>
-          <li>Auto-posts via LinkedIn API (OAuth connected)</li>
-          <li>Engagement tracking: bookmarklet + xlsx import + API fallback</li>
-          <li>AI learns from scores — improves every post</li>
-          <li>Impression-based scoring: &lt;300 = 1, 40k+ = 8+</li>
-          <li>Articles with relevance &lt; 4 auto-switch to original posts</li>
-        </ul>
-      </div>
-
-      <div class="module live">
-        <div class="module-status status-live">● Live</div>
-        <h3>Outreach / UC Acquisition</h3>
-        <p>Research-backed outreach sequencer for prospecting.</p>
-        <ul>
-          <li>Candidate input: name, company, LinkedIn URL</li>
-          <li>AI researches company, finds pain points, ICP match score</li>
-          <li>AI writes personalised video script per candidate</li>
-          <li>Multi-day email sequence (D0, D3, D7, D14)</li>
-          <li>LinkedIn audience sync for ad targeting</li>
-          <li>WhatsApp via Twilio sandbox (temporary number)</li>
-        </ul>
-      </div>
-
-      <div class="module live">
-        <div class="module-status status-live">● Live</div>
-        <h3>Channel Learning &amp; Weights</h3>
-        <p>Engine that scores content performance and adjusts channel priority over time.</p>
-        <ul>
-          <li>Rolling average score per channel (α = 0.2 learning rate)</li>
-          <li>Success rate: % of posts scoring 6+/10</li>
-          <li>Channel priority drives content cycle scheduling</li>
-          <li>Suggestion engine proposes improvements, Rain accepts/dismisses</li>
-          <li>Accepted guidelines injected into every future generation</li>
-        </ul>
-      </div>
-
-      <div class="module live">
-        <div class="module-status status-live">● Live</div>
-        <h3>Auth &amp; Dashboard</h3>
-        <p>Internal tool at localhost:3000. Google OAuth + email/password.</p>
-        <ul>
-          <li>Session-based auth, protected routes</li>
-          <li>Dashboard shows pipeline stats, cycle history</li>
-          <li>LinkedIn, Outreach, Twitter, Architecture pages</li>
-        </ul>
-      </div>
-
-      <div class="module partial">
-        <div class="module-status status-partial">◐ Partial</div>
-        <h3>Twitter / X Engine</h3>
-        <p>Generation and posting works. No engagement loop yet.</p>
-        <ul>
-          <li>Generates threads and single tweets</li>
-          <li>Manual approve → post</li>
-          <li>No impression tracking, no learning loop</li>
-          <li>No performance data yet</li>
-        </ul>
-      </div>
-
-      <div class="module partial">
-        <div class="module-status status-partial">◐ Partial</div>
-        <h3>Email Outreach Sequencer</h3>
-        <p>Logic is built. Deliverability and tracking not validated at scale.</p>
-        <ul>
-          <li>Day 0/3/7/14 sequence fires via cron</li>
-          <li>No open/reply tracking yet</li>
-          <li>No bounce handling</li>
-          <li>Estonian number for WhatsApp not configured yet</li>
-        </ul>
-      </div>
-
-    </div>
+  <!-- ── Building ─────────────────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-label">Building — in progress</div>
+    <div class="modules" id="modules-partial"></div>
   </div>
 
   <!-- ── Customer acquisition funnel ────────────────────────────────────── -->
@@ -458,5 +385,37 @@
   </div>
 
 </div>
+
+<script>
+(function() {
+  function renderArchModules() {
+    if (typeof window.GRITNORD === 'undefined') { return setTimeout(renderArchModules, 30); }
+    const G = window.GRITNORD;
+
+    function makeCard(m, cssClass, statusHtml, statusClass) {
+      const bullets = (m.bullets || []).map(b => `<li>${b}</li>`).join('');
+      return `
+        <div class="module ${cssClass}">
+          <div class="module-status ${statusClass}">${statusHtml}</div>
+          <h3>${m.icon} ${m.name}</h3>
+          <p>${m.description}</p>
+          ${bullets ? `<ul>${bullets}</ul>` : ''}
+        </div>
+      `;
+    }
+
+    const live = G.modules.filter(m => m.status === 'live');
+    const building = G.modules.filter(m => m.status === 'building');
+
+    const liveEl = document.getElementById('modules-live');
+    if (liveEl) liveEl.innerHTML = live.map(m => makeCard(m, 'live', '● Live', 'status-live')).join('');
+
+    const partialEl = document.getElementById('modules-partial');
+    if (partialEl) partialEl.innerHTML = building.map(m => makeCard(m, 'partial', '◐ Building', 'status-partial')).join('');
+  }
+  renderArchModules();
+})();
+</script>
+
 </body>
 </html>

@@ -6,6 +6,7 @@
   <title>Product Roadmap — Gritnord</title>
   <link rel="icon" type="image/png" href="/GN_FAV-03.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="/api/product-data.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -515,7 +516,7 @@
     </div>
   </a>
   <div class="nav-right">
-    <div class="nav-pill"><span class="dot"></span>V7 · 3 live · 5 building · 3 planned</div>
+    <div class="nav-pill"><span class="dot"></span><span id="nav-pill-text">V7 · loading…</span></div>
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙</button>
     <a href="/uc-acquisition.html" class="nav-link">UC Acquisition</a>
     <a href="/architecture-v7.html" class="nav-link">Architecture V7</a>
@@ -858,67 +859,16 @@
 <!-- ══════════════════════════════════════════
      PHASE CARDS
 ══════════════════════════════════════════ -->
-<div class="phases-section">
+<div class="phases-section" id="phases-section">
 
   <!-- Live -->
   <div class="phase">
     <div class="phase-header">
       <div class="phase-lbl" style="color:var(--green);">Live</div>
       <div class="phase-line"></div>
-      <div class="phase-count">3 modules</div>
+      <div class="phase-count" id="count-live">— modules</div>
     </div>
-    <div class="cards-grid">
-
-      <div class="card">
-        <div class="card-top">
-          <div class="card-icon">✦</div>
-          <div class="card-status live"></div>
-        </div>
-        <div>
-          <div class="card-title">Content Engine</div>
-          <div class="card-desc">Automated blog, LinkedIn and X/Twitter pipeline. 34 RSS sources, Claude drafts, human approval queue. 4 SEO blogs/week + 3 LinkedIn + 3 X posts.</div>
-        </div>
-        <div class="card-footer">
-          <span class="tag node">Node.js</span>
-          <span class="tag claude">Claude API</span>
-          <span class="tag supabase">Supabase</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-top">
-          <div class="card-icon">📋</div>
-          <div class="card-status live"></div>
-        </div>
-        <div>
-          <div class="card-title">UC Onboarding</div>
-          <div class="card-desc">13-section ICP capture with live audio recording and AI fill. Outputs locked ICP JSON used to drive all downstream targeting. Lock & Launch at Stripe paywall.</div>
-        </div>
-        <div class="card-footer">
-          <span class="tag lovable">Lovable</span>
-          <span class="tag claude">Claude API</span>
-          <span class="tag supabase">Supabase</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-top">
-          <div class="card-icon">🔍</div>
-          <div class="card-status live"></div>
-        </div>
-        <div>
-          <div class="card-title">DC Research Pipeline</div>
-          <div class="card-desc">Clay receives ICP via webhook, Apollo finds 250 matching DC companies per batch. BetterContact enriches phone + LinkedIn. Claude scores 0–100. Top 50 flagged per batch.</div>
-        </div>
-        <div class="card-footer">
-          <span class="tag clay">Clay</span>
-          <span class="tag external">Apollo</span>
-          <span class="tag claude">Claude API</span>
-          <span class="tag external">HubSpot</span>
-        </div>
-      </div>
-
-    </div>
+    <div class="cards-grid" id="cards-live"></div>
   </div>
 
   <!-- Building -->
@@ -926,74 +876,9 @@
     <div class="phase-header">
       <div class="phase-lbl" style="color:var(--amber);">Building</div>
       <div class="phase-line"></div>
-      <div class="phase-count">4 modules</div>
+      <div class="phase-count" id="count-building">— modules</div>
     </div>
-    <div class="cards-grid">
-
-      <div class="card">
-        <div class="card-top">
-          <div class="card-icon">⚡</div>
-          <div class="card-status build"></div>
-        </div>
-        <div>
-          <div class="card-title">30-Day Outreach Sequence</div>
-          <div class="card-desc">8 channels fired in deliberate order per DC. BDR call, LinkedIn dual account, WhatsApp, HeyGen video, paid social, cookie retargeting. Each touch references the last.</div>
-        </div>
-        <div class="card-footer">
-          <span class="tag make">Make.com</span>
-          <span class="tag external">HubSpot</span>
-          <span class="tag claude">Claude API</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-top">
-          <div class="card-icon">📅</div>
-          <div class="card-status build"></div>
-        </div>
-        <div>
-          <div class="card-title">Search &amp; Book Pages</div>
-          <div class="card-desc">One public page per UC at gritnord.com/meet/[slug]. DC arrives, fills 5-field form, Claude ICP-gates them, then routes to Calendly or a nurture sequence.</div>
-        </div>
-        <div class="card-footer">
-          <span class="tag lovable">Lovable</span>
-          <span class="tag supabase">Supabase</span>
-          <span class="tag external">Cal.com</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-top">
-          <div class="card-icon">📊</div>
-          <div class="card-status build"></div>
-        </div>
-        <div>
-          <div class="card-title">UC Dashboard</div>
-          <div class="card-desc">UC customer's private view. Meeting pipeline (booked, held, pending), credits used, billing history, ICP status. Proof the machine is running.</div>
-        </div>
-        <div class="card-footer">
-          <span class="tag lovable">Lovable</span>
-          <span class="tag supabase">Supabase</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-top">
-          <div class="card-icon">🛡</div>
-          <div class="card-status build"></div>
-        </div>
-        <div>
-          <div class="card-title">Admin &amp; Billing Panel</div>
-          <div class="card-desc">Internal Gritnord view. BDR exception queue, DC pipeline per UC, mark meeting held (fires Stripe €500 charge), retainer billing on 1st of month, referral payouts.</div>
-        </div>
-        <div class="card-footer">
-          <span class="tag lovable">Lovable</span>
-          <span class="tag supabase">Supabase</span>
-          <span class="tag stripe">Stripe</span>
-        </div>
-      </div>
-
-    </div>
+    <div class="cards-grid" id="cards-building"></div>
   </div>
 
   <!-- Planned -->
@@ -1001,75 +886,9 @@
     <div class="phase-header">
       <div class="phase-lbl">Planned</div>
       <div class="phase-line"></div>
-      <div class="phase-count">4 modules</div>
+      <div class="phase-count" id="count-planned">— modules</div>
     </div>
-    <div class="cards-grid">
-
-      <div class="card">
-        <div class="card-top">
-          <div class="card-icon">🧲</div>
-          <div class="card-status plan"></div>
-        </div>
-        <div>
-          <div class="card-title">Lead Magnet — Free ICP Analysis</div>
-          <div class="card-desc">Inbound UC acquisition. Company enters target customer profile, Claude generates a free ICP report. Stripe paywall at output converts to €3,500 paid onboarding.</div>
-        </div>
-        <div class="card-footer">
-          <span class="tag lovable">Lovable</span>
-          <span class="tag claude">Claude API</span>
-          <span class="tag stripe">Stripe</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-top">
-          <div class="card-icon">🛡</div>
-          <div class="card-status plan"></div>
-        </div>
-        <div>
-          <div class="card-title">No-Show Prevention</div>
-          <div class="card-desc">T-24hr and T-2hr reminders via email + WhatsApp. T+3min after start: ElevenLabs voice call + WhatsApp simultaneously. AI offers 3 reschedule slots. Target &lt;5% no-shows.</div>
-        </div>
-        <div class="card-footer">
-          <span class="tag external">ElevenLabs</span>
-          <span class="tag make">Make.com</span>
-          <span class="tag external">Resend</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-top">
-          <div class="card-icon">🧠</div>
-          <div class="card-status plan"></div>
-        </div>
-        <div>
-          <div class="card-title">Self-Learning Loop</div>
-          <div class="card-desc">Every Monday: Claude reads channel performance, BDR call scores, paid social results, GEO citations. Outputs updated ICP weights, new scripts, budget reallocation. Zero human decisions.</div>
-        </div>
-        <div class="card-footer">
-          <span class="tag claude">Claude API</span>
-          <span class="tag supabase">Supabase</span>
-          <span class="tag make">Make.com</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-top">
-          <div class="card-icon">♾️</div>
-          <div class="card-status plan"></div>
-        </div>
-        <div>
-          <div class="card-title">Flywheel: DC → UC Conversion</div>
-          <div class="card-desc">48hr post-meeting: DC gets conversion email "Want meetings like this for your business?" DC becomes UC at zero acquisition cost. Every meeting is a potential new paying customer.</div>
-        </div>
-        <div class="card-footer">
-          <span class="tag claude">Claude API</span>
-          <span class="tag external">Resend</span>
-          <span class="tag supabase">Supabase</span>
-        </div>
-      </div>
-
-    </div>
+    <div class="cards-grid" id="cards-planned"></div>
   </div>
 
 </div>
@@ -1100,5 +919,63 @@
 </script>
 
 <script src="/nav.js"></script>
+
+<script>
+(function() {
+  function renderRoadmapCards() {
+    if (typeof window.GRITNORD === 'undefined') { return setTimeout(renderRoadmapCards, 30); }
+    const G = window.GRITNORD;
+
+    const tagClassMap = {
+      node: 'node', claude: 'claude', clay: 'clay', external: 'external',
+      lovable: 'lovable', supabase: 'supabase', stripe: 'stripe', make: 'make',
+    };
+
+    function makeCard(m, statusClass) {
+      const tags = (m.tags || []).map(t => {
+        const cls = tagClassMap[t] || '';
+        return `<span class="tag ${cls}">${t}</span>`;
+      }).join('');
+      const stackTags = (m.stack || []).map(s => `<span class="tag">${s}</span>`).join('');
+      return `
+        <div class="card">
+          <div class="card-top">
+            <div class="card-icon">${m.icon}</div>
+            <div class="card-status ${statusClass}"></div>
+          </div>
+          <div>
+            <div class="card-title">${m.name}</div>
+            <div class="card-desc">${m.description}</div>
+          </div>
+          <div class="card-footer">${stackTags || tags}</div>
+        </div>
+      `;
+    }
+
+    const statusGroups = { live: 'live', building: 'build', planned: 'plan' };
+    const gridIds = { live: 'cards-live', building: 'cards-building', planned: 'cards-planned' };
+    const countIds = { live: 'count-live', building: 'count-building', planned: 'count-planned' };
+
+    ['live', 'building', 'planned'].forEach(status => {
+      const mods = G.modules.filter(m => m.status === status);
+      const gridEl = document.getElementById(gridIds[status]);
+      const countEl = document.getElementById(countIds[status]);
+      if (gridEl) gridEl.innerHTML = mods.map(m => makeCard(m, statusGroups[status])).join('');
+      if (countEl) countEl.textContent = `${mods.length} module${mods.length !== 1 ? 's' : ''}`;
+    });
+
+    // Update nav pill
+    const pillEl = document.getElementById('nav-pill-text');
+    if (pillEl) {
+      const nLive = G.modules.filter(m => m.status === 'live').length;
+      const nBuilding = G.modules.filter(m => m.status === 'building').length;
+      const nPlanned = G.modules.filter(m => m.status === 'planned').length;
+      pillEl.textContent = `${G.meta.version} · ${nLive} live · ${nBuilding} building · ${nPlanned} planned`;
+    }
+  }
+  renderRoadmapCards();
+})();
+</script>
+
 </body>
 </html>
