@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product Brief — Gritnord</title>
+  <title>Product Brief V8 — Gritnord</title>
   <link rel="icon" type="image/png" href="/GN_FAV-03.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="/api/product-data.js"></script>
@@ -186,6 +186,95 @@
     .context-table th { background: var(--surface); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted2); }
     .context-table tr:nth-child(even) td { background: var(--surface); }
 
+    /* ── 9-phase flow ── */
+    .flow-list { display: flex; flex-direction: column; gap: 0; }
+    .flow-item {
+      display: flex; align-items: flex-start; gap: 20px;
+      padding: 18px 0; border-bottom: 1px solid var(--border);
+    }
+    .flow-item:last-child { border-bottom: none; }
+    .flow-badge {
+      width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px;
+      background: var(--surface); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .flow-step-num {
+      font-size: 10px; font-weight: 800; color: var(--purple);
+      text-transform: uppercase; letter-spacing: .08em; margin-bottom: 2px;
+    }
+    .flow-body h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .flow-body p { font-size: 13px; color: var(--muted2); line-height: 1.65; }
+
+    /* ── Revenue model ── */
+    .rev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+    @media (max-width: 700px) { .rev-grid { grid-template-columns: 1fr; } }
+    .rev-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px 22px;
+    }
+    .rev-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--muted2); text-transform: uppercase; letter-spacing: .05em; }
+    .rev-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--border); }
+    .rev-row:last-child { border-bottom: none; }
+    .rev-label { font-size: 13px; color: var(--muted2); }
+    .rev-value { font-size: 14px; font-weight: 700; color: var(--text); }
+    .rev-value.green { color: var(--green); }
+    .rev-total-row { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0; border-top: 1px solid #2a2a2a; margin-top: 4px; }
+    .rev-total-label { font-size: 14px; font-weight: 700; }
+    .rev-total-value { font-size: 20px; font-weight: 800; color: var(--green); }
+
+    .trajectory-table { width: 100%; border-collapse: collapse; }
+    .trajectory-table th, .trajectory-table td { padding: 10px 14px; border: 1px solid var(--border); font-size: 13px; }
+    .trajectory-table th { background: var(--surface); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted2); }
+    .trajectory-table td.green { color: var(--green); font-weight: 700; }
+
+    /* ── Self-learning layer ── */
+    .sl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .sl-card {
+      background: var(--surface); border: 1px solid #1a1a2e;
+      border-radius: 14px; padding: 18px 20px; position: relative; overflow: hidden;
+    }
+    .sl-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--purple), #6366f1);
+    }
+    .sl-num { font-size: 10px; font-weight: 800; color: var(--purple); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
+    .sl-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 5px; }
+    .sl-card p { font-size: 12px; color: var(--muted2); line-height: 1.65; }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .pill {
+      font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+      background: var(--purple-dim); border: 1px solid var(--purple-border); color: var(--purple);
+    }
+    .pill.adaptive { background: #1a0505; border-color: #ef444422; color: #f87171; }
+
+    /* ── DC Network & Flywheel ── */
+    .flywheel-steps { display: flex; gap: 8px; flex-wrap: wrap; }
+    .fw-step {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 16px; flex: 1; min-width: 140px;
+    }
+    .fw-day { font-size: 10px; font-weight: 800; color: var(--purple); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+    .fw-action { font-size: 12px; color: var(--text); line-height: 1.4; }
+
+    .network-list { display: flex; flex-direction: column; gap: 8px; }
+    .network-item {
+      display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    }
+    .network-item .ni-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; margin-top: 5px; }
+    .network-item p { font-size: 13px; color: var(--muted2); }
+
+    /* ── Referral ── */
+    .referral-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 24px 28px;
+      display: flex; gap: 32px; align-items: center; flex-wrap: wrap;
+    }
+    .ref-amount { font-size: 48px; font-weight: 800; color: var(--green); letter-spacing: -0.04em; flex-shrink: 0; }
+    .ref-detail h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .ref-detail p { font-size: 13px; color: var(--muted2); line-height: 1.65; }
+
     /* ── Footer ── */
     footer {
       border-top: 1px solid var(--border); padding: 28px 40px;
@@ -239,59 +328,11 @@
     </div>
   </div>
 
-  <!-- ── How it works ── -->
+  <!-- ── 9-Phase Flow ── -->
   <div class="section">
-    <div class="section-label">How it works</div>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-body">
-          <h4>UC Onboarding</h4>
-          <p>The Unique Customer (UC) defines their Ideal Customer Profile (ICP) — industry, company size, pain points, geography. Claude extracts and locks this into a structured JSON used by all downstream systems.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-body">
-          <h4>DC Research Pipeline</h4>
-          <p>The ICP is sent to Clay via webhook. Apollo finds 250 matching Dream Customer (DC) companies per batch. BetterContact enriches with email and mobile. Claude scores each 0–100 against the ICP.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-body">
-          <h4>Content Engine generates awareness</h4>
-          <p>30+ RSS feeds curated daily. Claude generates LinkedIn posts in Rain's voice with 8 learned guidelines. Auto-posted via LinkedIn API. Engagement tracked and fed back to the learning engine.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">4</div>
-        <div class="step-body">
-          <h4>30-Day 8-Channel Outreach Sequence</h4>
-          <p>Each DC enters a coordinated 8-touch sequence: paid social → LinkedIn DM → HeyGen video → BDR call → voice note → WhatsApp → BDR call 2 → breakup message. Every touch references the last.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">5</div>
-        <div class="step-body">
-          <h4>Meeting Booking & Gate</h4>
-          <p>DCs who respond book via Cal.com with an ICP-gate qualification form. Routing assigns the correct UC. Confirmation + reminder sequences fire automatically.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">6</div>
-        <div class="step-body">
-          <h4>No-Show Prevention</h4>
-          <p>T-24h and T-2h reminders via email + WhatsApp. If DC doesn't join at T+3min, ElevenLabs places an AI voice call and offers 3 reschedule slots via Make.com.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">7</div>
-        <div class="step-body">
-          <h4>Billing & Flywheel</h4>
-          <p>Admin marks meeting held → Stripe fires €500 charge. 48h later, the DC receives a pitch: "Want meetings like this?" — converting DC to UC at zero acquisition cost. The flywheel spins.</p>
-        </div>
-      </div>
+    <div class="section-label">The 9-phase flow</div>
+    <div class="flow-list" id="flow-list">
+      <!-- rendered by JS -->
     </div>
   </div>
 
@@ -315,55 +356,38 @@
     <div class="roadmap-row" id="roadmap-row"></div>
   </div>
 
-  <!-- ── Commercial context ── -->
+  <!-- ── Revenue Model ── -->
   <div class="section">
-    <div class="section-label">Commercial model</div>
-    <table class="context-table">
-      <thead>
-        <tr>
-          <th>Metric</th>
-          <th>Value</th>
-          <th>Notes</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Revenue per meeting</td>
-          <td><strong>€500</strong></td>
-          <td>Charged per meeting held, not booked</td>
-        </tr>
-        <tr>
-          <td>Gross margin target</td>
-          <td><strong>83%</strong></td>
-          <td>Content cost €2–10/meeting at scale</td>
-        </tr>
-        <tr>
-          <td>UCs to reach €1M ARR</td>
-          <td><strong>23</strong></td>
-          <td>At 4 meetings/UC/month average</td>
-        </tr>
-        <tr>
-          <td>DC contacts per batch</td>
-          <td><strong>250</strong></td>
-          <td>Clay + Apollo per ICP run</td>
-        </tr>
-        <tr>
-          <td>Outreach channels</td>
-          <td><strong>8</strong></td>
-          <td>Over 30-day coordinated sequence</td>
-        </tr>
-        <tr>
-          <td>Content cost / meeting</td>
-          <td><strong>€2–10</strong></td>
-          <td>After 3+ months of compounding</td>
-        </tr>
-        <tr>
-          <td>UC Onboarding fee</td>
-          <td><strong>€3,500</strong></td>
-          <td>One-time setup + ICP extraction</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="section-label">Revenue model</div>
+    <div class="rev-grid" id="rev-grid">
+      <!-- rendered by JS -->
+    </div>
+    <div id="trajectory-wrap"><!-- rendered by JS --></div>
+  </div>
+
+  <!-- ── DC Loyal Network & Flywheel ── -->
+  <div class="section">
+    <div class="section-label">DC loyal network — the strategic moat</div>
+    <div id="dc-network-content"><!-- rendered by JS --></div>
+  </div>
+
+  <!-- ── DC→UC Flywheel ── -->
+  <div class="section">
+    <div class="section-label">DC→UC flywheel — growth loop</div>
+    <div id="flywheel-content"><!-- rendered by JS --></div>
+  </div>
+
+  <!-- ── Self-Learning Layer ── -->
+  <div class="section">
+    <div class="section-label">Self-learning layer — 6 layers, running 24/7</div>
+    <div class="sl-grid" id="sl-grid"><!-- rendered by JS --></div>
+    <div id="sl-pills-row"><!-- rendered by JS --></div>
+  </div>
+
+  <!-- ── Referral Program ── -->
+  <div class="section">
+    <div class="section-label">Referral program</div>
+    <div id="referral-card"><!-- rendered by JS --></div>
   </div>
 
 </div>
@@ -397,12 +421,30 @@
 
     // Stats
     const statsEl = document.getElementById('stats-strip');
-    statsEl.innerHTML = G.stats.map(s => `
-      <div class="stat-cell">
-        <div class="stat-num">${s.value}</div>
-        <div class="stat-lbl">${s.label}</div>
-      </div>
-    `).join('');
+    if (statsEl && G.stats) {
+      statsEl.innerHTML = G.stats.map(s => `
+        <div class="stat-cell">
+          <div class="stat-num">${s.value}</div>
+          <div class="stat-lbl">${s.label}</div>
+          ${s.note ? `<div style="font-size:10px;color:var(--muted);margin-top:2px;">${s.note}</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    // 9-phase flow
+    const flowEl = document.getElementById('flow-list');
+    if (flowEl && G.flow) {
+      flowEl.innerHTML = G.flow.map(f => `
+        <div class="flow-item">
+          <div class="flow-badge">${f.icon}</div>
+          <div class="flow-body">
+            <div class="flow-step-num">Phase ${f.step}</div>
+            <h4>${f.name}</h4>
+            <p>${f.description}</p>
+          </div>
+        </div>
+      `).join('');
+    }
 
     // Modules grouped by status
     const statusOrder = ['live', 'building', 'planned'];
@@ -444,21 +486,162 @@
 
     // Roadmap
     const roadmapEl = document.getElementById('roadmap-row');
-    const pillClass = { live: 'pill-live', building: 'pill-building', planned: 'pill-planned' };
-    const pillLabel = { live: 'Live', building: 'Building', planned: 'Planned' };
-    roadmapEl.innerHTML = G.roadmap.map(r => `
-      <div class="roadmap-item">
-        <div class="roadmap-phase">P${r.phase}</div>
-        <div>
-          <div class="roadmap-name">${r.name}</div>
-          <div class="roadmap-deliverables">${r.deliverables.slice(0, 3).join(' · ')}${r.deliverables.length > 3 ? ' …' : ''}</div>
+    if (roadmapEl && G.roadmap) {
+      const pillClass = { live: 'pill-live', building: 'pill-building', planned: 'pill-planned' };
+      const pillLabel = { live: 'Live', building: 'Building', planned: 'Planned' };
+      roadmapEl.innerHTML = G.roadmap.map(r => `
+        <div class="roadmap-item">
+          <div class="roadmap-phase">P${r.phase}</div>
+          <div>
+            <div class="roadmap-name">${r.name}</div>
+            <div class="roadmap-deliverables">${r.deliverables.slice(0, 3).join(' · ')}${r.deliverables.length > 3 ? ' …' : ''}</div>
+          </div>
+          <div class="roadmap-right">
+            <div class="roadmap-quarter">${r.quarter}</div>
+            <span class="roadmap-pill ${pillClass[r.status]}">${pillLabel[r.status]}</span>
+          </div>
         </div>
-        <div class="roadmap-right">
-          <div class="roadmap-quarter">${r.quarter}</div>
-          <span class="roadmap-pill ${pillClass[r.status]}">${pillLabel[r.status]}</span>
+      `).join('');
+    }
+
+    // Revenue model
+    const revGrid = document.getElementById('rev-grid');
+    if (revGrid && G.revenue) {
+      const r = G.revenue;
+      const puc = r.perUCMonthly;
+      revGrid.innerHTML = `
+        <div class="rev-card">
+          <h4>Per UC — monthly recurring</h4>
+          <div class="rev-row"><span class="rev-label">Platform</span><span class="rev-value">€${puc.platform}/mo</span></div>
+          <div class="rev-row"><span class="rev-label">Traffic & Ads</span><span class="rev-value">€${puc.traffic}/mo</span></div>
+          <div class="rev-row"><span class="rev-label">Content Marketing</span><span class="rev-value">€${puc.content}/mo</span></div>
+          <div class="rev-row"><span class="rev-label">Lead Magnets (avg 3)</span><span class="rev-value">€${puc.leadMagnets}/mo</span></div>
+          <div class="rev-row"><span class="rev-label">Meetings (5 × €500)</span><span class="rev-value">€${puc.meetings}/mo</span></div>
+          <div class="rev-total-row"><span class="rev-total-label">Total per UC</span><span class="rev-total-value">€${puc.total.toLocaleString()}/mo</span></div>
+          <div style="font-size:12px;color:var(--muted2);margin-top:8px;">Annual: €${puc.annual.toLocaleString()} per UC · Onboarding: €${r.onboarding.toLocaleString()} one-time</div>
         </div>
-      </div>
-    `).join('');
+        <div class="rev-card">
+          <h4>vs. alternative cost</h4>
+          <div class="rev-row"><span class="rev-label">Junior SDR (salary only)</span><span class="rev-value">€3–4K/mo</span></div>
+          <div class="rev-row"><span class="rev-label">DIY stack</span><span class="rev-value">€5–8K/mo</span></div>
+          <div class="rev-row"><span class="rev-label" style="color:var(--green);">Gritnord all-in</span><span class="rev-value green">€3,747/mo</span></div>
+          <div style="margin-top:12px; padding:10px 14px; background:#0a1a0a; border:1px solid #1a2a1a; border-radius:8px; font-size:12px; color:var(--muted2);">
+            Fully managed · AI-powered · self-improving<br>
+            <strong style="color:var(--green);">Year 1 saving vs DIY: €15,000–50,000</strong>
+          </div>
+          <div style="margin-top:12px; font-size:12px; color:var(--muted2);">
+            <strong style="color:var(--text);">At €100M ARR:</strong> ~15% net margin · 28% people · 8% tech · 7% external tools
+          </div>
+        </div>
+      `;
+    }
+
+    const trajWrap = document.getElementById('trajectory-wrap');
+    if (trajWrap && G.revenue && G.revenue.trajectory) {
+      trajWrap.innerHTML = `
+        <h4 style="font-size:13px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">Revenue trajectory</h4>
+        <table class="trajectory-table">
+          <thead>
+            <tr>
+              <th>Year</th><th>UCs</th><th>ARR</th><th>Total Revenue</th><th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${G.revenue.trajectory.map(t => `
+              <tr>
+                <td><strong>${t.year}</strong></td>
+                <td>${t.ucs}</td>
+                <td class="green">€${(t.arr/1000000).toFixed(2)}M</td>
+                <td class="green">€${(t.totalRevenue/1000000).toFixed(2)}M</td>
+                <td style="color:var(--muted2)">${t.note}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    // DC Loyal Network
+    const dcNetEl = document.getElementById('dc-network-content');
+    if (dcNetEl && G.dcNetwork) {
+      const dn = G.dcNetwork;
+      dcNetEl.innerHTML = `
+        <p style="font-size:14px;color:var(--muted2);margin-bottom:16px;line-height:1.7;">${dn.description}</p>
+        <div class="network-list">
+          ${(dn.howItWorks || []).map(item => `
+            <div class="network-item">
+              <div class="ni-dot"></div>
+              <p>${item}</p>
+            </div>
+          `).join('')}
+        </div>
+        <div style="margin-top:16px;padding:14px 18px;background:#0a1a0a;border:1px solid #1a2a1a;border-radius:10px;font-size:13px;color:var(--muted2);">
+          <strong style="color:var(--green);">The moat:</strong> ${dn.moat}
+        </div>
+      `;
+    }
+
+    // DC→UC Flywheel
+    const fwEl = document.getElementById('flywheel-content');
+    if (fwEl && G.flywheel) {
+      const fw = G.flywheel;
+      fwEl.innerHTML = `
+        <p style="font-size:14px;color:var(--muted2);margin-bottom:16px;line-height:1.7;">${fw.description}</p>
+        <div class="flywheel-steps">
+          ${(fw.sequence || []).map(s => `
+            <div class="fw-step">
+              <div class="fw-day">${s.day}</div>
+              <div class="fw-action">${s.action}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div style="margin-top:14px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--muted2);">
+          Conversion target: <strong style="color:var(--green);">${fw.conversionTarget}</strong>
+        </div>
+      `;
+    }
+
+    // Self-learning layer
+    const slGrid = document.getElementById('sl-grid');
+    if (slGrid && G.selfLearning) {
+      const sl = G.selfLearning;
+      slGrid.innerHTML = (sl.layers || []).map((l, i) => `
+        <div class="sl-card">
+          <div class="sl-num">Layer ${i + 1}</div>
+          <h4>${l.name}</h4>
+          <p>${l.description}</p>
+        </div>
+      `).join('');
+
+      const pillsRow = document.getElementById('sl-pills-row');
+      if (pillsRow) {
+        pillsRow.innerHTML = `
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:4px;">
+            <span style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;">Fixed (human):</span>
+            ${(sl.fixed || []).map(t => `<span class="pill">${t}</span>`).join('')}
+            <span style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-left:8px;">Adaptive (AI):</span>
+            ${(sl.adaptive || []).map(t => `<span class="pill adaptive">${t}</span>`).join('')}
+          </div>
+        `;
+      }
+    }
+
+    // Referral program
+    const refEl = document.getElementById('referral-card');
+    if (refEl && G.referral) {
+      const ref = G.referral;
+      refEl.innerHTML = `
+        <div class="referral-card">
+          <div class="ref-amount">${ref.reward}</div>
+          <div class="ref-detail">
+            <h4>Per signed contract — any UC or DC can refer</h4>
+            <p>Conditions: ${ref.conditions}<br>
+            Paid: ${ref.paidWhen}<br>
+            Tracking: ${ref.tracking}</p>
+          </div>
+        </div>
+      `;
+    }
   });
 })();
 </script>

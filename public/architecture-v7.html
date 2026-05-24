@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product &amp; Architecture — Gritnord</title>
+  <title>Product &amp; Architecture V8 — Gritnord</title>
   <link rel="icon" type="image/png" href="/GN_FAV-03.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="/api/product-data.js"></script>
@@ -148,6 +148,31 @@
     }
     .metric .val { font-size: 22px; font-weight: 800; color: var(--purple); letter-spacing: -0.02em; }
     .metric .lbl { font-size: 12px; color: var(--muted2); margin-top: 2px; }
+
+    /* ── Self-learning layer ── */
+    .sl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+    .sl-card {
+      background: var(--surface); border: 1px solid #1a1a2e;
+      border-radius: 16px; padding: 20px 22px;
+      position: relative; overflow: hidden;
+    }
+    .sl-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--purple), #6366f1);
+    }
+    .sl-num {
+      font-size: 10px; font-weight: 800; color: var(--purple);
+      text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px;
+    }
+    .sl-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .sl-card p { font-size: 12px; color: var(--muted2); line-height: 1.65; }
+    .sl-tags { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+    .sl-tag {
+      font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 999px;
+      background: #0f0f1e; border: 1px solid var(--purple-border); color: var(--purple);
+    }
+    .sl-tag.adaptive { background: #1a0a0a; border-color: #ef444433; color: var(--red); }
   </style>
 </head>
 <body>
@@ -164,7 +189,7 @@
 
 <div class="page">
   <h1>Product &amp; Architecture</h1>
-  <p class="page-sub">Honest state of what's built, what's working, and what to ship next to drive traffic and signups. Updated May 2026.</p>
+  <p class="page-sub">V8 — 9-phase business model, 28 modules, self-learning layer. Updated May 2026.</p>
 
   <!-- ── Current metrics ─────────────────────────────────────────────────── -->
   <div class="section">
@@ -189,6 +214,19 @@
   <div class="section">
     <div class="section-label">Building — in progress</div>
     <div class="modules" id="modules-partial"></div>
+  </div>
+
+  <!-- ── Planned ─────────────────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-label">Planned — full roadmap</div>
+    <div class="modules" id="modules-planned"></div>
+  </div>
+
+  <!-- ── Self-learning layer ───────────────────────────────────────────────── -->
+  <div class="section" id="section-self-learning">
+    <div class="section-label">Self-learning layer — the operating system underneath everything</div>
+    <div class="sl-grid" id="sl-layers"></div>
+    <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;" id="sl-tags-row"></div>
   </div>
 
   <!-- ── Customer acquisition funnel ────────────────────────────────────── -->
@@ -394,24 +432,58 @@
 
     function makeCard(m, cssClass, statusHtml, statusClass) {
       const bullets = (m.bullets || []).map(b => `<li>${b}</li>`).join('');
+      const stackLine = (m.stack || []).join(' · ');
       return `
         <div class="module ${cssClass}">
           <div class="module-status ${statusClass}">${statusHtml}</div>
           <h3>${m.icon} ${m.name}</h3>
           <p>${m.description}</p>
           ${bullets ? `<ul>${bullets}</ul>` : ''}
+          ${stackLine ? `<p style="font-size:11px;color:var(--muted);margin-top:10px;">${stackLine}</p>` : ''}
         </div>
       `;
     }
 
     const live = G.modules.filter(m => m.status === 'live');
     const building = G.modules.filter(m => m.status === 'building');
+    const planned = G.modules.filter(m => m.status === 'planned');
 
     const liveEl = document.getElementById('modules-live');
     if (liveEl) liveEl.innerHTML = live.map(m => makeCard(m, 'live', '● Live', 'status-live')).join('');
 
     const partialEl = document.getElementById('modules-partial');
     if (partialEl) partialEl.innerHTML = building.map(m => makeCard(m, 'partial', '◐ Building', 'status-partial')).join('');
+
+    const plannedEl = document.getElementById('modules-planned');
+    if (plannedEl) plannedEl.innerHTML = planned.map(m => makeCard(m, 'backlog', '○ Planned', 'status-backlog')).join('');
+
+    // Self-learning layers
+    if (G.selfLearning) {
+      const sl = G.selfLearning;
+      const layersEl = document.getElementById('sl-layers');
+      if (layersEl) {
+        layersEl.innerHTML = sl.layers.map((l, i) => `
+          <div class="sl-card">
+            <div class="sl-num">Layer ${i + 1}</div>
+            <h4>${l.name}</h4>
+            <p>${l.description}</p>
+          </div>
+        `).join('');
+      }
+      const tagsRow = document.getElementById('sl-tags-row');
+      if (tagsRow) {
+        const fixedTags = (sl.fixed || []).map(t => `<span class="sl-tag">${t}</span>`).join('');
+        const adaptiveTags = (sl.adaptive || []).map(t => `<span class="sl-tag adaptive">${t}</span>`).join('');
+        tagsRow.innerHTML = `
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;">Fixed (human):</span>
+            ${fixedTags}
+            <span style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-left:8px;">Adaptive (AI):</span>
+            ${adaptiveTags}
+          </div>
+        `;
+      }
+    }
   }
   renderArchModules();
 })();

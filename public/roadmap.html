@@ -512,11 +512,11 @@
   <a href="/dashboard.html" class="nav-logo">
     <div>
       <div class="nav-logo-text">Gritnord</div>
-      <div class="nav-logo-sub">Product Roadmap / Architecture V7</div>
+      <div class="nav-logo-sub">Product Roadmap / Architecture V8</div>
     </div>
   </a>
   <div class="nav-right">
-    <div class="nav-pill"><span class="dot"></span><span id="nav-pill-text">V7 · loading…</span></div>
+    <div class="nav-pill"><span class="dot"></span><span id="nav-pill-text">V8 · loading…</span></div>
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙</button>
     <a href="/uc-acquisition.html" class="nav-link">UC Acquisition</a>
     <a href="/architecture-v7.html" class="nav-link">Architecture V7</a>
@@ -526,9 +526,9 @@
 
 <!-- Hero -->
 <div class="hero">
-  <div class="hero-tag">⬡ Architecture V7</div>
+  <div class="hero-tag">⬡ Architecture V8</div>
   <h1>The <span class="grad">Gritnord Machine</span></h1>
-  <p>End-to-end AI-powered B2B meeting engine. From UC onboarding to booked meetings, billing, and self-learning — one seamless system.</p>
+  <p>End-to-end AI-powered B2B meeting engine. 9 phases, 28 modules, one self-improving system.</p>
 </div>
 
 <div class="holo"></div>
@@ -828,31 +828,8 @@
      STATS
 ══════════════════════════════════════════ -->
 <div class="stats-section">
-  <div class="stats-row">
-    <div class="stat-cell">
-      <div class="stat-num">€500</div>
-      <div class="stat-lbl">Per meeting held</div>
-    </div>
-    <div class="stat-cell">
-      <div class="stat-num">83%</div>
-      <div class="stat-lbl">Gross margin target</div>
-    </div>
-    <div class="stat-cell">
-      <div class="stat-num">23</div>
-      <div class="stat-lbl">UCs to €1M ARR</div>
-    </div>
-    <div class="stat-cell">
-      <div class="stat-num">250</div>
-      <div class="stat-lbl">DC contacts per batch</div>
-    </div>
-    <div class="stat-cell">
-      <div class="stat-num">8</div>
-      <div class="stat-lbl">Active outreach channels</div>
-    </div>
-    <div class="stat-cell">
-      <div class="stat-num">€2–10</div>
-      <div class="stat-lbl">Cost/meeting via content (3mo+)</div>
-    </div>
+  <div class="stats-row" id="stats-row">
+    <!-- rendered by JS -->
   </div>
 </div>
 
@@ -860,43 +837,13 @@
      PHASE CARDS
 ══════════════════════════════════════════ -->
 <div class="phases-section" id="phases-section">
-
-  <!-- Live -->
-  <div class="phase">
-    <div class="phase-header">
-      <div class="phase-lbl" style="color:var(--green);">Live</div>
-      <div class="phase-line"></div>
-      <div class="phase-count" id="count-live">— modules</div>
-    </div>
-    <div class="cards-grid" id="cards-live"></div>
-  </div>
-
-  <!-- Building -->
-  <div class="phase">
-    <div class="phase-header">
-      <div class="phase-lbl" style="color:var(--amber);">Building</div>
-      <div class="phase-line"></div>
-      <div class="phase-count" id="count-building">— modules</div>
-    </div>
-    <div class="cards-grid" id="cards-building"></div>
-  </div>
-
-  <!-- Planned -->
-  <div class="phase">
-    <div class="phase-header">
-      <div class="phase-lbl">Planned</div>
-      <div class="phase-line"></div>
-      <div class="phase-count" id="count-planned">— modules</div>
-    </div>
-    <div class="cards-grid" id="cards-planned"></div>
-  </div>
-
+  <!-- rendered by JS from GRITNORD.roadmap -->
 </div>
 
 <!-- Footer -->
 <footer>
   <div class="footer-logo">Gritnord</div>
-  <div>Architecture v7 · Target €100M ARR</div>
+  <div>Architecture V8 · 28 modules · Target €100M ARR</div>
   <div>© 2026 Gritnord OÜ</div>
 </footer>
 
@@ -932,10 +879,6 @@
     };
 
     function makeCard(m, statusClass) {
-      const tags = (m.tags || []).map(t => {
-        const cls = tagClassMap[t] || '';
-        return `<span class="tag ${cls}">${t}</span>`;
-      }).join('');
       const stackTags = (m.stack || []).map(s => `<span class="tag">${s}</span>`).join('');
       return `
         <div class="card">
@@ -947,22 +890,56 @@
             <div class="card-title">${m.name}</div>
             <div class="card-desc">${m.description}</div>
           </div>
-          <div class="card-footer">${stackTags || tags}</div>
+          <div class="card-footer">${stackTags}</div>
         </div>
       `;
     }
 
-    const statusGroups = { live: 'live', building: 'build', planned: 'plan' };
-    const gridIds = { live: 'cards-live', building: 'cards-building', planned: 'cards-planned' };
-    const countIds = { live: 'count-live', building: 'count-building', planned: 'count-planned' };
+    const statusColors = { live: 'var(--green)', building: 'var(--amber)', planned: '#888' };
+    const statusCardClass = { live: 'live', building: 'build', planned: 'plan' };
+    const statusLabel = { live: 'Live', building: 'Building', planned: 'Planned' };
 
-    ['live', 'building', 'planned'].forEach(status => {
-      const mods = G.modules.filter(m => m.status === status);
-      const gridEl = document.getElementById(gridIds[status]);
-      const countEl = document.getElementById(countIds[status]);
-      if (gridEl) gridEl.innerHTML = mods.map(m => makeCard(m, statusGroups[status])).join('');
-      if (countEl) countEl.textContent = `${mods.length} module${mods.length !== 1 ? 's' : ''}`;
-    });
+    // Render phases from GRITNORD.roadmap
+    const phasesEl = document.getElementById('phases-section');
+    if (phasesEl && G.roadmap) {
+      phasesEl.innerHTML = G.roadmap.map(r => {
+        const phaseModules = G.modules.filter(m => r.modules && r.modules.includes(m.id));
+        const cardStatusClass = statusCardClass[r.status] || 'plan';
+        const labelColor = statusColors[r.status] || '#888';
+        return `
+          <div class="phase">
+            <div class="phase-header">
+              <div class="phase-lbl" style="color:${labelColor};">Phase ${r.phase} — ${r.name}</div>
+              <div class="phase-line"></div>
+              <div class="phase-count" style="color:${labelColor};">${r.quarter} · ${statusLabel[r.status]}</div>
+            </div>
+            ${r.deliverables && r.deliverables.length ? `
+              <div style="margin-bottom:14px; padding:14px 16px; background:var(--canvas-bg); border:1px solid var(--border); border-radius:10px;">
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);margin-bottom:8px;">Deliverables</div>
+                <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:4px;">
+                  ${r.deliverables.map(d => `<li style="font-size:12px;color:var(--muted2);display:flex;gap:8px;"><span style="color:var(--muted);flex-shrink:0;">·</span>${d}</li>`).join('')}
+                </ul>
+              </div>
+            ` : ''}
+            <div class="cards-grid">
+              ${phaseModules.map(m => makeCard(m, cardStatusClass)).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render stats
+    const statsRow = document.getElementById('stats-row');
+    if (statsRow && G.stats) {
+      statsRow.innerHTML = G.stats.map(s => `
+        <div class="stat-cell">
+          <div class="stat-num">${s.value}</div>
+          <div class="stat-lbl">${s.label}</div>
+          ${s.note ? `<div style="font-size:10px;color:var(--muted);margin-top:2px;">${s.note}</div>` : ''}
+        </div>
+      `).join('');
+    }
 
     // Update nav pill
     const pillEl = document.getElementById('nav-pill-text');
