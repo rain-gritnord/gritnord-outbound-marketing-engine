@@ -131,31 +131,57 @@ const POST_GUIDELINES = () => {
 // ── Format generators ─────────────────────────────────────────────────────────
 
 // 1. LinkedIn post — high-impression format
+// Structure forensically derived from the 110K post.
+// Every element has a specific job — do not simplify or merge.
 export async function generateLinkedInPost({ article, additionalContext = '' }) {
   const guidelines = POST_GUIDELINES();
 
-  const prompt = `You are writing a LinkedIn post for Rain, founder of Gritnord — a B2B lead generation and GTM intelligence platform.
-Rain's audience: B2B founders, VP Sales, GTM leads, SDRs, revenue operators. ~5,000 followers.
+  const prompt = `${RAIN_CONTEXT}
 
-WHAT DRIVES IMPRESSIONS — learned from Rain's best post (86,328 impressions, 16 saves):
-1. Counterintuitive take: defend the slower, older, or less-hyped side of a story.
-2. Structural insight, not execution tips: explain WHY at a systems level — moats, lock-in, compounding.
-3. One specific failure mode: 5-7 words, crime-scene language. "Pipeline full, retention broken."
-4. Binary closing question: force readers to pick a side. Both sides must feel valid.
-5. Rain's independent perspective — companies or numbers from the article are evidence, not the subject.
-
-Write a LinkedIn post for this article targeting 45,000+ impressions.
+You are writing a LinkedIn post for Rain in the exact structure that produced 110,110 impressions.
 
 Article: ${article.title}
 Source: ${article.source || ''}
 URL: ${article.link || ''}
 Summary: ${article.description || ''}
 
-STYLE RULES:
-- First line must stop the scroll. Bold claim or counterintuitive contrast.
-- Short sentences. One idea per line. White space between paragraphs.
-- 130-200 words total. No em dashes. No emoji bullets. No numbered lists.
-- 1-2 hashtags at end only (#B2BSales or #GTM).
+━━━ MANDATORY STRUCTURE — every element has a proven job ━━━
+
+LINE 1: DATA BOMB WITH BUILT-IN CONTRADICTION
+Two sentences. Both must contain specific, verifiable numbers from the article.
+The contrast must create cognitive dissonance: the reader cannot help asking "how is this possible?"
+If the article lacks two confrontable numbers relevant to its specific topic, output CANNOT_GENERATE and nothing else.
+
+LINE 2: PATTERN INTERRUPT (exact phrasing)
+"That [sounds/looks/feels] like [obvious label]. And it is. But not for the reason most people think."
+This single sentence drove 20 saves and 9 sends on the 110K post. It promises a smarter take than the article.
+Do not vary it. Do not weaken it.
+
+PARAGRAPH 1: THE DEEPER MECHANISM
+2-3 sentences. WHY this is happening at a structural level — moat, lock-in, compounding, timing.
+Apply the TRIBAL DEFENDER EFFECT: name the company tribe most relevant to this article.
+Defend the less-hyped or slower player. Take the counterintuitive position.
+Insiders at the named company will engage publicly — each one reaches their entire network.
+
+PARAGRAPH 2: WHAT THE SOURCE DOESN'T SAY
+2-3 sentences. The insight the article missed because the journalist doesn't run outbound campaigns.
+Ground it in Rain's world: cold outreach reply rates, ICP qualification, meeting booking mechanics,
+the gap between first touch and a booked call, what actually makes a prospect convert.
+
+CLOSING QUESTION
+One sentence. Binary framing. Forces a B2B founder or VP Sales to honestly evaluate their own situation.
+Both sides must feel valid and slightly exposing. Not "Thoughts?" — a question where the honest answer
+reveals something real about their pipeline or ICP.
+
+HASHTAGS: 2 max at the very end. Both must match post topic exactly.
+
+━━━ HARD RULES ━━━
+- NO em dashes. Use a period or comma.
+- NO emoji. NO bullet lists. NO numbered lists.
+- Never open with I, We, Thrilled, Excited, or Great.
+- Empty line between every element.
+- Length: 780-860 characters including spaces.
+- Tone: sharp, direct operator who books meetings for a living. Not a marketer. Not a guru.
 ${guidelines}
 ${additionalContext ? `ANGLE: ${additionalContext}\n` : ''}
 Output only the post text. No title, no intro, no meta-commentary.`;
