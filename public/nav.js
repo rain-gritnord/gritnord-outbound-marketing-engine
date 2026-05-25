@@ -13,8 +13,9 @@
     { label: 'X Queue',         icon: '𝕏',  href: '/twitter.html',             group: null },
     { label: 'UC Acquisition',  icon: '🎯', href: '/uc-acquisition.html',      group: 'Growth' },
     { label: 'Content OS',      icon: '✦',  href: '/dashboard.html#content-os', group: null },
+    { label: 'Product Flow',    icon: '→',  href: '/product-flow.html',         group: null },
     { label: 'Product Roadmap', icon: '◈',  href: '/roadmap.html',             group: null },
-    { label: 'Architecture V7', icon: '⬡',  href: '/architecture-v7.html',     group: null },
+    { label: 'System Architecture', icon: '⬡',  href: '/system-architecture.html', group: null },
   ];
 
   // All selectors scoped under #gnav-root so nothing leaks, and !important guards

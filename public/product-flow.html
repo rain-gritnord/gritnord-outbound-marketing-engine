@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Flow — Gritnord</title>
+  <link rel="icon" type="image/png" href="/GN_FAV-03.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0a;
+      --surface: #0f0f0f;
+      --card: #141414;
+      --border: #1e1e1e;
+      --border2: #2a2a2a;
+      --text: #f0f0f0;
+      --muted: #555;
+      --muted2: #888;
+      --purple: #a78bfa;
+      --purple-dim: #a78bfa18;
+      --purple-border: #a78bfa33;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 60px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .nav-logo { font-size: 14px; font-weight: 800; letter-spacing: -0.4px; color: var(--text); text-decoration: none; }
+    .nav-links { display: flex; gap: 6px; align-items: center; }
+    .nav-link {
+      font-size: 12px; color: var(--muted2); text-decoration: none;
+      padding: 4px 12px; border: 1px solid var(--border); border-radius: 9999px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .nav-link:hover { color: var(--text); border-color: #333; }
+    .nav-link.active { color: var(--text); border-color: #333; }
+
+    /* ── Page ── */
+    .page { max-width: 960px; margin: 0 auto; padding: 72px 40px 100px; }
+
+    /* ── Hero ── */
+    .hero { text-align: center; margin-bottom: 80px; }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 5px 14px; border-radius: 9999px;
+      border: 1px solid var(--border);
+      font-size: 11px; font-weight: 600; color: var(--muted2);
+      text-transform: uppercase; letter-spacing: 0.8px;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: clamp(32px, 5vw, 52px); font-weight: 800;
+      letter-spacing: -0.03em; line-height: 1.08;
+      margin-bottom: 16px;
+    }
+    .hero p { font-size: 16px; color: var(--muted2); max-width: 500px; margin: 0 auto; }
+
+    /* ── Flow ── */
+    .flow { position: relative; margin-bottom: 80px; }
+
+    .flow-connector {
+      position: absolute;
+      left: 31px;
+      top: 56px;
+      bottom: 56px;
+      width: 1px;
+      background: linear-gradient(180deg, var(--purple-border) 0%, transparent 100%);
+    }
+
+    .step {
+      display: flex; gap: 28px; align-items: flex-start;
+      margin-bottom: 8px; position: relative;
+    }
+    .step:last-child { margin-bottom: 0; }
+
+    .step-left {
+      flex-shrink: 0;
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+    }
+
+    .step-dot {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--purple-dim);
+      border: 1.5px solid var(--purple-border);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 18px;
+    }
+    .step-dot-inner {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--purple);
+    }
+
+    .step-line {
+      width: 1px;
+      flex: 1;
+      min-height: 32px;
+      background: linear-gradient(180deg, var(--purple-border) 0%, transparent 100%);
+      margin-top: 4px;
+    }
+
+    .step:last-child .step-line { display: none; }
+
+    .step-card {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+    .step-card:hover { border-color: var(--border2); }
+
+    .step-num {
+      font-size: 11px; font-weight: 700;
+      color: var(--purple);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .step-title {
+      font-size: 20px; font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+
+    .step-desc {
+      font-size: 15px;
+      color: var(--muted2);
+      line-height: 1.65;
+      max-width: 620px;
+    }
+
+    .step-tag {
+      display: inline-flex; align-items: center;
+      margin-top: 14px;
+      padding: 3px 10px; border-radius: 9999px;
+      background: var(--purple-dim);
+      border: 1px solid var(--purple-border);
+      font-size: 11px; font-weight: 600;
+      color: var(--purple);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Stats strip ── */
+    .stats-section { margin-bottom: 80px; }
+
+    .stats-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--muted);
+      margin-bottom: 24px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .stats-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .stat-cell {
+      background: var(--card);
+      padding: 28px 24px;
+    }
+
+    .stat-value {
+      font-size: 28px; font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--purple);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted2);
+      line-height: 1.4;
+    }
+
+    /* ── Why Gritnord ── */
+    .why-section { margin-bottom: 40px; }
+
+    .why-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--muted);
+      margin-bottom: 24px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .why-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .why-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 28px;
+      transition: border-color 0.2s;
+    }
+
+    .why-card:hover { border-color: var(--border2); }
+
+    .why-card.highlight {
+      background: var(--purple-dim);
+      border-color: var(--purple-border);
+    }
+
+    .why-card.highlight:hover {
+      border-color: var(--purple);
+    }
+
+    .why-who {
+      font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--muted2);
+      margin-bottom: 12px;
+    }
+
+    .why-card.highlight .why-who { color: var(--purple); }
+
+    .why-cost {
+      font-size: 24px; font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 10px;
+      line-height: 1;
+    }
+
+    .why-card.highlight .why-cost { color: var(--purple); }
+
+    .why-points {
+      list-style: none;
+      padding: 0; margin: 0;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+
+    .why-points li {
+      font-size: 13px;
+      color: var(--muted2);
+      padding-left: 16px;
+      position: relative;
+      line-height: 1.5;
+    }
+
+    .why-points li::before {
+      content: '—';
+      position: absolute; left: 0;
+      color: var(--muted);
+    }
+
+    .why-card.highlight .why-points li { color: #c4b5fd; }
+    .why-card.highlight .why-points li::before { color: var(--purple); }
+
+    /* ── Responsive ── */
+    @media (max-width: 760px) {
+      .page { padding: 48px 20px 80px; }
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .stats-strip { grid-template-columns: repeat(2, 1fr); }
+      .why-grid { grid-template-columns: 1fr; }
+      .step-card { padding: 22px 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/dashboard.html" class="nav-logo">Gritnord</a>
+    <div class="nav-links">
+      <a href="/product-brief.html" class="nav-link">Product Brief</a>
+      <a href="/product-flow.html" class="nav-link active">Product Flow</a>
+      <a href="/roadmap.html" class="nav-link">Roadmap</a>
+      <a href="/system-architecture.html" class="nav-link">System Architecture</a>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-tag">How it works</div>
+      <h1>Product Flow</h1>
+      <p>From your ideal customer definition to qualified meetings in your calendar — fully managed, no retainer risk.</p>
+    </div>
+
+    <!-- Flow steps -->
+    <div class="flow">
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-dot"><div class="step-dot-inner"></div></div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">Step 01</div>
+          <div class="step-title">You define your ideal customer</div>
+          <div class="step-desc">Industry, company size, role, geography. Your best three existing customers become the anchor. We extract what makes them a perfect fit and turn that into a precise targeting profile.</div>
+          <div class="step-tag">Takes 30 minutes</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-dot"><div class="step-dot-inner"></div></div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">Step 02</div>
+          <div class="step-title">We build your target list</div>
+          <div class="step-desc">100 qualified dream customer contacts with 2 or more decision-maker personas per target. Ranked by fit, mapped to their channels, events, and entry points. Ready within 48 hours.</div>
+          <div class="step-tag">48 hours</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-dot"><div class="step-dot-inner"></div></div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">Step 03</div>
+          <div class="step-title">Personalised outreach starts</div>
+          <div class="step-desc">LinkedIn, WhatsApp, email, cold calling — every channel your dream customer actually uses. Content marketing and SEO run in parallel to build inbound authority while outbound works the list.</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-dot"><div class="step-dot-inner"></div></div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">Step 04</div>
+          <div class="step-title">Meetings land in your calendar</div>
+          <div class="step-desc">5 qualified dream customer meetings per month, managed end-to-end. Reminders, check-ins, no-show recovery, and instant rebook — so you show up to conversations, not coordination.</div>
+          <div class="step-tag">5 meetings / month</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-dot"><div class="step-dot-inner"></div></div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">Step 05</div>
+          <div class="step-title">Every meeting billed — no retainer risk</div>
+          <div class="step-desc">€500 per meeting held. Monthly consolidated invoice. No meeting held means no charge for that slot. The incentive is entirely aligned with your outcome.</div>
+          <div class="step-tag">€500 per meeting held</div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-dot"><div class="step-dot-inner"></div></div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-card">
+          <div class="step-num">Step 06</div>
+          <div class="step-title">Your contacts become tomorrow's pipeline</div>
+          <div class="step-desc">Post-meeting nurture turns dream customer prospects into referrers and new customers. The network grows with every cycle. The cost per meeting drops as the system learns.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Stats strip -->
+    <div class="stats-section">
+      <div class="stats-label">The numbers</div>
+      <div class="stats-strip">
+        <div class="stat-cell">
+          <div class="stat-value">5</div>
+          <div class="stat-label">Meetings per dream customer per month</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-value">€500</div>
+          <div class="stat-label">Per meeting held — no meeting, no charge</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-value">€3,747</div>
+          <div class="stat-label">Per dream customer per month, all-in</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-value">€100M</div>
+          <div class="stat-label">Revenue target by 2030</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Why Gritnord -->
+    <div class="why-section">
+      <div class="why-label">Why Gritnord</div>
+      <div class="why-grid">
+
+        <div class="why-card">
+          <div class="why-who">Hiring an SDR</div>
+          <div class="why-cost">€3,000–4,000/mo</div>
+          <ul class="why-points">
+            <li>Salary only — tools are extra</li>
+            <li>3–6 months to ramp</li>
+            <li>Low volume, high management overhead</li>
+            <li>You own the process and the risk</li>
+          </ul>
+        </div>
+
+        <div class="why-card">
+          <div class="why-who">DIY stack</div>
+          <div class="why-cost">€5,000–8,000/mo</div>
+          <ul class="why-points">
+            <li>Lemlist + Clay + HubSpot + ads agency</li>
+            <li>You manage every layer</li>
+            <li>No single owner of the outcome</li>
+            <li>Complexity compounds fast</li>
+          </ul>
+        </div>
+
+        <div class="why-card highlight">
+          <div class="why-who">Gritnord</div>
+          <div class="why-cost">€3,747/mo</div>
+          <ul class="why-points">
+            <li>Fully managed end-to-end</li>
+            <li>5 qualified meetings delivered per month</li>
+            <li>No meeting held = no charge</li>
+            <li>Self-improving — cost per meeting drops over time</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/nav.js"></script>
+</body>
+</html>

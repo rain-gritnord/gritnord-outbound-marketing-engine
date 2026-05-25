@@ -81,7 +81,7 @@ function setSessionCookie(res, data) {
   res.setHeader('Set-Cookie', `grtn_session=${token}; HttpOnly; Path=/; Max-Age=${7 * 24 * 3600}; SameSite=Lax`);
 }
 
-const PROTECTED = new Set(['/dashboard.html', '/linkedin.html', '/twitter.html', '/roadmap.html', '/architecture-v7.html', '/uc-acquisition.html', '/content-marketing.html']);
+const PROTECTED = new Set(['/dashboard.html', '/linkedin.html', '/twitter.html', '/roadmap.html', '/system-architecture.html', '/product-flow.html', '/uc-acquisition.html', '/content-marketing.html']);
 const AUTH_PUBLIC = new Set(['/login.html', '/auth/login', '/auth/logout', '/auth/google', '/auth/google/callback', '/auth/linkedin', '/auth/linkedin/callback', '/bookmarklet-sync', '/api/product-data.js', '/api/product-brief/download', '/product-brief.html']);
 
 function authMiddleware(req, res, next) {
