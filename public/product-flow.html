@@ -8,18 +8,33 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
+    :root, [data-theme="dark"] {
       --bg: #0a0a0a;
-      --surface: #0f0f0f;
+      --surface: #111111;
       --card: #141414;
-      --border: #1e1e1e;
-      --border2: #2a2a2a;
+      --border: rgba(255,255,255,0.08);
+      --border2: rgba(255,255,255,0.14);
+      --border-hover: rgba(255,255,255,0.16);
       --text: #f0f0f0;
-      --muted: #555;
-      --muted2: #888;
+      --muted: rgba(255,255,255,0.55);
+      --muted2: rgba(255,255,255,0.35);
       --purple: #a78bfa;
-      --purple-dim: #a78bfa18;
-      --purple-border: #a78bfa33;
+      --purple-dim: rgba(167,139,250,0.12);
+      --purple-border: rgba(167,139,250,0.2);
+    }
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --surface: #ffffff;
+      --card: #fafafa;
+      --border: rgba(0,0,0,0.09);
+      --border2: rgba(0,0,0,0.15);
+      --border-hover: rgba(0,0,0,0.18);
+      --text: #111111;
+      --muted: rgba(0,0,0,0.55);
+      --muted2: rgba(0,0,0,0.35);
+      --purple: #7c3aed;
+      --purple-dim: rgba(124,58,237,0.08);
+      --purple-border: rgba(124,58,237,0.2);
     }
     body {
       background: var(--bg);
@@ -47,6 +62,18 @@
     }
     .nav-link:hover { color: var(--text); border-color: #333; }
     .nav-link.active { color: var(--text); border-color: #333; }
+    .theme-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--muted);
+      transition: border-color 0.15s, color 0.15s;
+      margin-left: auto;
+    }
+    .theme-toggle:hover { border-color: var(--border-hover); color: var(--text); }
 
     /* ── Page ── */
     .page { max-width: 960px; margin: 0 auto; padding: 72px 40px 100px; }
@@ -297,6 +324,9 @@
       <a href="/product-flow.html" class="nav-link active">Product Flow</a>
       <a href="/roadmap.html" class="nav-link">Roadmap</a>
       <a href="/system-architecture.html" class="nav-link">System Architecture</a>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <span id="theme-icon">🌙</span>
+      </button>
     </div>
   </nav>
 
@@ -457,5 +487,24 @@
   </div>
 
   <script src="/nav.js"></script>
+<script>
+(function() {
+  const t = localStorage.getItem('grtn-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  document.addEventListener('DOMContentLoaded', () => {
+    const icon = document.getElementById('theme-icon');
+    if (icon) icon.textContent = t === 'dark' ? '🌙' : '☀️';
+  });
+})();
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('grtn-theme', next);
+  const icon = document.getElementById('theme-icon');
+  if (icon) icon.textContent = next === 'dark' ? '🌙' : '☀️';
+}
+</script>
 </body>
 </html>

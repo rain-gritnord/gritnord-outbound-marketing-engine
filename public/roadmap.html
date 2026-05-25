@@ -11,35 +11,37 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root, [data-theme="dark"] {
-      --bg: #000;
-      --surface: #0a0a0a;
-      --card: #0f0f0f;
-      --canvas-bg: #050505;
-      --canvas-dot: #1e1e1e;
-      --border: #1a1a1a;
-      --border-h: #2a2a2a;
-      --text: #f5f5f5;
-      --muted: #c0c0c0;
-      --muted2: #909090;
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --card: #141414;
+      --canvas-bg: #0a0a0a;
+      --canvas-dot: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.08);
+      --border-h: rgba(255,255,255,0.16);
+      --border-hover: rgba(255,255,255,0.16);
+      --text: #f0f0f0;
+      --muted: rgba(255,255,255,0.55);
+      --muted2: rgba(255,255,255,0.35);
       --green: #22c55e;
       --amber: #eab308;
       --blue: #3b82f6;
-      --node-bg: #0d0d0d;
-      --seq-bg: #0d0d0d;
+      --node-bg: #141414;
+      --seq-bg: #141414;
     }
     [data-theme="light"] {
-      --bg: #f7f7f7;
+      --bg: #f5f5f5;
       --surface: #ffffff;
-      --card: #ffffff;
-      --canvas-bg: #f0f0f0;
-      --canvas-dot: #d5d5d5;
-      --border: #e0e0e0;
-      --border-h: #c0c0c0;
-      --text: #111;
-      --muted: #bbb;
-      --muted2: #666;
+      --card: #fafafa;
+      --canvas-bg: #efefef;
+      --canvas-dot: rgba(0,0,0,0.1);
+      --border: rgba(0,0,0,0.09);
+      --border-h: rgba(0,0,0,0.18);
+      --border-hover: rgba(0,0,0,0.18);
+      --text: #111111;
+      --muted: rgba(0,0,0,0.55);
+      --muted2: rgba(0,0,0,0.35);
       --green: #16a34a;
-      --amber: #ca8a04;
+      --amber: #b45309;
       --blue: #2563eb;
       --node-bg: #ffffff;
       --seq-bg: #ffffff;
@@ -425,17 +427,17 @@
       gap: 14px;
     }
 
-    .theme-btn {
+    .theme-btn, .theme-toggle {
       background: none;
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 5px 10px;
+      border-radius: 9999px;
+      padding: 4px 10px;
       font-size: 14px;
       cursor: pointer;
-      color: var(--muted2);
+      color: var(--muted);
       transition: border-color 0.15s, color 0.15s;
     }
-    .theme-btn:hover { border-color: var(--border-h); color: var(--text); }
+    .theme-btn:hover, .theme-toggle:hover { border-color: var(--border-h); color: var(--text); }
 
     .card {
       background: var(--card);
@@ -517,7 +519,7 @@
   </a>
   <div class="nav-right">
     <div class="nav-pill"><span class="dot"></span><span id="nav-pill-text">V8 · loading…</span></div>
-    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙</button>
+    <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()" title="Toggle theme"><span id="theme-icon">🌙</span></button>
     <a href="/uc-acquisition.html" class="nav-link">UC Acquisition</a>
     <a href="/system-architecture.html" class="nav-link">System Architecture</a>
     <a href="/dashboard.html" class="nav-link">← Dashboard</a>
@@ -848,21 +850,23 @@
 </footer>
 
 <script>
-  function toggleTheme() {
-    const current = document.documentElement.getAttribute('data-theme') || 'dark';
-    const next = current === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('grtn-theme', next);
-    document.getElementById('theme-btn').textContent = next === 'dark' ? '🌙' : '☀️';
-  }
-  (function() {
-    const t = localStorage.getItem('grtn-theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', t);
-    document.addEventListener('DOMContentLoaded', () => {
-      const btn = document.getElementById('theme-btn');
-      if (btn) btn.textContent = t === 'dark' ? '🌙' : '☀️';
-    });
-  })();
+(function() {
+  const t = localStorage.getItem('grtn-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  document.addEventListener('DOMContentLoaded', () => {
+    const icon = document.getElementById('theme-icon');
+    if (icon) icon.textContent = t === 'dark' ? '🌙' : '☀️';
+  });
+})();
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('grtn-theme', next);
+  const icon = document.getElementById('theme-icon');
+  if (icon) icon.textContent = next === 'dark' ? '🌙' : '☀️';
+}
 </script>
 
 <script src="/nav.js"></script>
