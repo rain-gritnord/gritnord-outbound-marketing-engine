@@ -6,45 +6,60 @@
   <title>Product Roadmap — Gritnord</title>
   <link rel="icon" type="image/png" href="/GN_FAV-03.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    (function() {
+      const t = localStorage.getItem('grtn-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
   <script src="/api/product-data.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root, [data-theme="dark"] {
-      --bg: #0a0a0a;
+      --bg: #080808;
+      --bg2: #0d0d0d;
       --surface: #111111;
-      --card: #141414;
-      --canvas-bg: #0a0a0a;
-      --canvas-dot: rgba(255,255,255,0.06);
-      --border: rgba(255,255,255,0.08);
-      --border-h: rgba(255,255,255,0.16);
-      --border-hover: rgba(255,255,255,0.16);
-      --text: #f0f0f0;
-      --muted: rgba(255,255,255,0.55);
-      --muted2: rgba(255,255,255,0.35);
+      --card: #161616;
+      --card-hover: #1a1a1a;
+      --border: #222222;
+      --border-hover: #333333;
+      --text: #f2f2f2;
+      --text2: #a0a0a0;
+      --muted: #555555;
       --green: #22c55e;
-      --amber: #eab308;
+      --green-dim: rgba(34,197,94,0.12);
+      --amber: #f59e0b;
+      --amber-dim: rgba(245,158,11,0.12);
       --blue: #3b82f6;
-      --node-bg: #141414;
-      --seq-bg: #141414;
+      --blue-dim: rgba(59,130,246,0.12);
+      --purple: #a78bfa;
+      --purple-dim: rgba(167,139,250,0.12);
+      --red: #ef4444;
+      --accent: #22c55e;
     }
+
     [data-theme="light"] {
-      --bg: #f5f5f5;
+      --bg: #fafafa;
+      --bg2: #f4f4f5;
       --surface: #ffffff;
-      --card: #fafafa;
-      --canvas-bg: #efefef;
-      --canvas-dot: rgba(0,0,0,0.1);
-      --border: rgba(0,0,0,0.09);
-      --border-h: rgba(0,0,0,0.18);
-      --border-hover: rgba(0,0,0,0.18);
-      --text: #111111;
-      --muted: rgba(0,0,0,0.55);
-      --muted2: rgba(0,0,0,0.35);
+      --card: #ffffff;
+      --card-hover: #f8f8f8;
+      --border: #e4e4e7;
+      --border-hover: #d4d4d8;
+      --text: #09090b;
+      --text2: #52525b;
+      --muted: #a1a1aa;
       --green: #16a34a;
-      --amber: #b45309;
+      --green-dim: rgba(22,163,74,0.08);
+      --amber: #d97706;
+      --amber-dim: rgba(217,119,6,0.08);
       --blue: #2563eb;
-      --node-bg: #ffffff;
-      --seq-bg: #ffffff;
+      --blue-dim: rgba(37,99,235,0.08);
+      --purple: #7c3aed;
+      --purple-dim: rgba(124,58,237,0.08);
+      --red: #dc2626;
+      --accent: #16a34a;
     }
 
     body {
@@ -52,588 +67,347 @@
       color: var(--text);
       font-family: 'Inter', sans-serif;
       font-size: 14px;
-      line-height: 1.6;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ─── Nav ─── */
+    /* ── Nav ── */
     nav {
       position: sticky; top: 0; z-index: 50;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 40px 0 64px; height: 64px;
+      display: flex; align-items: center; gap: 16px;
+      padding: 0 40px; height: 60px;
       border-bottom: 1px solid var(--border);
       background: var(--bg);
-      backdrop-filter: blur(12px);
     }
-    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-    .nav-logo-icon { width: 30px; height: 30px; border-radius: 7px; overflow: hidden; flex-shrink: 0; }
-    .nav-logo-icon img { width: 100%; height: 100%; object-fit: cover; }
-    .nav-logo-text { font-size: 14px; font-weight: 800; letter-spacing: -0.4px; color: var(--text); }
-    .nav-logo-sub { font-size: 10px; color: var(--muted2); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 1px; }
-    .nav-right { display: flex; align-items: center; gap: 10px; }
+    .nav-brand { display: flex; flex-direction: column; text-decoration: none; flex-shrink: 0; }
+    .nav-brand-name { font-size: 14px; font-weight: 800; letter-spacing: -0.4px; color: var(--text); }
+    .nav-brand-sub { font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+    .nav-links { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
+    .nav-link {
+      font-size: 12px; color: var(--text2); text-decoration: none;
+      padding: 4px 10px; border-radius: 6px;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-link:hover { background: var(--bg2); color: var(--text); }
+    .nav-link.active { background: var(--bg2); color: var(--text); font-weight: 600; }
     .nav-pill {
       display: flex; align-items: center; gap: 6px;
       padding: 4px 12px; border-radius: 9999px;
       border: 1px solid var(--border);
-      font-size: 12px; color: var(--muted2);
+      font-size: 12px; color: var(--text2);
+      flex-shrink: 0;
     }
-    .nav-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); }
-    .nav-link { font-size: 12px; color: var(--muted2); text-decoration: none; padding: 4px 12px; border: 1px solid var(--border); border-radius: 9999px; }
-    .nav-link:hover { color: var(--text); }
+    .nav-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+    .theme-toggle {
+      display: flex; align-items: center; gap: 6px;
+      flex-shrink: 0;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text2);
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .theme-toggle:hover { border-color: var(--border-hover); color: var(--text); }
 
-    /* ─── Hero ─── */
+    /* ── Hero ── */
     .hero {
-      padding: 80px 40px 60px;
+      padding: 72px 40px 56px;
       max-width: 800px; margin: 0 auto; text-align: center;
     }
     .hero-tag {
       display: inline-flex; align-items: center; gap: 8px;
-      padding: 5px 14px; border-radius: 9999px;
+      padding: 4px 14px; border-radius: 9999px;
       border: 1px solid var(--border);
-      font-size: 11px; font-weight: 600; color: var(--muted2);
-      text-transform: uppercase; letter-spacing: 0.8px;
+      font-size: 11px; font-weight: 600; color: var(--text2);
+      text-transform: uppercase; letter-spacing: 0.06em;
       margin-bottom: 24px;
     }
-    .hero h1 {
-      font-size: clamp(36px, 5vw, 64px);
-      font-weight: 800; letter-spacing: -0.03em; line-height: 1.06;
-      margin-bottom: 18px;
-    }
-    .grad {
-      background: linear-gradient(135deg, #e879f9 0%, #f97316 30%, #a855f7 65%, #3b82f6 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .hero p { font-size: 17px; color: var(--muted2); max-width: 480px; margin: 0 auto; }
+    .hero h1 { font-size: clamp(32px, 5vw, 56px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.08; margin-bottom: 16px; }
+    .hero p { font-size: 16px; color: var(--text2); max-width: 500px; margin: 0 auto; }
 
-    /* ─── Holo strip ─── */
-    .holo {
-      width: 100%; height: 2px;
-      background: linear-gradient(90deg, transparent 0%, #e879f9 15%, #f97316 30%, #a855f7 50%, #3b82f6 70%, #06b6d4 85%, transparent 100%);
-      opacity: 0.55;
+    /* ── Stats strip ── */
+    .stats-section { padding: 0 40px 56px; max-width: 1080px; margin: 0 auto; }
+    .stats-strip {
+      display: flex; gap: 0;
+      border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
     }
+    .stat-cell {
+      flex: 1; padding: 24px 20px;
+      background: var(--card); text-align: center;
+      border-right: 1px solid var(--border);
+      position: relative;
+    }
+    .stat-cell:last-child { border-right: none; }
+    .stat-num { font-size: 30px; font-weight: 800; letter-spacing: -0.04em; color: var(--purple); margin-bottom: 5px; }
+    .stat-lbl { font-size: 11px; color: var(--text2); line-height: 1.4; }
 
-    /* ─── Section label ─── */
+    /* ── Flow canvas ── */
+    .canvas-section { padding: 0 40px 56px; max-width: 1080px; margin: 0 auto; }
+
+    /* ── Section label ── */
     .section-label {
-      font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
       text-transform: uppercase; color: var(--muted);
-      margin-bottom: 20px;
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 12px;
     }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-    /* ════════════════════════════════════
-       FLOW CANVAS — Make.com / n8n style
-    ════════════════════════════════════ */
-    .canvas-section { padding: 56px 40px 0; }
-
-    .canvas-wrap {
-      background: var(--canvas-bg);
-      background-image: radial-gradient(circle, var(--canvas-dot) 1px, transparent 1px);
-      background-size: 22px 22px;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      overflow-x: auto;
-      overflow-y: visible;
-      padding: 48px 40px 56px;
-      position: relative;
+    /* ── Flow items ── */
+    .flow-list { display: flex; flex-direction: column; }
+    .flow-item {
+      display: flex; align-items: flex-start; gap: 20px;
+      padding: 18px 20px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; margin-bottom: 10px;
+      transition: border-color 0.15s;
     }
-
-    /* Main pipeline row */
-    .flow-main {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      min-width: max-content;
-      margin-bottom: 0;
-      position: relative;
-    }
-
-    .flow-node {
-      flex-shrink: 0;
-      width: 148px;
-      background: var(--node-bg);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px 14px 12px;
-      position: relative;
-      transition: border-color 0.2s, transform 0.2s;
-      cursor: default;
-    }
-    .flow-node:hover { border-color: var(--border-h); transform: translateY(-2px); }
-
-    /* Status stripe on top */
-    .flow-node::before {
-      content: '';
-      position: absolute;
-      top: -1px; left: 16px; right: 16px;
-      height: 3px;
-      border-radius: 9999px;
-    }
-    .flow-node.live::before  { background: var(--green); box-shadow: 0 0 8px var(--green); }
-    .flow-node.build::before { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
-    .flow-node.plan::before  { background: var(--muted); }
-    .flow-node.future::before { background: #333; }
-
-    .node-icon { font-size: 22px; margin-bottom: 8px; }
-    .node-title { font-size: 12px; font-weight: 700; letter-spacing: -0.2px; margin-bottom: 6px; line-height: 1.3; }
-    .node-tags { display: flex; flex-wrap: wrap; gap: 4px; }
-    .node-tag {
-      font-size: 10px; font-weight: 500;
-      padding: 2px 7px; border-radius: 4px;
-      background: var(--node-bg); border: 1px solid var(--border); color: var(--muted2);
-    }
-    .node-status-label {
-      font-size: 9px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.6px; color: var(--muted);
-      margin-bottom: 6px;
-    }
-    .node-status-label.live  { color: var(--green); }
-    .node-status-label.build { color: var(--amber); }
-
-    /* Trigger node — always dark */
-    .flow-node.trigger {
-      border-color: #f97316;
-      background: #0d0a07;
-      color: #f5f5f5;
-    }
-    .flow-node.trigger .node-title { color: #f5f5f5; }
-    .flow-node.trigger .node-tag { background: #1a1208; border-color: #3a2a10; color: #aaa; }
-    .flow-node.trigger::before { background: #f97316; box-shadow: 0 0 8px #f97316; }
-
-    /* Arrow between nodes */
-    .flow-arrow {
-      flex-shrink: 0;
+    .flow-item:hover { border-color: var(--border-hover); }
+    .flow-item:last-child { margin-bottom: 0; }
+    .flow-icon {
+      width: 44px; height: 44px; flex-shrink: 0;
+      border-radius: 10px; background: var(--purple-dim);
+      border: 1px solid rgba(167,139,250,0.2);
       display: flex; align-items: center; justify-content: center;
-      width: 40px; position: relative;
+      font-size: 20px;
     }
-    .flow-arrow::before {
-      content: '';
-      position: absolute;
-      top: 50%; left: 0; right: 12px;
-      height: 1.5px;
-      background: linear-gradient(90deg, var(--border-h), var(--muted));
-      transform: translateY(-50%);
-    }
-    .flow-arrow::after {
-      content: '';
-      position: absolute;
-      top: 50%; right: 8px;
-      transform: translateY(-50%) rotate(45deg);
-      width: 6px; height: 6px;
-      border-top: 2.5px solid var(--muted);
-      border-right: 2.5px solid var(--muted);
-    }
+    .flow-body { flex: 1; }
+    .flow-phase-num { font-size: 10px; font-weight: 600; color: var(--purple); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+    .flow-name { font-size: 15px; font-weight: 700; margin-bottom: 5px; letter-spacing: -0.01em; }
+    .flow-desc { font-size: 13px; color: var(--text2); line-height: 1.65; }
 
-    /* Branch point — downward from Launch Sequence */
-    .branch-wrap {
-      display: flex;
-      min-width: max-content;
-      align-items: flex-start;
-      position: relative;
-      margin-top: 0;
-    }
-
-    /* Spacer to align branch under node 4 */
-    .branch-spacer { flex-shrink: 0; }
-
-    .branch-down {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-    }
-
-    .branch-line-v {
-      width: 1.5px;
-      height: 32px;
-      background: linear-gradient(180deg, var(--muted), var(--border-h));
-    }
-
-    .branch-label {
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 1px; color: var(--muted2);
-      background: var(--surface);
-      padding: 3px 10px;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      margin-bottom: 0;
-      white-space: nowrap;
-    }
-
-    /* Channel grid */
-    .channels-outer {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      position: relative;
-    }
-
-    .channels-row {
-      display: flex;
-      gap: 0;
-      align-items: center;
-      position: relative;
-    }
-
-    .channels-row::before {
-      content: '';
-      position: absolute;
-      left: -1px;
-      top: -32px;
-      width: 1.5px;
-      height: 32px;
-      background: var(--muted);
-    }
-
-    /* Horizontal top line spanning all channels */
-    .channels-top-line {
-      position: relative;
-      height: 1.5px;
-      background: var(--border-h);
-      margin-bottom: 0;
-    }
-
-    .channel-node {
-      flex-shrink: 0;
-      width: 130px;
-      background: var(--node-bg);
+    /* ── 30-day sequence ── */
+    .sequence-section { padding: 0 40px 56px; max-width: 1080px; margin: 0 auto; }
+    .sequence-wrap {
+      background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 12px 12px 10px;
-      position: relative;
-      cursor: default;
-      transition: border-color 0.2s;
-      margin-right: 10px;
-    }
-    .channel-node:hover { border-color: var(--border-h); }
-    .channel-node::before {
-      content: '';
-      position: absolute;
-      top: -1px; left: 12px; right: 12px;
-      height: 2.5px; border-radius: 9999px;
-    }
-    .channel-node.live::before  { background: var(--green); }
-    .channel-node.build::before { background: var(--amber); }
-    .channel-node.plan::before  { background: #444; }
-
-    .channel-node .node-icon { font-size: 18px; margin-bottom: 6px; }
-    .channel-node .node-title { font-size: 11px; }
-
-    /* Vertical line from each channel up to top line */
-    .ch-connector {
-      position: absolute;
-      top: -32px; left: 50%;
-      width: 1.5px; height: 32px;
-      background: var(--border-h);
-      transform: translateX(-50%);
-    }
-
-    /* ─── 30-day sequence ─── */
-    .sequence-section { padding: 56px 40px 0; }
-
-    .sequence-wrap {
-      background: var(--canvas-bg);
-      background-image: radial-gradient(circle, var(--canvas-dot) 1px, transparent 1px);
-      background-size: 20px 20px;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 36px 40px;
+      padding: 28px 32px;
       overflow-x: auto;
     }
-
-    .sequence-title {
-      font-size: 13px; font-weight: 700; color: var(--muted2);
-      margin-bottom: 28px; display: flex; align-items: center; gap: 10px;
-    }
-    .sequence-title::after {
-      content: ''; flex: 1; height: 1px; background: var(--border);
-    }
-
-    .seq-row {
-      display: flex; align-items: stretch;
-      gap: 0; min-width: max-content;
-    }
-
+    .seq-row { display: flex; align-items: stretch; gap: 0; min-width: max-content; }
     .seq-node {
-      flex-shrink: 0;
-      width: 140px;
-      background: var(--node-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px;
-      position: relative;
+      flex-shrink: 0; width: 148px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px;
     }
-
     .seq-day {
       font-size: 10px; font-weight: 800; text-transform: uppercase;
-      letter-spacing: 1px;
-      background: linear-gradient(135deg, #e879f9, #3b82f6);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-      margin-bottom: 6px;
+      letter-spacing: 1px; color: var(--purple); margin-bottom: 6px;
     }
-
-    .seq-action { font-size: 11px; font-weight: 600; margin-bottom: 4px; line-height: 1.35; }
-    .seq-stat { font-size: 10px; color: var(--muted2); }
-
+    .seq-action { font-size: 11px; font-weight: 600; margin-bottom: 4px; line-height: 1.35; color: var(--text); }
+    .seq-stat { font-size: 10px; color: var(--text2); }
     .seq-arrow {
       flex-shrink: 0; width: 28px;
       display: flex; align-items: center; justify-content: center;
       position: relative;
     }
     .seq-arrow::before {
-      content: '';
-      position: absolute; top: 50%; left: 0; right: 10px;
-      height: 1px; background: #333; transform: translateY(-50%);
+      content: ''; position: absolute; top: 50%; left: 0; right: 10px;
+      height: 1px; background: var(--border-hover); transform: translateY(-50%);
     }
     .seq-arrow::after {
-      content: '';
-      position: absolute; top: 50%; right: 6px;
+      content: ''; position: absolute; top: 50%; right: 6px;
       transform: translateY(-50%) rotate(45deg);
       width: 5px; height: 5px;
-      border-top: 1px solid #444; border-right: 1px solid #444;
+      border-top: 1px solid var(--muted); border-right: 1px solid var(--muted);
     }
 
-    /* ─── Stats strip ─── */
-    .stats-section { padding: 56px 40px 0; }
-    .stats-row {
-      display: flex; gap: 1px;
-      border: 1px solid var(--border);
-      border-radius: 16px; overflow: hidden;
+    /* ── Phase cards ── */
+    .phases-section { padding: 0 40px 80px; max-width: 1080px; margin: 0 auto; }
+    .phase {
+      margin-bottom: 24px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px 24px 20px;
+      transition: border-color 0.15s;
     }
-    .stat-cell {
-      flex: 1; padding: 24px 20px;
-      background: var(--card);
-      text-align: center;
-      border-right: 1px solid var(--border);
-    }
-    .stat-cell:last-child { border-right: none; }
-    .stat-num {
-      font-size: 32px; font-weight: 800; letter-spacing: -0.04em;
-      background: linear-gradient(135deg, #e879f9, #3b82f6);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-      margin-bottom: 4px;
-    }
-    .stat-lbl { font-size: 11px; color: var(--muted2); }
-
-    /* ─── Phase cards ─── */
-    .phases-section { padding: 56px 40px 0; }
-    .phase { margin-bottom: 52px; }
-    .phase-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+    .phase:hover { border-color: var(--border-hover); }
+    .phase-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+    .phase-name { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
     .phase-line { flex: 1; height: 1px; background: var(--border); }
-    .phase-lbl { font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
-    .phase-count { font-size: 11px; color: var(--muted); }
+    .phase-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .phase-quarter { font-size: 11px; color: var(--text2); }
 
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 14px;
+    /* ── Module grid ── */
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+
+    /* ── Module card ── */
+    .mod-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+      display: flex; flex-direction: column; gap: 10px;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative; overflow: hidden;
+    }
+    .mod-card:hover { border-color: var(--border-hover); background: var(--card-hover); }
+
+    /* Phase number watermark */
+    .mod-card .phase-watermark {
+      position: absolute; right: 12px; bottom: 8px;
+      font-size: 72px; font-weight: 800; letter-spacing: -0.05em;
+      color: var(--text); opacity: 0.04; line-height: 1;
+      pointer-events: none; user-select: none;
     }
 
-    .theme-btn, .theme-toggle {
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: 9999px;
-      padding: 4px 10px;
-      font-size: 14px;
-      cursor: pointer;
-      color: var(--muted);
-      transition: border-color 0.15s, color 0.15s;
-    }
-    .theme-btn:hover, .theme-toggle:hover { border-color: var(--border-h); color: var(--text); }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 22px;
-      display: flex; flex-direction: column; gap: 14px;
-      transition: border-color 0.2s, transform 0.2s;
-    }
-    .card:hover { border-color: var(--border-h); transform: translateY(-2px); }
-
-    .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-    .card-icon {
-      width: 42px; height: 42px; border-radius: 11px;
-      background: #141414; border: 1px solid var(--border);
+    .mod-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .mod-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: var(--bg2); border: 1px solid var(--border);
       display: flex; align-items: center; justify-content: center;
-      font-size: 19px; flex-shrink: 0;
+      font-size: 18px; flex-shrink: 0;
     }
-    .card-status {
-      width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0;
+    .mod-title { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+    .mod-desc { font-size: 13px; color: var(--text2); line-height: 1.7; }
+
+    .mod-stack { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; padding-top: 6px; }
+    .pill { font-size: 11px; color: var(--text2); background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; }
+
+    /* ── Badges ── */
+    .badge {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; padding: 2px 8px; border-radius: 9999px;
+      flex-shrink: 0; white-space: nowrap;
     }
-    .card-status.live  { background: var(--green); box-shadow: 0 0 8px #22c55e66; }
-    .card-status.build { background: var(--amber); box-shadow: 0 0 8px #eab30866; }
-    .card-status.plan  { background: #3f3f46; }
-    .card-status.future { background: #27272a; }
+    .badge-live    { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+    .badge-building{ background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
+    .badge-planned { background: transparent; color: var(--muted); border: 1px solid var(--border); }
 
-    .card-title { font-size: 14px; font-weight: 700; letter-spacing: -0.2px; margin-bottom: 5px; }
-    .card-desc { font-size: 12px; color: var(--muted2); line-height: 1.65; }
-
-    .card-footer { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 2px; }
-    .tag {
-      padding: 3px 9px; border-radius: 9999px;
-      border: 1px solid var(--border); font-size: 10px; font-weight: 500; color: var(--muted2);
+    /* ── Deliverables ── */
+    .deliverables-box {
+      margin-bottom: 14px; padding: 14px 16px;
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
     }
-    .tag.lovable  { border-color: #7c3aed44; color: #a78bfa; background: #7c3aed0a; }
-    .tag.node     { border-color: #16a34a44; color: #4ade80; background: #16a34a0a; }
-    .tag.supabase { border-color: #0ea5e944; color: #38bdf8; background: #0ea5e90a; }
-    .tag.external { border-color: #f9731644; color: #fb923c; background: #f973160a; }
-    .tag.stripe   { border-color: #6366f144; color: #818cf8; background: #6366f10a; }
-    .tag.claude   { border-color: #e879f944; color: #e879f9; background: #e879f90a; }
-    .tag.make     { border-color: #f9731644; color: #fbbf24; background: #f973160a; }
-    .tag.clay     { border-color: #84cc1644; color: #a3e635; background: #84cc160a; }
-    [data-theme="light"] .tag.lovable  { color: #6d28d9; border-color: #7c3aed66; background: #7c3aed12; }
-    [data-theme="light"] .tag.node     { color: #15803d; border-color: #16a34a66; background: #16a34a12; }
-    [data-theme="light"] .tag.supabase { color: #0369a1; border-color: #0ea5e966; background: #0ea5e912; }
-    [data-theme="light"] .tag.external { color: #c2410c; border-color: #f9731666; background: #f9731612; }
-    [data-theme="light"] .tag.stripe   { color: #4338ca; border-color: #6366f166; background: #6366f112; }
-    [data-theme="light"] .tag.claude   { color: #a21caf; border-color: #e879f966; background: #e879f912; }
-    [data-theme="light"] .tag.make     { color: #b45309; border-color: #f9731666; background: #f9731612; }
-    [data-theme="light"] .tag.clay     { color: #4d7c0f; border-color: #84cc1666; background: #84cc1612; }
+    .deliverables-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
+    .deliverables-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+    .deliverables-list li { font-size: 12px; color: var(--text2); display: flex; gap: 8px; line-height: 1.5; }
+    .deliverables-list li::before { content: '—'; color: var(--muted); flex-shrink: 0; font-size: 10px; margin-top: 2px; }
 
-    /* ─── Footer ─── */
+    /* ── Footer ── */
     footer {
-      margin-top: 80px;
-      border-top: 1px solid var(--border);
-      padding: 28px 40px;
+      border-top: 1px solid var(--border); padding: 28px 40px;
       display: flex; align-items: center; justify-content: space-between;
-      color: var(--muted); font-size: 12px;
+      color: var(--text2); font-size: 12px;
     }
     .footer-logo { font-weight: 800; color: var(--text); font-size: 13px; }
 
     @media (max-width: 768px) {
       nav, .canvas-section, .sequence-section, .stats-section, .phases-section, footer { padding-left: 20px; padding-right: 20px; }
-      .hero { padding: 60px 20px 48px; }
-      .stats-row { flex-wrap: wrap; }
-      .stat-cell { min-width: 50%; border-right: none; border-bottom: 1px solid var(--border); }
+      .hero { padding: 56px 20px 40px; }
+      .stats-strip { flex-wrap: wrap; }
+      .stat-cell { min-width: 50%; border-bottom: 1px solid var(--border); }
+      .nav-links { display: none; }
     }
   </style>
 </head>
 <body>
 
-<!-- Nav -->
 <nav>
-  <a href="/dashboard.html" class="nav-logo">
-    <div>
-      <div class="nav-logo-text">Gritnord</div>
-      <div class="nav-logo-sub">Product Roadmap / Architecture V8</div>
-    </div>
+  <a href="/dashboard.html" class="nav-brand">
+    <span class="nav-brand-name">Gritnord</span>
+    <span class="nav-brand-sub">Content Engine</span>
   </a>
-  <div class="nav-right">
-    <div class="nav-pill"><span class="dot"></span><span id="nav-pill-text">V8 · loading…</span></div>
-    <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()" title="Toggle theme"><span id="theme-icon">🌙</span></button>
+  <div class="nav-links">
+    <a href="/dashboard.html" class="nav-link">Overview</a>
+    <a href="/linkedin.html" class="nav-link">LinkedIn Queue</a>
     <a href="/uc-acquisition.html" class="nav-link">UC Acquisition</a>
     <a href="/system-architecture.html" class="nav-link">System Architecture</a>
-    <a href="/dashboard.html" class="nav-link">← Dashboard</a>
+    <a href="/roadmap.html" class="nav-link active">Product Roadmap</a>
+    <a href="/product-brief.html" class="nav-link">Product Brief</a>
+    <a href="/product-flow.html" class="nav-link">Product Flow</a>
   </div>
+  <div class="nav-pill"><span class="dot"></span><span id="nav-pill-text">V8 · loading…</span></div>
+  <button class="theme-toggle" onclick="toggleTheme()">
+    <span id="theme-icon">🌙</span>
+    <span id="theme-label">Dark</span>
+  </button>
 </nav>
 
 <!-- Hero -->
 <div class="hero">
-  <div class="hero-tag">⬡ Architecture V8</div>
-  <h1>The <span class="grad">Gritnord Machine</span></h1>
+  <div class="hero-tag">Architecture V8</div>
+  <h1>The Gritnord Machine</h1>
   <p>End-to-end AI-powered B2B meeting engine. 9 phases, 28 modules, one self-improving system.</p>
 </div>
 
-<div class="holo"></div>
-
-<!-- ══════════════════════════════════════════
-     FLOW CANVAS — data-driven from GRITNORD.flow
-══════════════════════════════════════════ -->
-<div class="canvas-section">
-  <div class="section-label">Business flow — 9 phases</div>
-  <div id="flow-canvas" style="display:flex; flex-direction:column; gap:0;"></div>
+<!-- Stats -->
+<div class="stats-section">
+  <div class="stats-strip" id="stats-row"></div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     30-DAY DC SEQUENCE
-══════════════════════════════════════════ -->
+<!-- Flow canvas -->
+<div class="canvas-section">
+  <div class="section-label">Business flow — 9 phases</div>
+  <div class="flow-list" id="flow-canvas"></div>
+</div>
+
+<!-- 30-day sequence -->
 <div class="sequence-section">
   <div class="section-label">30-day DC outreach sequence</div>
-
   <div class="sequence-wrap">
-    <div class="sequence-title">One DC contact · 8 touches · 30 days · every channel references the last</div>
-
+    <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:20px;">One DC contact · 8 touches · 30 days · every channel references the last</div>
     <div class="seq-row">
-
       <div class="seq-node">
         <div class="seq-day">Day 1</div>
         <div class="seq-action">Paid social starts + LinkedIn connection request</div>
         <div class="seq-stat">Gritnord company page</div>
       </div>
       <div class="seq-arrow"></div>
-
       <div class="seq-node">
         <div class="seq-day">Day 3</div>
         <div class="seq-action">UC founder LinkedIn DM — value-first, Claude-written per DC</div>
         <div class="seq-stat">3–6% conversion</div>
       </div>
       <div class="seq-arrow"></div>
-
       <div class="seq-node">
         <div class="seq-day">Day 5</div>
         <div class="seq-action">HeyGen 60-sec AI video — says their name + company</div>
         <div class="seq-stat">+40% reply uplift</div>
       </div>
       <div class="seq-arrow"></div>
-
       <div class="seq-node">
         <div class="seq-day">Day 7</div>
         <div class="seq-action">BDR call via AI dialer — references all prior touches</div>
         <div class="seq-stat">5–12% booked</div>
       </div>
       <div class="seq-arrow"></div>
-
       <div class="seq-node">
         <div class="seq-day">Day 8</div>
         <div class="seq-action">UC founder LinkedIn voice note — 30 sec, personal</div>
         <div class="seq-stat">High open rate</div>
       </div>
       <div class="seq-arrow"></div>
-
       <div class="seq-node">
         <div class="seq-day">Day 10</div>
         <div class="seq-action">WhatsApp — 2 sentences + one-tap Calendly link</div>
         <div class="seq-stat">5–12% in EU markets</div>
       </div>
       <div class="seq-arrow"></div>
-
       <div class="seq-node">
         <div class="seq-day">Day 14</div>
         <div class="seq-action">BDR call 2 — shorter, final ask</div>
         <div class="seq-stat">Last active push</div>
       </div>
       <div class="seq-arrow"></div>
-
       <div class="seq-node">
         <div class="seq-day">Day 21</div>
         <div class="seq-action">LinkedIn breakup message → long-term nurture + ads 30 more days</div>
         <div class="seq-stat">Stays warm forever</div>
       </div>
-
     </div>
-
-    <div style="margin-top:20px; padding:14px 16px; background:var(--canvas-bg); border:1px solid var(--border); border-radius:10px; font-size:12px; color:var(--muted2); line-height:1.7;">
-      ★ <strong style="color:var(--text)">Signal override:</strong> Job change · new CFO hire · funding round · ERP transformation announced → restart sequence immediately, regardless of day in cycle.
+    <div style="margin-top:20px;padding:12px 16px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.7;">
+      <strong style="color:var(--text);">Signal override:</strong> Job change · new CFO hire · funding round · ERP transformation announced → restart sequence immediately, regardless of day in cycle.
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     STATS
-══════════════════════════════════════════ -->
-<div class="stats-section">
-  <div class="stats-row" id="stats-row">
-    <!-- rendered by JS -->
-  </div>
-</div>
+<!-- Phase cards -->
+<div class="phases-section" id="phases-section"></div>
 
-<!-- ══════════════════════════════════════════
-     PHASE CARDS
-══════════════════════════════════════════ -->
-<div class="phases-section" id="phases-section">
-  <!-- rendered by JS from GRITNORD.roadmap -->
-</div>
-
-<!-- Footer -->
 <footer>
   <div class="footer-logo">Gritnord</div>
   <div>Architecture V8 · 28 modules · Target €100M ARR</div>
@@ -641,23 +415,23 @@
 </footer>
 
 <script>
-(function() {
-  const t = localStorage.getItem('grtn-theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', t);
-  document.addEventListener('DOMContentLoaded', () => {
-    const icon = document.getElementById('theme-icon');
-    if (icon) icon.textContent = t === 'dark' ? '🌙' : '☀️';
-  });
-})();
-
 function toggleTheme() {
   const current = document.documentElement.getAttribute('data-theme') || 'dark';
   const next = current === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('grtn-theme', next);
   const icon = document.getElementById('theme-icon');
+  const label = document.getElementById('theme-label');
   if (icon) icon.textContent = next === 'dark' ? '🌙' : '☀️';
+  if (label) label.textContent = next === 'dark' ? 'Dark' : 'Light';
 }
+document.addEventListener('DOMContentLoaded', function() {
+  const t = document.documentElement.getAttribute('data-theme') || 'dark';
+  const icon = document.getElementById('theme-icon');
+  const label = document.getElementById('theme-label');
+  if (icon) icon.textContent = t === 'dark' ? '🌙' : '☀️';
+  if (label) label.textContent = t === 'dark' ? 'Dark' : 'Light';
+});
 </script>
 
 <script src="/nav.js"></script>
@@ -670,12 +444,12 @@ function toggleTheme() {
     const el = document.getElementById('flow-canvas');
     if (!el || !G.flow) return;
     el.innerHTML = G.flow.map((f, i) => `
-      <div style="display:flex; align-items:flex-start; gap:20px; padding:20px 0; border-bottom:1px solid var(--border);">
-        <div style="min-width:48px; height:48px; border-radius:12px; background:var(--purple-dim); border:1px solid var(--purple); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;">${f.icon}</div>
-        <div style="flex:1;">
-          <div style="font-size:11px; font-weight:600; color:var(--purple); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:4px;">Phase ${f.step}</div>
-          <div style="font-size:15px; font-weight:700; color:var(--text); margin-bottom:6px;">${f.name}</div>
-          <div style="font-size:13px; color:var(--muted2); line-height:1.6;">${f.description}</div>
+      <div class="flow-item">
+        <div class="flow-icon">${f.icon}</div>
+        <div class="flow-body">
+          <div class="flow-phase-num">Phase ${f.step}</div>
+          <div class="flow-name">${f.name}</div>
+          <div class="flow-desc">${f.description}</div>
         </div>
       </div>
     `).join('');
@@ -688,63 +462,60 @@ function toggleTheme() {
     if (typeof window.GRITNORD === 'undefined') { return setTimeout(renderRoadmapCards, 30); }
     const G = window.GRITNORD;
 
-    const tagClassMap = {
-      node: 'node', claude: 'claude', clay: 'clay', external: 'external',
-      lovable: 'lovable', supabase: 'supabase', stripe: 'stripe', make: 'make',
-    };
+    function makeBadge(status) {
+      if (status === 'live') return '<span class="badge badge-live">Live</span>';
+      if (status === 'building') return '<span class="badge badge-building">Building</span>';
+      return '<span class="badge badge-planned">Planned</span>';
+    }
 
-    function makeCard(m, statusClass) {
-      const stackTags = (m.stack || []).map(s => `<span class="tag">${s}</span>`).join('');
+    function makeCard(m, phaseNum) {
+      const stackPills = (m.stack || []).map(s => `<span class="pill">${s}</span>`).join('');
       return `
-        <div class="card">
-          <div class="card-top">
-            <div class="card-icon">${m.icon}</div>
-            <div class="card-status ${statusClass}"></div>
+        <div class="mod-card">
+          <div class="phase-watermark">P${phaseNum}</div>
+          <div class="mod-card-top">
+            <div class="mod-icon">${m.icon}</div>
+            ${makeBadge(m.status)}
           </div>
-          <div>
-            <div class="card-title">${m.name}</div>
-            <div class="card-desc">${m.description}</div>
-          </div>
-          <div class="card-footer">${stackTags}</div>
+          <div class="mod-title">${m.name}</div>
+          <div class="mod-desc">${m.description}</div>
+          ${stackPills ? `<div class="mod-stack">${stackPills}</div>` : ''}
         </div>
       `;
     }
 
-    const statusColors = { live: 'var(--green)', building: 'var(--amber)', planned: '#888' };
-    const statusCardClass = { live: 'live', building: 'build', planned: 'plan' };
-    const statusLabel = { live: 'Live', building: 'Building', planned: 'Planned' };
-
-    // Render phases from GRITNORD.roadmap
     const phasesEl = document.getElementById('phases-section');
     if (phasesEl && G.roadmap) {
       phasesEl.innerHTML = G.roadmap.map(r => {
         const phaseModules = G.modules.filter(m => r.modules && r.modules.includes(m.id));
-        const cardStatusClass = statusCardClass[r.status] || 'plan';
-        const labelColor = statusColors[r.status] || '#888';
+        const quarterBadge = `<span class="badge badge-planned">${r.quarter}</span>`;
         return `
           <div class="phase">
             <div class="phase-header">
-              <div class="phase-lbl" style="color:${labelColor};">Phase ${r.phase} — ${r.name}</div>
+              <div class="phase-name">Phase ${r.phase} — ${r.name}</div>
               <div class="phase-line"></div>
-              <div class="phase-count" style="color:${labelColor};">${r.quarter} · ${statusLabel[r.status]}</div>
+              <div class="phase-right">
+                ${quarterBadge}
+                ${makeBadge(r.status)}
+              </div>
             </div>
             ${r.deliverables && r.deliverables.length ? `
-              <div style="margin-bottom:14px; padding:14px 16px; background:var(--canvas-bg); border:1px solid var(--border); border-radius:10px;">
-                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);margin-bottom:8px;">Deliverables</div>
-                <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:4px;">
-                  ${r.deliverables.map(d => `<li style="font-size:12px;color:var(--muted2);display:flex;gap:8px;"><span style="color:var(--muted);flex-shrink:0;">·</span>${d}</li>`).join('')}
+              <div class="deliverables-box">
+                <div class="deliverables-label">Deliverables</div>
+                <ul class="deliverables-list">
+                  ${r.deliverables.map(d => `<li>${d}</li>`).join('')}
                 </ul>
               </div>
             ` : ''}
             <div class="cards-grid">
-              ${phaseModules.map(m => makeCard(m, cardStatusClass)).join('')}
+              ${phaseModules.map(m => makeCard(m, r.phase)).join('')}
             </div>
           </div>
         `;
       }).join('');
     }
 
-    // Render stats
+    // Stats
     const statsRow = document.getElementById('stats-row');
     if (statsRow && G.stats) {
       statsRow.innerHTML = G.stats.map(s => `
@@ -756,7 +527,7 @@ function toggleTheme() {
       `).join('');
     }
 
-    // Update nav pill
+    // Nav pill
     const pillEl = document.getElementById('nav-pill-text');
     if (pillEl) {
       const nLive = G.modules.filter(m => m.status === 'live').length;
