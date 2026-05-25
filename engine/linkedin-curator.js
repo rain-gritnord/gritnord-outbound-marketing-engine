@@ -232,21 +232,28 @@ export async function curateArticles({ count = 3, usedLinks = [] } = {}) {
       } catch { return false; }
     });
 
-  // ── Enforce weekly content mix: 1 AI post + 2 GTM/growth posts ──────────────
+  // ── Enforce weekly content mix: up to 1/3 AI, rest GTM/growth ───────────────
+  // We return more candidates than needed so the generator has variety to work with.
+  // Target ratio across the batch: ~1 AI per 2-3 GTM posts.
   const aiArticles  = deduped.filter(a => a.topic === 'ai');
   const gtmArticles = deduped.filter(a => a.topic === 'gtm');
 
+  const maxAi = Math.max(1, Math.ceil(count / 3)); // 1 AI per ~3 candidates
   const selected = [];
-  if (aiArticles.length > 0)  selected.push(aiArticles[0]);
-  // Fill remaining slots with GTM, pad with AI if GTM runs dry
+
+  // Interleave: GTM first, one AI every 3rd slot
+  let aiUsed = 0;
   for (const a of gtmArticles) {
     if (selected.length >= count) break;
     selected.push(a);
+    // Insert an AI article after every 2 GTM articles
+    if (aiUsed < maxAi && selected.length % 3 === 0 && aiArticles[aiUsed]) {
+      selected.push(aiArticles[aiUsed++]);
+    }
   }
-  while (selected.length < count && aiArticles.length > selected.filter(a => a.topic === 'ai').length) {
-    const next = aiArticles[selected.filter(a => a.topic === 'ai').length];
-    if (next) selected.push(next);
-    else break;
+  // Pad remaining slots with AI if GTM ran dry
+  while (selected.length < count && aiArticles[aiUsed]) {
+    selected.push(aiArticles[aiUsed++]);
   }
 
   // Fetch OG images for articles missing one

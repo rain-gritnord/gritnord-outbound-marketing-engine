@@ -119,8 +119,14 @@ export function updateLinkedInPost(id, updates) {
 }
 
 export function deleteLinkedInPost(id) {
-  const all = getLinkedInQueue().filter(p => p.id !== id);
-  write(FILES.linkedinQueue, all);
+  // Mark as dismissed (not hard-delete) so the article link stays in history
+  // and the curator never picks the same article again in this session or next.
+  const all = getLinkedInQueue();
+  const idx = all.findIndex(p => p.id === id);
+  if (idx >= 0) {
+    all[idx] = { ...all[idx], status: 'dismissed', updatedAt: new Date().toISOString() };
+    write(FILES.linkedinQueue, all.slice(0, 100));
+  }
 }
 
 // Twitter queue

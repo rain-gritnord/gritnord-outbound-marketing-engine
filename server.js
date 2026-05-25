@@ -406,17 +406,16 @@ app.get('/api/linkedin/queue', (req, res) => {
 // POST /api/linkedin/generate — manually curate + generate drafts
 app.post('/api/linkedin/generate', async (req, res) => {
   try {
-    // Pass already-queued article links so we never repeat the same article/image
+    // Pass all seen article links so we never repeat — includes dismissed drafts.
+    // dismissed = Rain deleted the draft; we still block that article from reappearing.
     const existingQueue = getLinkedInQueue();
-    // Only block links that are active drafts or posted — ignore broken/undefined-status items
-    const activeStatuses = new Set(['draft', 'posted', 'scheduled']);
+    const blockedStatuses = new Set(['draft', 'posted', 'scheduled', 'dismissed']);
     const usedLinks = existingQueue
-      .filter(p => activeStatuses.has(p.status))
+      .filter(p => blockedStatuses.has(p.status))
       .map(p => p.article?.link).filter(Boolean);
 
-    // Request 10 candidates — many will be rejected by CANNOT_GENERATE or Rule 1.
-    // We keep generating until we have 3 posts or exhaust all candidates.
-    const articles = await curateArticles({ count: 10, usedLinks });
+    // Request 15 candidates for more variety — generator stops after 3 good posts.
+    const articles = await curateArticles({ count: 15, usedLinks });
     const drafts = [];
 
     // Prevent duplicates within this generation run only (not across all history)
