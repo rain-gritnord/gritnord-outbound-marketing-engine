@@ -1,7 +1,8 @@
 // Publishes ai_search content to Supabase blog_posts table
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
+// Service key is required for INSERT — anon key is blocked by RLS on blog_posts
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
 
 // Large pool of verified professional Unsplash photos — diverse business/tech/office
 const PHOTO_POOL = [
