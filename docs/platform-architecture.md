@@ -1,6 +1,57 @@
 # Gritnord Full Platform Architecture
-**Current Version — updated with every flow change**
+**Current Version — V9**
 Last updated: May 2026
+
+---
+
+## MISSION
+
+Gritnord is a B2B meeting generation platform. We generate qualified meetings between User Companies (UCs) and their ideal Decision-maker Contacts (DCs) — then handle all operations: outreach, ops, content, tracking, no-show management, and billing.
+
+Meetings are the product. Outreach is the means. Revenue is tied to meetings held, not contacts delivered.
+
+---
+
+## ICP SWEET SPOT
+
+Gritnord does not serve everyone. Two primary ICP segments:
+
+### ICP 1 — Startup
+- 7–30 employees, seed or late seed, VC or angel funded
+- EU + UK, B2B SaaS or tech product
+- €3K ACV, 1–2 week decision cycle
+- Founder/CEO directly involved in sales
+- Currently using internal SDRs OR no formal sales motion at all
+
+### ICP 2 — Established B2B Software and Services
+- 15–200 employees, €2M–€10M revenue
+- EU + UK, B2B SaaS, software, licensing, services, or manufacturing with export focus
+- Actively expanding into new markets or geographies
+- ACV €15K–€25K
+
+### Excluded
+- Companies with €50M+ revenue and a dedicated internal sales + marketing team
+- Creative agencies
+- Pre-seed companies with no funding
+- B2C or hybrid B2C companies
+- Service companies with no scalable product
+
+---
+
+## WHAT WE ARE NOT — Scope Guard
+
+This section exists to prevent scope creep. Gritnord is not, and will not become:
+
+1. **Not a cold-email platform** — meetings are the product, outreach is the means
+2. **Not a content agency** — content is infrastructure for meetings, not the deliverable
+3. **Not a hiring service** — DC network is B2B decision-makers, not candidates
+4. **Not a CRM vendor** — HubSpot is infrastructure; Gritnord charges for outcomes
+5. **Not an SEO agency** — audit is delivered, implementation is separate
+6. **Not a BI/analytics tool** — data serves the UC relationship, not the analyst
+7. **Not a self-serve platform** — Gritnord operates on the UC's behalf (enterprise tier)
+8. **Not a meeting scheduler** — full meeting ops lifecycle: reminders, no-show, rebook, billing
+9. **Not a contact database** — DC network is a relationship network with engagement history, not a list
+10. **Not a per-lead service** — we charge per meeting held, not per contact delivered
 
 ---
 
@@ -21,7 +72,22 @@ Last updated: May 2026
    - 2–3 sample DC personas with outreach angle
    - 1 lead magnet concept for their industry
 7. UC sees what Gritnord delivers before committing — this is the conversion moment
-8. UC converts to paid → Stripe payment page for €3,500 onboarding
+8. UC converts to paid → two paths:
+
+   **Path A — Enterprise Onboarding:**
+   - Stripe payment page for €3,500 onboarding fee
+   - 3-hour onboarding session, full Gritnord team facilitation
+   - Full platform: all content, outreach, meeting ops, monthly reporting
+   - Platform subscription: €499/month
+
+   **Path B — SMB Self-Serve Tier:**
+   - €99/month platform access — no 3-hour onboarding required
+   - €200/meeting (AI layer only, no human facilitation)
+   - 14-day trial, self-serve conversion
+   - Target: companies too small for enterprise onboarding but with genuine B2B pipeline need
+   - Volume play that does not dilute enterprise pricing
+   - UC manages own outreach review; AI handles generation and tracking
+
 9. Billing details captured before payment: company name, registration number, VAT, invoicing address, credit card on file
 10. Any docs uploaded during trial carry over automatically to paid onboarding
 
@@ -114,6 +180,18 @@ Last updated: May 2026
 
 ---
 
+## PHASE 5b — Meeting Recording and Coaching
+
+44a. Meeting recording integrated — consent-based, AI-powered (Zoom API or equivalent)
+44b. Auto-transcription and summary generated within 15 minutes of meeting end
+44c. Transcript and recording stored — UC can access, DC cannot
+44d. Self-learning Layer 4 (enhanced): meeting content analysis — system learns which topics and objections correlate with closed-won outcomes
+44e. Sales coaching engine: AI-generated coaching notes for UC team members based on meeting transcripts
+44f. Coaching notes delivered to UC team member after every meeting: what went well, what to change, what questions to ask next time
+44g. Pattern recognition: after 10 meetings per UC, system identifies top 3 objection patterns and generates an objection-handler document
+
+---
+
 ## PHASE 6 — Meeting Operations
 
 44. Meeting booked → automatic sequence fires immediately:
@@ -174,6 +252,25 @@ Last updated: May 2026
     - Auto-tracked, paid monthly via invoice credit or bank transfer
 61. Overflow upsell — if DC demand exceeds 5 meetings/month: queue forms, UC notified, offer to unlock more at upgraded pricing
 62. DC network → new UC matching: when a loyal DC's profile matches a new UC's ICP, Gritnord initiates the warm intro instead of cold outreach
+63. **UC-as-DC Cross-Billing Mechanic:** every UC paying €500/meeting who also takes meetings from other UCs as a DC = double revenue from one relationship:
+    - UC profiles are also DC profiles in the network
+    - When UC A's ICP matches UC B's profile → warm intro offered
+    - If UC B takes a meeting as a DC for UC A → UC A billed €500, Gritnord collects
+    - Cross-billing tracked automatically
+    - Creates bidirectional revenue from every UC relationship
+
+---
+
+## PHASE 10 — Scale Platform (2027+)
+
+64. White-label capability: other agencies can run Gritnord under their own brand
+65. Gritnord takes 20% of their meeting revenue
+66. Certified Gritnord agency program: training, tooling, quality standards
+67. Agency partner dashboard: manage multiple client UCs under one login
+68. Third-party developer ecosystem: apps and integrations built on Gritnord API
+69. Vertical-specific solution packs: pre-configured ICPs, personas, content for specific industries
+70. Platform licensing model: sales teams run Gritnord engine internally, Gritnord takes 20% of meeting revenue
+71. Phase 10 complete when: first certified agency partner is live, first licensing deal signed
 
 ---
 
@@ -181,28 +278,50 @@ Last updated: May 2026
 
 Runs underneath all phases continuously.
 
-63. **Layer 1 — Campaign Feedback Loop:** every outreach action logged (opened / replied / clicked / booked / ignored). After 50 data points per variable, system adjusts: subject lines, send times, CTAs, channel mix per ICP. No human needed.
-64. **Layer 2 — Cross-UC Learning (anonymised):** what works for one SaaS UC targeting VP Sales in Nordics becomes the starting point for the next similar UC. Each new UC starts with the best known playbook, not a blank slate.
-65. **Layer 3 — Content Performance:** every post, lead magnet, blog article tracked for engagement + DC landing page referrals + meetings converted. Content calendar rewrites itself based on what generates pipeline.
-66. **Layer 4 — Industry Intelligence (daily):** monitors B2B sales methodology, AI sales tools, competitor moves, content marketing, SEO/AI search changes, regulatory updates. High-impact items auto-routed to relevant modules. Rain reviews weekly brief — approves or overrides.
-67. **Layer 5 — Meeting Quality Feedback:** Gritnord team logs post-meeting: right DC? persona held? pitch angle correct? DC advancing toward deal? Feeds back into ICP refinement. After 10 meetings per UC, system predicts which DCs will advance vs ghost.
-68. **Layer 6 — UC Health Monitoring:** tracks per UC: meetings held, UC team attendance, DC pipeline advancing, no-show rate, platform engagement. Early warning flags 6 weeks before potential churn — human review triggered.
+72. **Layer 1 — Campaign Feedback Loop:** every outreach action logged (opened / replied / clicked / booked / ignored). After 50 data points per variable, system adjusts: subject lines, send times, CTAs, channel mix per ICP. No human needed.
+73. **Layer 2 — Cross-UC Learning (anonymised):** what works for one SaaS UC targeting VP Sales in Nordics becomes the starting point for the next similar UC. Each new UC starts with the best known playbook, not a blank slate.
+74. **Layer 3 — Content Performance:** every post, lead magnet, blog article tracked for engagement + DC landing page referrals + meetings converted. Content calendar rewrites itself based on what generates pipeline.
+75. **Layer 4 — Industry Intelligence (daily):** monitors B2B sales methodology, AI sales tools, competitor moves, content marketing, SEO/AI search changes, regulatory updates. High-impact items auto-routed to relevant modules. Rain reviews weekly brief — approves or overrides. Enhanced with meeting content analysis (Phase 5b): system learns which topics and objections correlate with closed-won outcomes.
+76. **Layer 5 — Meeting Quality Feedback:** Gritnord team logs post-meeting: right DC? persona held? pitch angle correct? DC advancing toward deal? Feeds back into ICP refinement. After 10 meetings per UC, system predicts which DCs will advance vs ghost.
+77. **Layer 6a — UC Health Monitoring:** tracks per UC: meetings held, UC team attendance, DC pipeline advancing, no-show rate, platform engagement. Early warning flags 6 weeks before potential churn — human review triggered.
+78. **Layer 6b — Content-to-Revenue Attribution (new):**
+    - Tracks which content pieces led to meetings, and which led to closed deals
+    - Post ROI score per asset, with rewrite recommendations for underperformers
+    - Content calendar adapts based on revenue attribution, not just engagement
+    - Weekly report: "These 3 posts generated DC landing page visits that converted to meetings"
 
 ---
 
 ## CONTENT ENGINE — Build Principles
 
-69. One clean Claude call per article — no retry loops, no second trim call
-70. 7-mechanism POST_PROMPT is the core — do not change the structure
-71. CANNOT_GENERATE is a soft skip signal — article lacks confrontable numbers, skip and move on
-72. Rule 1 and character count logged as warnings — Rain reviews in approval queue, no auto-block
-73. Curator requires 2+ numbers in article title+description before sending to Claude — better input = better output
-74. Post performance analyser: scan scored posts, find patterns from top performers, encode as evidence in prompt
-75. Source diversity not enforced — if one source consistently produces data-rich articles, use it multiple times
+79. One clean Claude call per article — no retry loops, no second trim call
+80. 7-mechanism POST_PROMPT is the core — do not change the structure
+81. **CANNOT_GENERATE handling:** CANNOT_GENERATE is a soft flag, not an auto-skip. Article is flagged for Rain review in approval queue. Rain decides: skip, find a different angle, or manually write. Rationale: some articles have value but Claude couldn't find confrontable numbers — human judgement needed.
+82. Rule 1 and character count logged as warnings — Rain reviews in approval queue, no auto-block
+83. Curator requires 2+ numbers in article title+description before sending to Claude — better input = better output
+84. **Post Performance Analyser:**
+    - Scan all scored posts after publication
+    - Posts scoring 7+ feed their structure patterns back into the POST_PROMPT evidence base
+    - Track per post: topic, Line 1 structure, anchor company named, character count, day/time posted, engagement rate, DC landing page referral rate, meeting conversion rate
+    - High performers → extract patterns → encode as evidence in prompt for next generation cycle
+85. Source diversity not enforced — if one source consistently produces data-rich articles, use it multiple times
+
+---
+
+## STRATEGIC ADDITIONS
+
+### Reverse DC Funnel
+Don't wait for UCs to find you. Build the DC network first from Gritnord's own outreach:
+- When Gritnord has 500 qualified DCs who've confirmed "yes, I'll take meetings" → the sales pitch to UCs flips: "We already have your buyers. Pay us."
+- Fundamentally different pitch than "we'll find your buyers"
+- Reduces UC sales cycle from weeks to days
+- Start building the DC network from day one, even before the first UC is signed
 
 ---
 
 ## REVENUE MODEL
+
+### Enterprise Tier
 
 | Line | Amount |
 |------|--------|
@@ -211,9 +330,26 @@ Runs underneath all phases continuously.
 | Content marketing tools | €299/month |
 | Lead magnets (avg 3 active × €50) | €150/month |
 | 5 meetings × €500 | €2,500/month |
-| **Total per active UC** | **€3,747/month** |
-| **Annual per UC** | **€44,964** |
+| **Total per active UC (enterprise)** | **€3,747/month** |
+| **Annual per UC (enterprise)** | **€44,964** |
 | Onboarding (one-time) | €3,500 |
+
+### SMB Self-Serve Tier
+
+| Line | Amount |
+|------|--------|
+| Platform access | €99/month |
+| Per meeting (AI layer only, no human facilitation) | €200/meeting |
+| Onboarding | None — self-serve |
+| Trial | 14 days free, self-serve conversion |
+
+### Deal-Value Pricing (All Tiers)
+
+- Structure: €500 flat base + 1% of closed deal value above €50K ACV
+- Introductory offer: valid for first 24 months from contract start date
+- Positioned as "enterprise pricing available to everyone while we build vertical density" — never marketed as "introductory"
+- Revenue tracking: UCs self-report closed deal value in monthly platform form. Contract includes audit rights. HubSpot/Stripe integration (Phase 3+) automates when adoption warrants.
+- Why 1% not 2%: lower friction for early UCs, still meaningful at scale (example: €200K deal = €500 + €2,000 = €2,500 total)
 
 ### Growth Trajectory to €100M
 
@@ -243,7 +379,49 @@ Target: **€100M by 2030, 15% net margin (€15M net)**
 |--------|-------------|--------|
 | Junior SDR | €3,000–4,000 salary | Low volume, slow ramp, no tools |
 | DIY stack (Lemlist + Clay + HubSpot + ads agency) | €5,000–8,000 | You manage it |
-| **Gritnord all-in** | **€3,747** | **5 meetings/month, fully managed, AI-powered, self-improving** |
+| **Gritnord all-in (enterprise)** | **€3,747** | **5 meetings/month, fully managed, AI-powered, self-improving** |
+| **Gritnord SMB self-serve** | **€99 + €200/meeting** | **AI-generated, UC-managed, no onboarding** |
+
+---
+
+## DATA MODEL
+
+Core entities and their fields:
+
+**UC (User Company)**
+- id, name, slug, domain, billing_email, stripe_customer_id
+- status: `trial` / `smb` / `paid` / `onboarding` / `active`
+- tier: `enterprise` / `smb`
+- trial_upload_ids, onboarding_meeting_id, icp_id, active_since
+
+**ICP**
+- id, uc_id, industry, company_size, geography, tech_stack, buying_triggers, deal_cycle
+
+**Persona**
+- id, icp_id, title, pain_points, buying_role, objections, preferred_channel, language_patterns
+
+**DC Contact**
+- id, uc_id, icp_id, persona_id, name, title, company, linkedin_url, email, phone, hubspot_id
+- network_segment, warm_intro_eligible, cross_billing_eligible
+
+**Meeting**
+- id, uc_id, dc_contact_id, scheduled_at, held_at, no_show, charged_amount, stripe_charge_id
+- recording_url, transcript_url, closed_deal_value
+
+**DC Loyal Network**
+- id, dc_contact_id, industry, company_size, role, deal_appetite, geography
+- engagement_score, last_contacted, warm_intro_rate
+
+**Content Asset**
+- id, uc_id, type: `post` / `blog` / `lead_magnet` / `ad` / `email`
+- channel, published_at, engagement_metrics, dc_landing_page_referrals
+- meetings_converted, deal_value_attributed, roi_score
+
+**Campaign Performance Log**
+- id, uc_id, variable, value, action, timestamp
+
+**Agency Partner**
+- id, name, certified_at, uc_ids_managed, revenue_share_pct, white_label_domain
 
 ---
 
