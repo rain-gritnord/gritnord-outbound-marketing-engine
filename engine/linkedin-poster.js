@@ -240,64 +240,23 @@ Output only the post text. No title, no intro, no meta-commentary. No "Topic tag
   // Strip any "Topic tag: X" or "Scenario: X" prefix Claude occasionally adds
   text = text.replace(/^(topic tag|scenario|category|type)\s*:\s*\S+\s*/i, '').trim();
 
-  // If Claude signals the article has no confrontable numbers, reject it
+  // Soft signal: if Claude says the article lacks confrontable numbers, flag for review
+  // but still return the text so Rain can decide — not a hard block
   if (text.startsWith('CANNOT_GENERATE')) {
+    console.warn('[poster] CANNOT_GENERATE signal — article may lack confrontable numbers. Skipping.');
     throw new Error('CANNOT_GENERATE: article lacks two relevant confrontable numbers');
   }
 
-  // Rule 1 validation: Line 1 must contain at least 2 distinct numbers/metrics.
-  // A number is any digit sequence, optionally preceded by $£€ or followed by % B M K.
-  // If only 1 found, regenerate once with an explicit correction instruction.
+  // Log Rule 1 status for Rain's awareness — no retry, no hard block
   const line1 = text.split('\n')[0] ?? '';
   const numbersInLine1 = line1.match(/[$£€]?\d[\d,.]*[BMK%]?/g) ?? [];
   if (numbersInLine1.length < 2) {
-    console.log(`[poster] Rule 1 fail — Line 1 has ${numbersInLine1.length} number(s): "${line1}" — retrying`);
-    const retryResponse = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1024,
-      messages: [{
-        role: 'user',
-        content: `${prompt}
-
-CRITICAL: Your previous attempt failed Rule 1. Line 1 was: "${line1}"
-It contains only ${numbersInLine1.length} number(s). Rule 1 requires EXACTLY 2 sentences in Line 1, each with a specific number that contrasts the other.
-Example: "Anthropic hit $31B ARR in 4 years. Salesforce took 19."
-Rewrite the entire post now with a correct Line 1.`,
-      }],
-    });
-    const retryText = retryResponse.content.find(b => b.type === 'text')?.text?.trim() ?? text;
-    text = retryText.replace(/^(topic tag|scenario|category|type)\s*:\s*\S+\s*/i, '').trim();
-    // Check CANNOT_GENERATE again after retry
-    if (text.startsWith('CANNOT_GENERATE')) {
-      throw new Error('CANNOT_GENERATE: article lacks two relevant confrontable numbers');
-    }
+    console.warn(`[poster] Rule 1 advisory — Line 1 has ${numbersInLine1.length} number(s): "${line1}" — Rain reviews before posting`);
   }
 
-  // Enforce 860-char hard ceiling — Claude consistently ignores the prompt instruction.
-  // If over limit, ask Claude to trim only the middle paragraphs, keeping Line 1, Line 2, and closing intact.
+  // Log character count — no auto-trim, Rain reviews in the approval queue
   if (text.length > 860) {
-    console.log(`[poster] Post is ${text.length} chars — trimming to 860`);
-    const trimResponse = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 512,
-      messages: [{
-        role: 'user',
-        content: `This LinkedIn post is ${text.length} characters. Trim it to under 860 characters total (including spaces and hashtags).
-
-STRICT RULES:
-- Keep Line 1 (first two sentences with the data points) UNCHANGED.
-- Keep Line 2 ("That sounds like..." or equivalent) UNCHANGED.
-- Keep the closing question UNCHANGED.
-- Only cut sentences from the middle paragraphs. Remove whole sentences, do not truncate mid-sentence.
-- Output only the final post. No commentary.
-
-POST:
-${text}`,
-      }],
-    });
-    const trimmed = trimResponse.content.find(b => b.type === 'text')?.text?.trim() ?? text;
-    if (trimmed.length <= 860) text = trimmed;
-    else text = text.slice(0, 857) + '...'; // last-resort hard cut
+    console.warn(`[poster] Post is ${text.length} chars (target: 780-860) — review before posting`);
   }
 
   return text;

@@ -536,220 +536,11 @@
 <div class="holo"></div>
 
 <!-- ══════════════════════════════════════════
-     FLOW CANVAS
+     FLOW CANVAS — data-driven from GRITNORD.flow
 ══════════════════════════════════════════ -->
 <div class="canvas-section">
-  <div class="section-label">Product flow</div>
-
-  <div class="canvas-wrap">
-
-    <!-- Main pipeline -->
-    <div class="flow-main">
-
-      <!-- 1. UC Signup -->
-      <div class="flow-node trigger">
-        <div class="node-status-label live">Trigger</div>
-        <div class="node-icon">⚡</div>
-        <div class="node-title">UC Signs Up</div>
-        <div class="node-tags"><span class="node-tag">Lovable</span><span class="node-tag">Stripe</span></div>
-      </div>
-      <div class="flow-arrow"></div>
-
-      <!-- 2. ICP Onboarding -->
-      <div class="flow-node live">
-        <div class="node-status-label live">Live ✓</div>
-        <div class="node-icon">📋</div>
-        <div class="node-title">ICP Onboarding</div>
-        <div class="node-tags"><span class="node-tag">Claude</span><span class="node-tag">Whisper</span></div>
-      </div>
-      <div class="flow-arrow"></div>
-
-      <!-- 3. Clay Research -->
-      <div class="flow-node live">
-        <div class="node-status-label live">Live ✓</div>
-        <div class="node-icon">🔍</div>
-        <div class="node-title">DC Research</div>
-        <div class="node-tags"><span class="node-tag">Clay</span><span class="node-tag">Apollo</span></div>
-      </div>
-      <div class="flow-arrow"></div>
-
-      <!-- 4. Launch Sequence -->
-      <div class="flow-node build" id="launch-node">
-        <div class="node-status-label build">Building</div>
-        <div class="node-icon">🚀</div>
-        <div class="node-title">Launch 30-Day Sequence</div>
-        <div class="node-tags"><span class="node-tag">Make.com</span><span class="node-tag">HubSpot</span></div>
-      </div>
-      <div class="flow-arrow"></div>
-
-      <!-- 5. Meeting Booked -->
-      <div class="flow-node build">
-        <div class="node-status-label build">Building</div>
-        <div class="node-icon">📅</div>
-        <div class="node-title">Meeting Booked</div>
-        <div class="node-tags"><span class="node-tag">Cal.com</span><span class="node-tag">Calendly</span></div>
-      </div>
-      <div class="flow-arrow"></div>
-
-      <!-- 6. No-show Prevention -->
-      <div class="flow-node plan">
-        <div class="node-status-label">Planned</div>
-        <div class="node-icon">🛡</div>
-        <div class="node-title">No-Show Prevention</div>
-        <div class="node-tags"><span class="node-tag">ElevenLabs</span><span class="node-tag">Make</span></div>
-      </div>
-      <div class="flow-arrow"></div>
-
-      <!-- 7. Meeting Held → €500 -->
-      <div class="flow-node plan">
-        <div class="node-status-label">Planned</div>
-        <div class="node-icon">💳</div>
-        <div class="node-title">Meeting Held → €500</div>
-        <div class="node-tags"><span class="node-tag">Stripe</span><span class="node-tag">Supabase</span></div>
-      </div>
-      <div class="flow-arrow"></div>
-
-      <!-- 8. Flywheel -->
-      <div class="flow-node future">
-        <div class="node-status-label">Phase 4</div>
-        <div class="node-icon">♾️</div>
-        <div class="node-title">Flywheel: DC→UC</div>
-        <div class="node-tags"><span class="node-tag">Claude</span><span class="node-tag">Resend</span></div>
-      </div>
-
-    </div>
-
-    <!-- Branch: 8 outreach channels -->
-    <div style="display:flex; margin-top:0;">
-
-      <!-- spacer: width = 4 nodes + 3 arrows + half node = (148×3 + 40×3 + 74) = 518px -->
-      <div style="width:518px; flex-shrink:0;"></div>
-
-      <!-- Branch column -->
-      <div style="display:flex; flex-direction:column; align-items:flex-start;">
-        <!-- vertical line down -->
-        <div style="width:1px; height:32px; background:linear-gradient(180deg,#555,#2a2a2a); margin-left:73px;"></div>
-
-        <!-- label -->
-        <div style="display:flex; align-items:center; gap:0; margin-bottom:0;">
-          <div style="width:73px; height:1px; background:#2a2a2a;"></div>
-          <div class="branch-label">8 outreach channels</div>
-          <div style="width:600px; height:1px; background:#2a2a2a;"></div>
-        </div>
-
-        <!-- vertical lines down to each channel -->
-        <div style="display:flex; gap:0; margin-top:0;">
-          <!-- each channel gets a vertical drop -->
-
-          <div style="display:flex; flex-direction:column; align-items:center; width:140px; margin-right:10px;">
-            <div style="width:1px; height:24px; background:#2a2a2a;"></div>
-            <div class="channel-node live">
-              <div class="node-icon">📞</div>
-              <div class="node-title" style="font-size:11px; font-weight:700;">BDR Cold Calling</div>
-              <div style="margin-top:5px;">
-                <span class="node-tag" style="font-size:9px;">Nooks / Orum</span>
-              </div>
-            </div>
-          </div>
-
-          <div style="display:flex; flex-direction:column; align-items:center; width:140px; margin-right:10px;">
-            <div style="width:1px; height:24px; background:#2a2a2a;"></div>
-            <div class="channel-node live">
-              <div class="node-icon">💼</div>
-              <div class="node-title" style="font-size:11px; font-weight:700;">LinkedIn Dual</div>
-              <div style="margin-top:5px;">
-                <span class="node-tag" style="font-size:9px;">Claude</span>
-              </div>
-            </div>
-          </div>
-
-          <div style="display:flex; flex-direction:column; align-items:center; width:140px; margin-right:10px;">
-            <div style="width:1px; height:24px; background:#2a2a2a;"></div>
-            <div class="channel-node build">
-              <div class="node-icon">💬</div>
-              <div class="node-title" style="font-size:11px; font-weight:700;">WhatsApp</div>
-              <div style="margin-top:5px;">
-                <span class="node-tag" style="font-size:9px;">Make.com</span>
-              </div>
-            </div>
-          </div>
-
-          <div style="display:flex; flex-direction:column; align-items:center; width:140px; margin-right:10px;">
-            <div style="width:1px; height:24px; background:#2a2a2a;"></div>
-            <div class="channel-node build">
-              <div class="node-icon">🎬</div>
-              <div class="node-title" style="font-size:11px; font-weight:700;">HeyGen AI Video</div>
-              <div style="margin-top:5px;">
-                <span class="node-tag" style="font-size:9px;">HeyGen</span>
-              </div>
-            </div>
-          </div>
-
-          <div style="display:flex; flex-direction:column; align-items:center; width:140px; margin-right:10px;">
-            <div style="width:1px; height:24px; background:#2a2a2a;"></div>
-            <div class="channel-node build">
-              <div class="node-icon">📣</div>
-              <div class="node-title" style="font-size:11px; font-weight:700;">Paid Social</div>
-              <div style="margin-top:5px;">
-                <span class="node-tag" style="font-size:9px;">Meta · LinkedIn</span>
-              </div>
-            </div>
-          </div>
-
-          <div style="display:flex; flex-direction:column; align-items:center; width:140px; margin-right:10px;">
-            <div style="width:1px; height:24px; background:#2a2a2a;"></div>
-            <div class="channel-node plan">
-              <div class="node-icon">🍪</div>
-              <div class="node-title" style="font-size:11px; font-weight:700;">Cookie Tracking</div>
-              <div style="margin-top:5px;">
-                <span class="node-tag" style="font-size:9px;">Gritnord Pixel</span>
-              </div>
-            </div>
-          </div>
-
-          <div style="display:flex; flex-direction:column; align-items:center; width:140px; margin-right:10px;">
-            <div style="width:1px; height:24px; background:#2a2a2a;"></div>
-            <div class="channel-node plan">
-              <div class="node-icon">📅</div>
-              <div class="node-title" style="font-size:11px; font-weight:700;">Search &amp; Book</div>
-              <div style="margin-top:5px;">
-                <span class="node-tag" style="font-size:9px;">Lovable</span>
-              </div>
-            </div>
-          </div>
-
-          <div style="display:flex; flex-direction:column; align-items:center; width:140px;">
-            <div style="width:1px; height:24px; background:#2a2a2a;"></div>
-            <div class="channel-node live">
-              <div class="node-icon">✦</div>
-              <div class="node-title" style="font-size:11px; font-weight:700;">Content Engine</div>
-              <div style="margin-top:5px;">
-                <span class="node-tag" style="font-size:9px;">Node.js · Claude</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
-    <!-- Legend -->
-    <div style="display:flex; gap:20px; margin-top:32px; flex-wrap:wrap;">
-      <div style="display:flex;align-items:center;gap:7px;font-size:11px;color:#666;">
-        <div style="width:20px;height:2px;background:var(--green);border-radius:9999px;box-shadow:0 0 6px var(--green)"></div> Live
-      </div>
-      <div style="display:flex;align-items:center;gap:7px;font-size:11px;color:#666;">
-        <div style="width:20px;height:2px;background:var(--amber);border-radius:9999px;"></div> Building
-      </div>
-      <div style="display:flex;align-items:center;gap:7px;font-size:11px;color:#666;">
-        <div style="width:20px;height:2px;background:#444;border-radius:9999px;"></div> Planned
-      </div>
-      <div style="display:flex;align-items:center;gap:7px;font-size:11px;color:#666;">
-        <div style="width:20px;height:2px;background:#f97316;border-radius:9999px;"></div> Trigger
-      </div>
-    </div>
-
-  </div>
+  <div class="section-label">Business flow — 9 phases</div>
+  <div id="flow-canvas" style="display:flex; flex-direction:column; gap:0;"></div>
 </div>
 
 <!-- ══════════════════════════════════════════
@@ -872,6 +663,26 @@ function toggleTheme() {
 <script src="/nav.js"></script>
 
 <script>
+(function() {
+  function renderFlow() {
+    if (typeof window.GRITNORD === 'undefined') { return setTimeout(renderFlow, 30); }
+    const G = window.GRITNORD;
+    const el = document.getElementById('flow-canvas');
+    if (!el || !G.flow) return;
+    el.innerHTML = G.flow.map((f, i) => `
+      <div style="display:flex; align-items:flex-start; gap:20px; padding:20px 0; border-bottom:1px solid var(--border);">
+        <div style="min-width:48px; height:48px; border-radius:12px; background:var(--purple-dim); border:1px solid var(--purple); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;">${f.icon}</div>
+        <div style="flex:1;">
+          <div style="font-size:11px; font-weight:600; color:var(--purple); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:4px;">Phase ${f.step}</div>
+          <div style="font-size:15px; font-weight:700; color:var(--text); margin-bottom:6px;">${f.name}</div>
+          <div style="font-size:13px; color:var(--muted2); line-height:1.6;">${f.description}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+  renderFlow();
+})();
+
 (function() {
   function renderRoadmapCards() {
     if (typeof window.GRITNORD === 'undefined') { return setTimeout(renderRoadmapCards, 30); }

@@ -129,9 +129,14 @@ function scoreArticle(title, description = '') {
     if (text.includes(kw)) score++;
   }
 
-  // Boost articles that contain specific numbers — these are far more likely to support Line 1
-  const numberCount = (text.match(/\d[\d,.]*\s*(%|m|b|k|million|billion|thousand|arr|mrr)/gi) ?? []).length;
-  score += Math.min(numberCount * 2, 6);
+  // Require at least 2 specific numbers in title+description — necessary for Line 1 (two confrontable metrics).
+  // Articles with 0-1 numbers will almost always trigger CANNOT_GENERATE, so reject early.
+  const numberMatches = (text.match(/[$£€]?\d[\d,.]*\s*(%|m|b|k|x|million|billion|thousand|arr|mrr|yoy|cagr)?/gi) ?? []);
+  if (numberMatches.length < 2) return -1;
+
+  // Strong boost for articles with metric-qualified numbers (%, $M, ARR etc)
+  const metricCount = (text.match(/\d[\d,.]*\s*(%|m|b|k|million|billion|thousand|arr|mrr)/gi) ?? []).length;
+  score += Math.min(metricCount * 2, 6);
 
   return score;
 }
