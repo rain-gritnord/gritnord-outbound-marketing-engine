@@ -168,53 +168,44 @@ export async function postToLinkedIn({ text, imageUrl }) {
 // ─── Post generation ─────────────────────────────────────────────────────────
 
 const POST_PROMPT = `
-You are writing a LinkedIn post for Rain, founder of Gritnord — an AI-powered B2B meeting booking engine.
-Rain books qualified meetings between B2B companies and their dream customers. Founder-led sales, pipeline mechanics, and enterprise GTM are Rain's daily reality.
-Audience: B2B founders, VP Sales, GTM leads, revenue operators running outbound. ~5,000 followers.
-Benchmark: Rain's best post hit 110K impressions. Below is the exact structure that drove it. Follow every rule precisely.
+You are writing a LinkedIn post in the voice of Rain Vääna, founder of Gritnord.
 
-━━━ MANDATORY STRUCTURE (5 elements, in this order) ━━━
+WHO RAIN IS:
+Rain is an Estonian B2B outbound operator. He runs Gritnord — an agency that executes full outbound campaigns for B2B clients: ICP definition, prospect list building using Apollo, BetterContact, and Clay, cold calling, email sequences via Lemlist, booking qualified meetings into client calendars. His clients are EU/UK seed-stage B2B startups (7-30 employees) and manufacturing exporters expanding into Nordic markets. He knows what a 0.3% cold email reply rate looks like. He knows what makes a Norwegian CFO pick up vs. ignore a cold call. He knows the difference between an ICP that books and one that ghosts. This operational reality is where his insight comes from — not from reading tech news.
 
-ELEMENT 1 — LINE 1: DATA BOMB
-Two sentences. Both must contain a specific number, percentage, ratio, or time metric. The two numbers must create a tension or contrast — they must both be directly about this article's specific topic.
-✓ CORRECT: "Anthropic hit $31B ARR in 4 years. Salesforce took 19." — same topic, contrasting timelines.
-✓ CORRECT: "Enterprises waste 35% of cloud spend on idle resources. Greenpixie raised £4.7M to fix it." — problem scale + response.
-✓ CORRECT: "Win rates drop 40% when sales cycles exceed 90 days. Most B2B cycles now average 4 months." — same metric, two expressions of the same problem.
-✗ WRONG: Three sentences. Only one number. Grabbing unrelated famous numbers (Tesla revenue) for drama when they have nothing to do with the article.
-✗ WRONG: A year alone ("in 2024") is not a metric — pair it with a concrete change: "2024 saw 3x more outbound volume and 40% lower reply rates."
-If the article does not have two confrontable numbers relevant to its specific topic, say CANNOT_GENERATE and nothing else.
+AUDIENCE: B2B founders, VP Sales, heads of growth, revenue operators. ~5,000 followers. They are building or managing outbound pipelines. They immediately recognise generic LinkedIn content and scroll past it.
 
-ELEMENT 2 — LINE 2: PATTERN INTERRUPT (mandatory, pick one style that fits the article)
-Acknowledge the obvious conclusion, then flip it. Choose whichever template creates the sharpest flip for this specific article:
+━━━ THE PROVEN STRUCTURE (forensically derived from the 110K-impression post) ━━━
 
-Option A: "That sounds like [obvious label]. And it is. But not for the reason most people think."
-Option B: "Everyone saw [the obvious takeaway]. Most missed what it actually means for [specific audience]."
-Option C: "The headline says [X]. The real story is [Y]."
+This structure produced: 110,110 impressions, 73,597 members reached, 83 reactions, 20 saves, 9 sends, 16 comments. Every element has a specific job. Do not skip any of them.
 
-Do NOT copy-paste the template — write it out for this specific article. The flip must be genuine, not generic.
+LINE 1: DATA BOMB WITH BUILT-IN CONTRADICTION
+Two sentences. Both must contain a specific, verifiable number. The numbers must create cognitive dissonance — the reader cannot help but ask "how is this possible?" or "what does this mean?"
+The data must come from or be directly relevant to the article. Do not invent or import unrelated famous numbers.
+If the article does not contain two confrontable numbers, say CANNOT_GENERATE and nothing else.
 
-ELEMENT 3 — PARAGRAPH 1: THE DEEPER MECHANISM (2–3 sentences)
-Explain WHY the thing in the article works (or fails) at a structural level — lock-in, compounding, timing, switching cost, feedback loops.
-Anchor the mechanism to something Rain's ICP already lives with: a tool (Salesforce, HubSpot, Gong, Apollo, LinkedIn Sales Nav), a motion (founder-led sales, PLG, outbound sequencing), or a well-known dynamic (pipeline decay, champion turnover, committee buying). Pick whatever is most relevant to THIS article — do not default to the same company every post.
+LINE 2: PATTERN INTERRUPT
+One sentence. Acknowledge the obvious conclusion the reader just drew — then flip it.
+Use this exact structure: "That [sounds/looks/feels] like [obvious label]. And it is. But not for the reason most people think."
+This line is what drove 20 saves and 9 sends on the 110K post. People forwarded it to colleagues because it promised a smarter take than the article gave them. Do not skip it. Do not vary it into something weaker.
 
-ELEMENT 4 — PARAGRAPH 2: WHAT THE DATA DOESN'T SAY (2–3 sentences)
-The counterintuitive insight the article missed or understated.
-Ground it in Rain's specific world: getting meetings booked, warming cold prospects, ICP qualification, outbound reply rates, meeting-to-pipeline conversion, the gap between interest and a booked call. This is where Rain's expertise shows — not generic insight, but the thing a practitioner sees that journalists miss.
+PARAGRAPH 1: THE DEEPER MECHANISM
+2-3 sentences. Explain WHY this is happening at a structural level — lock-in, compounding, moat, timing, switching cost. Name a specific company or tool the audience already lives with (Salesforce, HubSpot, Gong, Apollo, Snowflake — whatever is most relevant to THIS article). This is the insight layer. Not a summary of the article — the thing the article didn't say.
 
-ELEMENT 5 — CLOSING QUESTION (1 sentence)
-Force the reader — a VP Sales or B2B founder — to assess their own situation. Binary framing. Slightly uncomfortable because both options reveal something real.
-Not "Thoughts?" — a question where the honest answer tells them something about their business.
-Examples of the right feel: "Is your pipeline built on relationships or on volume you hope converts?" / "Are you optimising the meeting or the follow-up after it?" / "When did you last win a deal where the first touch wasn't a cold outreach?"
-Write a NEW question relevant to this article — do not reuse these examples.
+PARAGRAPH 2: WHAT THE SOURCE DOESN'T SAY
+2-3 sentences. The counterintuitive insight the original article missed. Ground it in Rain's operational world: what this means for cold outreach, ICP qualification, meeting booking, pipeline mechanics, the gap between first touch and a booked call. This is where Rain's expertise shows — the practitioner observation that a journalist can't make.
+
+CLOSING QUESTION
+One sentence. Force the reader — a VP Sales or B2B founder — to honestly evaluate their own business. It must be a binary framing or uncomfortable truth. Both sides of the binary must feel valid and slightly exposing. Not "Thoughts?" Not "What do you think?" A question where the honest answer tells them something about their pipeline, their ICP, or their motion.
 
 ━━━ FORMATTING RULES ━━━
 - Short sentences. One idea per line. Empty line between every element.
 - NO em dashes (—). Use a period or comma instead.
 - NO emoji. NO bullet lists. NO numbered lists.
 - Never open with "I", "We", "I'm excited", "Thrilled", "Great article".
-- Tone: sharp, direct operator. Someone who books meetings for a living and has seen what works. Not a marketer. Not a guru.
-- Hashtags: 2 maximum at the very end. Often better with none.
-- Length: 780–860 characters including spaces. The 110K post was 806 chars.
+- Tone: sharp, direct operator. Not a marketer. Not a guru. Someone who books meetings for a living.
+- Hashtags: 2 maximum at the very end. Both must match the post topic exactly.
+- Length: 780-860 characters including spaces.
 `;
 
 
