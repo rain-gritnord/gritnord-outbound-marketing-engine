@@ -302,12 +302,25 @@ async function checkStatus() {
 }
 
 async function loadQueue() {
-  const r = await fetch('/api/linkedin/queue');
-  const d = await r.json();
-  allPosts = d.posts || [];
-  const draftCount = allPosts.filter(p => p.status === 'draft').length;
-  document.getElementById('draft-count').textContent = draftCount ? `(${draftCount})` : '';
-  renderTab();
+  try {
+    const r = await fetch('/api/linkedin/queue');
+    if (r.status === 401) throw new Error('Session expired — <a href="/login.html" style="color:var(--accent)">log in again</a>');
+    if (!r.ok) throw new Error(`Queue load failed (HTTP ${r.status})`);
+    const ct = r.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) throw new Error('Session expired — please refresh');
+    const d = await r.json();
+    allPosts = d.posts || [];
+    const draftCount = allPosts.filter(p => p.status === 'draft').length;
+    document.getElementById('draft-count').textContent = draftCount ? `(${draftCount})` : '';
+    renderTab();
+  } catch (err) {
+    allPosts = [];
+    const container = document.getElementById('queue-container');
+    if (container) {
+      container.innerHTML = `<div class="empty"><div style="font-size:32px">⚠</div><p>${err.message || 'Failed to load queue. Check your connection or login status.'}</p></div>`;
+    }
+    document.getElementById('draft-count').textContent = '';
+  }
 }
 
 function switchTab(tab, el) {
@@ -438,7 +451,11 @@ async function generateDrafts() {
     const r = await fetch('/api/linkedin/generate', { method: 'POST' });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error);
-    toast(`${d.total} drafts ready`, 'success');
+    if (d.total === 0) {
+      toast('No qualifying articles found today — try again tomorrow', 'error');
+    } else {
+      toast(`${d.total} draft${d.total === 1 ? '' : 's'} ready`, 'success');
+    }
     await loadQueue();
   } catch (err) {
     toast(err.message, 'error');
