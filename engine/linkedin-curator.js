@@ -1,47 +1,43 @@
 // Curates articles from top B2B/founder sources for LinkedIn posts
-// Rule: max 1 article per domain. Source diversity is NOT enforced — structure quality wins.
 
 const RSS_SOURCES = [
-  // ── B2B sales & GTM — highest signal for Rain's audience ─────────────────
+  // ── US founder & VC ──────────────────────────────────────────────────────
   { name: 'SaaStr',          url: 'https://www.saastr.com/feed/' },
-  { name: 'OpenView',        url: 'https://openviewpartners.com/feed/' },
-  { name: 'Predictable Rev', url: 'https://predictablerevenue.com/feed' },
-  { name: 'Winning by Design', url: 'https://winnbydesign.com/feed/' },
-  { name: 'Sales Hacker',    url: 'https://www.saleshacker.com/feed/rss/' },
-  { name: 'Gong Labs',       url: 'https://www.gong.io/blog/feed/' },
-  { name: 'ChartMogul',      url: 'https://chartmogul.com/blog/feed/' },
-  { name: 'Drift Blog',      url: 'https://www.drift.com/blog/feed/' },
-  { name: 'HubSpot Sales',   url: 'https://blog.hubspot.com/sales/rss.xml' },
-
-  // ── Founder & operator insights ───────────────────────────────────────────
   { name: 'First Round',     url: 'https://review.firstround.com/feed.xml' },
-  { name: 'NFX',             url: 'https://www.nfx.com/feed' },
-  { name: 'Lenny Rachitsky', url: 'https://www.lennysnewsletter.com/feed' },
-  { name: 'Tomasz Tunguz',   url: 'https://tomtunguz.com/index.xml' },
-  { name: 'Point Nine',      url: 'https://medium.com/feed/point-nine-news' },
-  { name: 'YCombinator',     url: 'https://www.ycombinator.com/blog/rss' },
   { name: 'a16z',            url: 'https://a16z.com/feed/' },
-
-  // ── AI in B2B / GTM ───────────────────────────────────────────────────────
+  { name: 'YCombinator',     url: 'https://www.ycombinator.com/blog/rss' },
+  { name: 'HBR',             url: 'https://feeds.hbr.org/harvardbusiness' },
+  { name: 'Inc',             url: 'https://www.inc.com/rss' },
   { name: 'TechCrunch',      url: 'https://techcrunch.com/feed/' },
-  { name: 'The Information', url: 'https://www.theinformation.com/feed' },
   { name: 'Sequoia',         url: 'https://www.sequoiacap.com/feed/' },
+  { name: 'NFX',             url: 'https://www.nfx.com/feed' },
 
-  // ── European B2B & startup ────────────────────────────────────────────────
+  // ── West European startup & VC ────────────────────────────────────────────
   { name: 'Sifted',          url: 'https://sifted.eu/feed/' },
   { name: 'EU-Startups',     url: 'https://eu-startups.com/feed/' },
   { name: 'Tech.eu',         url: 'https://tech.eu/feed/' },
-  { name: 'ArcticStartup',   url: 'https://arcticstartup.com/feed/' },
-  { name: 'The Hub',         url: 'https://thehub.io/blog/rss' },
+  { name: 'TNW',             url: 'https://thenextweb.com/feed/' },
+  { name: 'Silicon Republic', url: 'https://www.siliconrepublic.com/feed' },
+  { name: 'Maddyness',       url: 'https://www.maddyness.com/en/feed/' },
+  { name: 'Dealroom',        url: 'https://dealroom.co/blog/rss' },
+  { name: 'Startups UK',     url: 'https://startups.co.uk/feed/' },
+  { name: 'Real Business',   url: 'https://realbusiness.co.uk/feed' },
 
-  // ── Business press ────────────────────────────────────────────────────────
-  { name: 'HBR',             url: 'https://feeds.hbr.org/harvardbusiness' },
-  { name: 'Raconteur',       url: 'https://www.raconteur.net/feed/' },
-  { name: 'FT',              url: 'https://www.ft.com/rss/home/uk' },
+  // ── West European business & economy ─────────────────────────────────────
   { name: 'The Economist',   url: 'https://www.economist.com/business/rss.xml' },
-  { name: 'Bloomberg',       url: 'https://feeds.bloomberg.com/technology/news.rss' },
-  { name: 'WSJ',             url: 'https://feeds.a.dj.com/rss/WSJcomUSBusiness.xml' },
+  { name: 'FT',              url: 'https://www.ft.com/rss/home/uk' },
+  { name: 'Reuters Business', url: 'https://feeds.reuters.com/reuters/businessNews' },
+  { name: 'Guardian Business', url: 'https://www.theguardian.com/uk/business/rss' },
+  { name: 'BBC Business',    url: 'http://feeds.bbci.co.uk/news/business/rss.xml' },
+  { name: 'City A.M.',       url: 'https://www.cityam.com/feed/' },
+  { name: 'Wired UK',        url: 'https://www.wired.co.uk/rss' },
+  { name: 'Management Today', url: 'https://www.managementtoday.co.uk/rss' },
   { name: 'Business Insider', url: 'https://www.businessinsider.com/rss' },
+  { name: 'Forbes',          url: 'https://www.forbes.com/feeds/forbeslatam/2014/08/11/forbesfeeds.rss' },
+  { name: 'Handelsblatt',    url: 'https://www.handelsblatt.com/contentexport/feed/schlagzeilen' },
+  { name: 'Les Echos',       url: 'https://feeds.lesechos.fr/lesechos-start' },
+  { name: 'Politico Europe', url: 'https://www.politico.eu/feed/' },
+  { name: 'EurActiv Business', url: 'https://www.euractiv.com/feed/' },
 ];
 
 // ── Topic classification ──────────────────────────────────────────────────────
@@ -70,11 +66,6 @@ const RELEVANT_KEYWORDS = [
   'productivity', 'hiring', 'team', 'customers', 'retention', 'churn', 'mrr', 'arr',
   'fundraising', 'investor', 'vc', 'saas', 'product', 'marketing', 'sdr', 'account',
   'prospecting', 'cold email', 'linkedin', 'strategy', 'scale', 'enterprise',
-  // UK / EU / SEA context
-  'series a', 'series b', 'seed round', 'exit', 'acquisition', 'scaleup', 'scale-up',
-  'southeast asia', 'singapore', 'indonesia', 'vietnam', 'philippines', 'malaysia',
-  'nordic', 'baltic', 'estonia', 'scandinavia', 'fintech', 'deep tech',
-  'market entry', 'expansion', 'global', 'cross-border',
 ];
 
 function classifyArticle(title, description = '') {
@@ -93,25 +84,6 @@ const BLOCKED_KEYWORDS = [
   'divorce', 'lawsuit', 'scandal',
 ];
 
-// Articles with no confrontable numbers — CEO hires, opinion pieces, listicles, advice posts.
-// These cannot satisfy Line 1 (two contrasting numbers) so they are blocked at curation.
-const DATALESS_PATTERNS = [
-  // Executive appointments
-  /appoints?\s+(new\s+)?(ceo|cto|cfo|coo|vp|chief|head|director)/i,
-  /names?\s+(new\s+)?(ceo|cto|cfo|coo|vp|chief|head|director)/i,
-  /welcomes?\s+(new\s+)?(ceo|cto|cfo|coo|vp|chief|head|director)/i,
-  /joins?\s+as\s+(ceo|cto|cfo|coo|vp|chief|head|director)/i,
-  // Awards / recognition
-  /wins?\s+(award|prize|recognition|deal)/i,
-  /named\s+(best|top|leader|winner)/i,
-  // Partnerships with no data
-  /partners?\s+with\b/i,
-  /announces?\s+partnership/i,
-  // Opinion / advice / listicle titles — no data to extract
-  /^(how\s+to|why\s+you|dear\s+saastr|top\s+\d|best\s+\d|\d+\s+ways|\d+\s+tips|\d+\s+reasons|what\s+is\s+a|the\s+\d+\s+best)/i,
-  /\?\s*$/,  // titles that are just questions have no data
-];
-
 function scoreArticle(title, description = '') {
   const text = (title + ' ' + description).toLowerCase();
 
@@ -119,25 +91,10 @@ function scoreArticle(title, description = '') {
     if (text.includes(blocked)) return -1;
   }
 
-  // Reject pure announcement articles — they have no confrontable data for Line 1
-  for (const pattern of DATALESS_PATTERNS) {
-    if (pattern.test(title)) return -1;
-  }
-
   let score = 0;
   for (const kw of RELEVANT_KEYWORDS) {
     if (text.includes(kw)) score++;
   }
-
-  // Require at least 2 specific numbers in title+description — necessary for Line 1 (two confrontable metrics).
-  // Articles with 0-1 numbers will almost always trigger CANNOT_GENERATE, so reject early.
-  const numberMatches = (text.match(/[$£€]?\d[\d,.]*\s*(%|m|b|k|x|million|billion|thousand|arr|mrr|yoy|cagr)?/gi) ?? []);
-  if (numberMatches.length < 2) return -1;
-
-  // Strong boost for articles with metric-qualified numbers (%, $M, ARR etc)
-  const metricCount = (text.match(/\d[\d,.]*\s*(%|m|b|k|million|billion|thousand|arr|mrr)/gi) ?? []).length;
-  score += Math.min(metricCount * 2, 6);
-
   return score;
 }
 
@@ -160,10 +117,9 @@ function parseRSSItems(xml) {
 
     const pubDate = block.match(/<pubDate>(.*?)<\/pubDate>/)?.[1]?.trim() || '';
 
-    // Extract image from media:content or enclosure (reject non-image files)
-    const rawImg = (block.match(/<media:content[^>]+url="([^"]+)"/)?.[1]) ||
-                   (block.match(/<enclosure[^>]+url="([^"]+)"/)?.[1]) || null;
-    const image = rawImg && /\.(mp3|mp4|wav|ogg|m4a|pdf|webm)(\?|$)/i.test(rawImg) ? null : rawImg;
+    // Extract image from media:content or enclosure
+    const image = (block.match(/<media:content[^>]+url="([^"]+)"/)?.[1]) ||
+                  (block.match(/<enclosure[^>]+url="([^"]+)"/)?.[1]) || null;
 
     if (title && link && link.startsWith('http')) {
       items.push({ title, link, description, pubDate, image });
@@ -182,8 +138,6 @@ async function fetchOGImage(url) {
     const html = await res.text();
     const og = html.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/)?.[1] ||
                html.match(/<meta[^>]+content="([^"]+)"[^>]+property="og:image"/)?.[1];
-    // Reject audio/video/non-image URLs (e.g. Substack podcasts return .mp3)
-    if (og && /\.(mp3|mp4|wav|ogg|m4a|pdf|webm)(\?|$)/i.test(og)) return null;
     return og || null;
   } catch {
     return null;
@@ -216,10 +170,7 @@ export async function curateArticles({ count = 3, usedLinks = [] } = {}) {
     }
   }
 
-  // Deduplicate: max 1 article per domain (same URL = same article)
-  // Source diversity is intentionally NOT enforced — structure quality wins.
-  // If one source consistently has data-rich articles that fit the 7-mechanism
-  // format, we use it even if it appears more than once in the batch.
+  // Deduplicate by domain
   const seenDomains = new Set();
   const deduped = allArticles
     .sort((a, b) => b.relevanceScore - a.relevanceScore)
@@ -232,28 +183,21 @@ export async function curateArticles({ count = 3, usedLinks = [] } = {}) {
       } catch { return false; }
     });
 
-  // ── Enforce weekly content mix: up to 1/3 AI, rest GTM/growth ───────────────
-  // We return more candidates than needed so the generator has variety to work with.
-  // Target ratio across the batch: ~1 AI per 2-3 GTM posts.
+  // ── Enforce weekly content mix: 1 AI post + 2 GTM/growth posts ──────────────
   const aiArticles  = deduped.filter(a => a.topic === 'ai');
   const gtmArticles = deduped.filter(a => a.topic === 'gtm');
 
-  const maxAi = Math.max(1, Math.ceil(count / 3)); // 1 AI per ~3 candidates
   const selected = [];
-
-  // Interleave: GTM first, one AI every 3rd slot
-  let aiUsed = 0;
+  if (aiArticles.length > 0)  selected.push(aiArticles[0]);
+  // Fill remaining slots with GTM, pad with AI if GTM runs dry
   for (const a of gtmArticles) {
     if (selected.length >= count) break;
     selected.push(a);
-    // Insert an AI article after every 2 GTM articles
-    if (aiUsed < maxAi && selected.length % 3 === 0 && aiArticles[aiUsed]) {
-      selected.push(aiArticles[aiUsed++]);
-    }
   }
-  // Pad remaining slots with AI if GTM ran dry
-  while (selected.length < count && aiArticles[aiUsed]) {
-    selected.push(aiArticles[aiUsed++]);
+  while (selected.length < count && aiArticles.length > selected.filter(a => a.topic === 'ai').length) {
+    const next = aiArticles[selected.filter(a => a.topic === 'ai').length];
+    if (next) selected.push(next);
+    else break;
   }
 
   // Fetch OG images for articles missing one
@@ -263,5 +207,6 @@ export async function curateArticles({ count = 3, usedLinks = [] } = {}) {
     }
   }
 
-  return selected.slice(0, count);
+  // Return up to 10 candidates so generate has fallbacks if some articles fail
+  return selected.slice(0, Math.max(count, 10));
 }

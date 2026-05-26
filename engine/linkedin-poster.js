@@ -5,7 +5,6 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { homedir } from 'os';
 import path from 'path';
-import { getLinkedInGuidelines } from './db.js';
 
 // Store tokens in ~/.gritnord/ to avoid macOS Desktop folder TCC restrictions
 const TOKEN_DIR = path.join(homedir(), '.gritnord');
@@ -127,9 +126,10 @@ export async function postToLinkedIn({ text, imageUrl }) {
 
   const personUrn = await getPersonUrn();
 
-  // Do not upload images — LinkedIn's native link preview (from the URL in post text)
-  // always produces a cleaner result than manually uploaded OG image thumbnails.
-  const mediaAsset = null;
+  let mediaAsset = null;
+  if (imageUrl) {
+    try { mediaAsset = await uploadImageToLinkedIn(imageUrl, personUrn); } catch {}
+  }
 
   const body = {
     author: personUrn,
@@ -167,65 +167,62 @@ export async function postToLinkedIn({ text, imageUrl }) {
 
 // ─── Post generation ─────────────────────────────────────────────────────────
 
-const POST_PROMPT = `
-You are writing a LinkedIn post in the voice of Rain Vääna, founder of Gritnord.
-
-WHO RAIN IS:
-Rain is an Estonian B2B outbound operator. He runs Gritnord — an agency that executes full outbound campaigns for B2B clients: ICP definition, prospect list building using Apollo, BetterContact, and Clay, cold calling, email sequences via Lemlist, booking qualified meetings into client calendars. His clients are EU/UK seed-stage B2B startups (7-30 employees) and manufacturing exporters expanding into Nordic markets. He knows what a 0.3% cold email reply rate looks like. He knows what makes a Norwegian CFO pick up vs. ignore a cold call. He knows the difference between an ICP that books and one that ghosts. This operational reality is where his insight comes from — not from reading tech news.
-
-AUDIENCE: B2B founders, VP Sales, heads of growth, revenue operators. ~5,000 followers. They are building or managing outbound pipelines. They immediately recognise generic LinkedIn content and scroll past it.
-
-━━━ THE PROVEN STRUCTURE (forensically derived from the 110K-impression post) ━━━
-
-This structure produced: 110,110 impressions, 73,597 members reached, 83 reactions, 20 saves, 9 sends, 16 comments. Every element has a specific job. Do not skip any of them.
-
-LINE 1: DATA BOMB WITH BUILT-IN CONTRADICTION
-Two sentences. Both must contain a specific, verifiable number. The numbers must create cognitive dissonance — the reader cannot help but ask "how is this possible?" or "what does this mean?"
-The data must come from or be directly relevant to the article. Do not invent or import unrelated famous numbers.
-If the article does not contain two confrontable numbers, say CANNOT_GENERATE and nothing else.
-
-LINE 2: PATTERN INTERRUPT
-One sentence. Acknowledge the obvious conclusion the reader just drew — then flip it.
-Use this exact structure: "That [sounds/looks/feels] like [obvious label]. And it is. But not for the reason most people think."
-This line is what drove 20 saves and 9 sends on the 110K post. People forwarded it to colleagues because it promised a smarter take than the article gave them. Do not skip it. Do not vary it into something weaker.
-
-PARAGRAPH 1: THE DEEPER MECHANISM
-2-3 sentences. Explain WHY this is happening at a structural level — lock-in, compounding, moat, timing, switching cost. Name a specific company or tool the audience already lives with (Salesforce, HubSpot, Gong, Apollo, Snowflake — whatever is most relevant to THIS article). This is the insight layer. Not a summary of the article — the thing the article didn't say.
-
-PARAGRAPH 2: WHAT THE SOURCE DOESN'T SAY
-2-3 sentences. The counterintuitive insight the original article missed. Ground it in Rain's operational world: what this means for cold outreach, ICP qualification, meeting booking, pipeline mechanics, the gap between first touch and a booked call. This is where Rain's expertise shows — the practitioner observation that a journalist can't make.
-
-CLOSING QUESTION
-One sentence. Force the reader — a VP Sales or B2B founder — to honestly evaluate their own business. It must be a binary framing or uncomfortable truth. Both sides of the binary must feel valid and slightly exposing. Not "Thoughts?" Not "What do you think?" A question where the honest answer tells them something about their pipeline, their ICP, or their motion.
-
-━━━ FORMATTING RULES ━━━
-- Short sentences. One idea per line. Empty line between every element.
-- NO em dashes (—). Use a period or comma instead.
-- NO emoji. NO bullet lists. NO numbered lists.
-- Never open with "I", "We", "I'm excited", "Thrilled", "Great article".
-- Tone: sharp, direct operator. Not a marketer. Not a guru. Someone who books meetings for a living.
-- Hashtags: 2 maximum at the very end. Both must match the post topic exactly.
-- Length: 780-860 characters including spaces.
+const RAIN_CONTEXT = `
+You are writing LinkedIn posts for Rain, founder of Gritnord — a B2B lead generation and GTM intelligence platform.
+Rain is a direct, experienced founder who has operated in B2B sales and growth for years.
+His audience: B2B founders, VP Sales, GTM leads, SDRs, revenue operators. ~5,000 followers.
+His credibility: he has built pipeline systems, worked with sales teams, understands the operational reality of B2B growth.
 `;
 
+const POST_STYLE_RULES = `
+STYLE RULES — study the most viral founder posts on LinkedIn:
+- First line is everything. It must stop the scroll. Bold claim, surprising insight, or counterintuitive take.
+- Never start with "I'm excited to share", "Thrilled to announce", "Great article", "Just read this".
+- Short sentences. One idea per line. Generous white space between paragraphs.
+- Maximum 3 paragraphs. Each paragraph max 3 lines.
+- NO emoji bullets. NO numbered lists with emoji. NO "🔥 Top 5 things".
+- NO em dashes (—) or hyphens in the middle of sentences. Use a period or rewrite the sentence instead. Only use a hyphen if grammar strictly requires it.
+- At most 1-2 hashtags at the very end, only if genuinely useful. Often none.
+- End with a question or invitation to debate. Not a CTA to buy anything.
+- Sound like a sharp, direct operator. Not a marketer. Not a coach. Not a guru.
+- Total length: 120–220 words. Tight. Every word earns its place. Aim for the shorter end.
+- Write in first person, but don't make it about Rain — make it about the insight.
+`;
 
 export async function generateLinkedInPost({ article, postType = 'reshare', additionalContext = '' }) {
-  // Pull any accepted improvement guidelines and inject them
-  const guidelines = getLinkedInGuidelines();
-  const guidelineBlock = guidelines.length > 0
-    ? `\nACCEPTED IMPROVEMENT RULES (apply every post — Rain approved these based on real engagement data):\n${guidelines.map((g, i) => `${i + 1}. ${g.title}: ${g.action}`).join('\n')}\n`
-    : '';
+  let prompt = '';
 
-  const articleBlock = postType === 'reshare'
-    ? `ARTICLE:\nTitle: ${article.title}\nSource: ${article.source}\nSummary: ${article.description}`
-    : `TOPIC: "${article.title}"`;
+  if (postType === 'reshare') {
+    prompt = `${RAIN_CONTEXT}
 
-  const prompt = `${POST_PROMPT}
-${guidelineBlock}
-${articleBlock}
-${additionalContext ? `\nANGLE: ${additionalContext}` : ''}
+Write a LinkedIn post sharing this article with Rain's perspective:
 
-Output only the post text. No title, no intro, no meta-commentary. No "Topic tag:" prefix.`;
+Title: ${article.title}
+Source: ${article.source}
+URL: ${article.link}
+Summary: ${article.description}
+
+${POST_STYLE_RULES}
+
+TASK: Write a post that:
+1. Opens with Rain's hot take or the most interesting angle from the article
+2. Adds one insight or pushback that the article doesn't cover — Rain's real-world experience angle
+3. Ends by asking the audience a sharp question related to this topic
+4. Naturally reference the article in context (not as "check out this great piece")
+
+${additionalContext ? `IMPORTANT ANGLE GUIDANCE: ${additionalContext}\n` : ''}Output only the post text. No title, no intro, no meta-commentary.`;
+  } else {
+    prompt = `${RAIN_CONTEXT}
+
+Write an original LinkedIn post on this topic: "${article.title}"
+
+${POST_STYLE_RULES}
+
+TASK: Write an original post where Rain shares a direct insight, counterintuitive observation, or tactical lesson from his experience building B2B pipeline and running Gritnord.
+End with a question that sparks comments from founders and sales leaders.
+
+Output only the post text. No title, no intro, no meta-commentary.`;
+  }
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
@@ -233,28 +230,6 @@ Output only the post text. No title, no intro, no meta-commentary. No "Topic tag
     messages: [{ role: 'user', content: prompt }],
   });
 
-  let text = response.content.find(b => b.type === 'text')?.text?.trim() ?? '';
-  // Strip any "Topic tag: X" or "Scenario: X" prefix Claude occasionally adds
-  text = text.replace(/^(topic tag|scenario|category|type)\s*:\s*\S+\s*/i, '').trim();
-
-  // Soft signal: if Claude says the article lacks confrontable numbers, flag for review
-  // but still return the text so Rain can decide — not a hard block
-  if (text.startsWith('CANNOT_GENERATE')) {
-    console.warn('[poster] CANNOT_GENERATE signal — article may lack confrontable numbers. Skipping.');
-    throw new Error('CANNOT_GENERATE: article lacks two relevant confrontable numbers');
-  }
-
-  // Log Rule 1 status for Rain's awareness — no retry, no hard block
-  const line1 = text.split('\n')[0] ?? '';
-  const numbersInLine1 = line1.match(/[$£€]?\d[\d,.]*[BMK%]?/g) ?? [];
-  if (numbersInLine1.length < 2) {
-    console.warn(`[poster] Rule 1 advisory — Line 1 has ${numbersInLine1.length} number(s): "${line1}" — Rain reviews before posting`);
-  }
-
-  // Log character count — no auto-trim, Rain reviews in the approval queue
-  if (text.length > 860) {
-    console.warn(`[poster] Post is ${text.length} chars (target: 780-860) — review before posting`);
-  }
-
+  const text = response.content.find(b => b.type === 'text')?.text?.trim() ?? '';
   return text;
 }
