@@ -131,56 +131,30 @@ const POST_GUIDELINES = () => {
 // ── Format generators ─────────────────────────────────────────────────────────
 
 // 1. LinkedIn post — high-impression format
-// Structure forensically derived from the 110K post.
-// Every element has a specific job — do not simplify or merge.
 export async function generateLinkedInPost({ article, additionalContext = '' }) {
   const guidelines = POST_GUIDELINES();
 
   const prompt = `${RAIN_CONTEXT}
 
-You are writing a LinkedIn post for Rain in the exact structure that produced 110,110 impressions.
+Write a LinkedIn post sharing this article with Rain's perspective:
 
 Article: ${article.title}
 Source: ${article.source || ''}
 URL: ${article.link || ''}
 Summary: ${article.description || ''}
 
-━━━ MANDATORY STRUCTURE — every element has a proven job ━━━
+TASK: Write a post that:
+1. Opens with Rain's hot take or the most interesting angle from the article
+2. Adds one insight or pushback that the article doesn't cover — Rain's real-world experience angle
+3. Ends by asking the audience a sharp question related to this topic
+4. Naturally references the article in context (not as "check out this great piece")
 
-LINE 1: DATA BOMB WITH BUILT-IN CONTRADICTION
-Two sentences. Both must contain specific, verifiable numbers from the article.
-The contrast must create cognitive dissonance: the reader cannot help asking "how is this possible?"
-If the article lacks two confrontable numbers relevant to its specific topic, output CANNOT_GENERATE and nothing else.
-
-LINE 2: PATTERN INTERRUPT (exact phrasing)
-"That [sounds/looks/feels] like [obvious label]. And it is. But not for the reason most people think."
-This single sentence drove 20 saves and 9 sends on the 110K post. It promises a smarter take than the article.
-Do not vary it. Do not weaken it.
-
-PARAGRAPH 1: THE DEEPER MECHANISM
-2-3 sentences. WHY this is happening at a structural level — moat, lock-in, compounding, timing.
-Apply the TRIBAL DEFENDER EFFECT: name the company tribe most relevant to this article.
-Defend the less-hyped or slower player. Take the counterintuitive position.
-Insiders at the named company will engage publicly — each one reaches their entire network.
-
-PARAGRAPH 2: WHAT THE SOURCE DOESN'T SAY
-2-3 sentences. The insight the article missed because the journalist doesn't run outbound campaigns.
-Ground it in Rain's world: cold outreach reply rates, ICP qualification, meeting booking mechanics,
-the gap between first touch and a booked call, what actually makes a prospect convert.
-
-CLOSING QUESTION
-One sentence. Binary framing. Forces a B2B founder or VP Sales to honestly evaluate their own situation.
-Both sides must feel valid and slightly exposing. Not "Thoughts?" — a question where the honest answer
-reveals something real about their pipeline or ICP.
-
-HASHTAGS: 2 max at the very end. Both must match post topic exactly.
-
-━━━ HARD RULES ━━━
-- NO em dashes. Use a period or comma.
-- NO emoji. NO bullet lists. NO numbered lists.
-- Never open with I, We, Thrilled, Excited, or Great.
-- Empty line between every element.
-- Length: 780-860 characters including spaces.
+STYLE RULES:
+- First line must stop the scroll. Bold claim, surprising insight, or counterintuitive take.
+- Short sentences. One idea per line. White space between paragraphs.
+- 120-220 words total. No em dashes. No emoji bullets. No numbered lists.
+- 1-2 hashtags at end only. Often none.
+- Tone: sharp, direct operator. Not a marketer. Not a guru.
 - Tone: sharp, direct operator who books meetings for a living. Not a marketer. Not a guru.
 ${guidelines}
 ${additionalContext ? `ANGLE: ${additionalContext}\n` : ''}
