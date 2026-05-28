@@ -133,11 +133,16 @@ function classifyArticle(title, description = '') {
 }
 
 const BLOCKED_KEYWORDS = [
+  // Politics / geopolitics
   'politic', 'election', 'government', 'war', 'conflict', 'religion', 'church',
-  'geopolitic', 'ukraine', 'russia', 'china', 'taiwan', 'israel', 'gaza', 'iran',
+  'geopolitic', 'ukraine', 'russia', 'taiwan', 'israel', 'gaza', 'iran',
   'gender', 'abortion', 'immigration', 'refugee', 'racist', 'discrimination',
   'sexual', 'abuse', 'violence', 'death', 'tragedy', 'shooting', 'crime',
   'divorce', 'lawsuit', 'scandal',
+  // Consumer/retail stories — not Rain's B2B world
+  'toy', 'charger', 'e-commerce consumer', 'retail store', 'fast fashion',
+  'cancer', 'medical', 'healthcare', 'hospital', 'drug discovery', 'clinical',
+  'drug trial', 'oncology',
 ];
 
 function scoreArticle(title, description = '') {
@@ -226,6 +231,13 @@ export async function curateArticles({ count = 3, usedLinks = [] } = {}) {
 
       for (const item of items) {
         if (usedSet.has(item.link)) continue; // skip already-used articles
+
+        // Freshness filter: reject articles older than 14 days
+        if (item.pubDate) {
+          const pub = new Date(item.pubDate);
+          if (!isNaN(pub) && (Date.now() - pub.getTime()) > 14 * 24 * 60 * 60 * 1000) continue;
+        }
+
         const score = scoreArticle(item.title, item.description);
         if (score > 0) {
           const topic = classifyArticle(item.title, item.description);
