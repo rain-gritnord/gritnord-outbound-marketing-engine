@@ -105,7 +105,11 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 24px;
-      margin-bottom: 16px;
+      margin-bottom: 32px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    }
+    .card + .card {
+      border-top: 3px solid var(--purple);
     }
 
     .card-meta {
@@ -351,14 +355,15 @@ function renderTab() {
     return;
   }
 
-  container.innerHTML = posts.map(post => renderCard(post)).join('');
+  container.innerHTML = posts.map((post, i) => renderCard(post, i + 1, posts.length)).join('');
 }
 
-function renderCard(post) {
+function renderCard(post, index, total) {
   const article = post.article || {};
   const chars = (post.text || '').length;
   const charClass = chars > 3000 ? 'over' : chars > 2500 ? 'warn' : '';
   const date = new Date(post.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const draftLabel = (index && total && total > 1) ? `<span style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:var(--purple);text-transform:uppercase;margin-bottom:12px;display:block;">Draft ${index} of ${total}</span>` : '';
 
   const articleHtml = article.title ? `
     <div class="article-ref">
@@ -385,6 +390,7 @@ function renderCard(post) {
 
   return `
     <div class="card" id="card-${post.id}">
+      ${draftLabel}
       <div class="card-meta">
         ${article.source ? `<span class="source-badge">${article.source}</span>` : ''}
         <span class="status-badge ${post.status}">${post.status}</span>
