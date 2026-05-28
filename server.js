@@ -23,6 +23,7 @@ import {
   getTwitterQueue, saveTwitterDraft, updateTwitterPost, deleteTwitterPost,
   getUCCandidates, saveUCCandidate, updateUCCandidate, deleteUCCandidate,
   getUCSequences, saveUCSequence, updateUCSequence, getUCSequenceByCandidateId,
+  getRejectedArticles,
 } from './engine/db.js';
 import { researchUCCandidate, batchResearchUCCandidates } from './engine/uc-researcher.js';
 import { generateKineticVideo } from './engine/video-generator.js';
@@ -406,13 +407,15 @@ app.get('/api/linkedin/queue', (req, res) => {
 // POST /api/linkedin/generate — manually curate + generate drafts
 app.post('/api/linkedin/generate', async (req, res) => {
   try {
-    // Pass all seen article links so we never repeat — includes dismissed drafts.
-    // dismissed = Rain deleted the draft; we still block that article from reappearing.
+    // Block: active queue (draft/posted/scheduled/dismissed) + permanent rejected list.
+    // Rejected list is written when Rain deletes a draft and never trimmed —
+    // so the same article cannot come back even after the queue rolls over 100 items.
     const existingQueue = getLinkedInQueue();
     const blockedStatuses = new Set(['draft', 'posted', 'scheduled', 'dismissed']);
-    const usedLinks = existingQueue
+    const queueLinks = existingQueue
       .filter(p => blockedStatuses.has(p.status))
       .map(p => p.article?.link).filter(Boolean);
+    const usedLinks = [...new Set([...queueLinks, ...getRejectedArticles()])];
 
     // Request 15 candidates for more variety — generator stops after 3 good posts.
     const articles = await curateArticles({ count: 15, usedLinks });
@@ -1385,7 +1388,8 @@ cron.schedule('0 8 * * 1,3,5', async () => {
   console.log('[cron] linkedin-drafts — generating (1 AI + 2 GTM mix)');
   try {
     const existingQueue = getLinkedInQueue();
-    const usedLinks = existingQueue.map(p => p.article?.link).filter(Boolean);
+    const queueLinks = existingQueue.map(p => p.article?.link).filter(Boolean);
+    const usedLinks = [...new Set([...queueLinks, ...getRejectedArticles()])];
     const articles = await curateArticles({ count: 3, usedLinks });
     for (const article of articles) {
       const topicHint = article.topic === 'gtm'

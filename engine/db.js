@@ -15,6 +15,7 @@ const FILES = {
   ucSequences:       path.join(DATA_DIR, 'uc-sequences.json'),
   linkedinGuidelines: path.join(DATA_DIR, 'linkedin-guidelines.json'),
   linkedinFollowers:  path.join(DATA_DIR, 'linkedin-followers.json'),
+  rejectedArticles:   path.join(DATA_DIR, 'rejected-articles.json'),
 };
 
 function ensureFile(filePath, defaultData) {
@@ -119,13 +120,28 @@ export function updateLinkedInPost(id, updates) {
 }
 
 export function deleteLinkedInPost(id) {
-  // Mark as dismissed (not hard-delete) so the article link stays in history
-  // and the curator never picks the same article again in this session or next.
   const all = getLinkedInQueue();
   const idx = all.findIndex(p => p.id === id);
   if (idx >= 0) {
+    // Add the article link to the permanent rejected list before dismissing
+    const articleLink = all[idx].article?.link;
+    if (articleLink) rejectArticle(articleLink);
     all[idx] = { ...all[idx], status: 'dismissed', updatedAt: new Date().toISOString() };
     write(FILES.linkedinQueue, all.slice(0, 100));
+  }
+}
+
+// Rejected articles — permanent list, never trimmed.
+// Rain deletes a draft → article link goes here → never appears again.
+export function getRejectedArticles() {
+  return read(FILES.rejectedArticles, { links: [] }).links;
+}
+
+export function rejectArticle(link) {
+  const data = read(FILES.rejectedArticles, { links: [] });
+  if (!data.links.includes(link)) {
+    data.links.push(link);
+    write(FILES.rejectedArticles, data);
   }
 }
 
