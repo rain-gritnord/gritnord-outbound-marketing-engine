@@ -122,13 +122,13 @@ export function updateLinkedInPost(id, updates) {
 export function deleteLinkedInPost(id) {
   const all = getLinkedInQueue();
   const idx = all.findIndex(p => p.id === id);
-  if (idx >= 0) {
-    // Add the article link to the permanent rejected list before dismissing
-    const articleLink = all[idx].article?.link;
-    if (articleLink) rejectArticle(articleLink);
-    all[idx] = { ...all[idx], status: 'dismissed', updatedAt: new Date().toISOString() };
-    write(FILES.linkedinQueue, all.slice(0, 100));
-  }
+  if (idx < 0) return false; // ID not found — caller should treat as failure
+  // Add the article link to the permanent rejected list before dismissing
+  const articleLink = all[idx].article?.link;
+  if (articleLink) rejectArticle(articleLink);
+  all[idx] = { ...all[idx], status: 'dismissed', updatedAt: new Date().toISOString() };
+  write(FILES.linkedinQueue, all.slice(0, 100));
+  return true;
 }
 
 // Rejected articles — permanent list, never trimmed.

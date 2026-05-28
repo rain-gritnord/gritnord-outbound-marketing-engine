@@ -821,7 +821,8 @@ app.post('/api/linkedin/queue/save', (req, res) => {
 
 // DELETE /api/linkedin/queue/:id — discard draft
 app.delete('/api/linkedin/queue/:id', (req, res) => {
-  deleteLinkedInPost(req.params.id);
+  const ok = deleteLinkedInPost(req.params.id);
+  if (!ok) return res.status(404).json({ error: 'Post not found — may have already been discarded' });
   res.json({ success: true });
 });
 
