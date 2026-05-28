@@ -1,43 +1,75 @@
-// Curates articles from top B2B/founder sources for LinkedIn posts
+// Curates articles from globally trusted publishers for LinkedIn posts
 
 const RSS_SOURCES = [
-  // ── US founder & VC ──────────────────────────────────────────────────────
-  { name: 'SaaStr',          url: 'https://www.saastr.com/feed/' },
-  { name: 'First Round',     url: 'https://review.firstround.com/feed.xml' },
-  { name: 'a16z',            url: 'https://a16z.com/feed/' },
-  { name: 'YCombinator',     url: 'https://www.ycombinator.com/blog/rss' },
-  { name: 'HBR',             url: 'https://feeds.hbr.org/harvardbusiness' },
-  { name: 'Inc',             url: 'https://www.inc.com/rss' },
-  { name: 'TechCrunch',      url: 'https://techcrunch.com/feed/' },
-  { name: 'Sequoia',         url: 'https://www.sequoiacap.com/feed/' },
-  { name: 'NFX',             url: 'https://www.nfx.com/feed' },
+  // ── Global business & finance ─────────────────────────────────────────────
+  { name: 'Bloomberg Technology', url: 'https://feeds.bloomberg.com/technology/news.rss' },
+  { name: 'Bloomberg Business',   url: 'https://feeds.bloomberg.com/businessweek/news.rss' },
+  { name: 'WSJ Business',         url: 'https://feeds.a.dj.com/rss/WSJcomUSBusiness.xml' },
+  { name: 'WSJ Technology',       url: 'https://feeds.a.dj.com/rss/RSSWSJD.xml' },
+  { name: 'Financial Times',      url: 'https://www.ft.com/rss/home/uk' },
+  { name: 'The Economist',        url: 'https://www.economist.com/business/rss.xml' },
+  { name: 'Forbes',               url: 'https://www.forbes.com/innovation/feed2' },
+  { name: 'Fortune',              url: 'https://fortune.com/feed/' },
+  { name: 'Business Insider',     url: 'https://www.businessinsider.com/rss' },
+  { name: 'HBR',                  url: 'https://feeds.hbr.org/harvardbusiness' },
+  { name: 'Reuters Business',     url: 'https://feeds.reuters.com/reuters/businessNews' },
+  { name: 'CNBC Technology',      url: 'https://www.cnbc.com/id/19854910/device/rss/rss.html' },
+  { name: 'Fast Company',         url: 'https://www.fastcompany.com/latest/rss' },
+  { name: 'Inc',                  url: 'https://www.inc.com/rss' },
+  { name: 'Quartz',               url: 'https://qz.com/feed/' },
+  { name: 'MIT Sloan Review',     url: 'https://sloanreview.mit.edu/feed/' },
 
-  // ── West European startup & VC ────────────────────────────────────────────
-  { name: 'Sifted',          url: 'https://sifted.eu/feed/' },
-  { name: 'EU-Startups',     url: 'https://eu-startups.com/feed/' },
-  { name: 'Tech.eu',         url: 'https://tech.eu/feed/' },
-  { name: 'TNW',             url: 'https://thenextweb.com/feed/' },
-  { name: 'Silicon Republic', url: 'https://www.siliconrepublic.com/feed' },
-  { name: 'Maddyness',       url: 'https://www.maddyness.com/en/feed/' },
-  { name: 'Dealroom',        url: 'https://dealroom.co/blog/rss' },
-  { name: 'Startups UK',     url: 'https://startups.co.uk/feed/' },
-  { name: 'Real Business',   url: 'https://realbusiness.co.uk/feed' },
+  // ── Global technology ─────────────────────────────────────────────────────
+  { name: 'TechCrunch',           url: 'https://techcrunch.com/feed/' },
+  { name: 'TechCrunch Startups',  url: 'https://techcrunch.com/category/startups/feed/' },
+  { name: 'Wired',                url: 'https://www.wired.com/feed/rss' },
+  { name: 'MIT Tech Review',      url: 'https://www.technologyreview.com/feed/' },
+  { name: 'The Verge',            url: 'https://www.theverge.com/rss/index.xml' },
+  { name: 'Ars Technica',         url: 'https://feeds.arstechnica.com/arstechnica/index' },
+  { name: 'VentureBeat',          url: 'https://venturebeat.com/feed/' },
+  { name: 'TNW',                  url: 'https://thenextweb.com/feed/' },
+  { name: 'ZDNet',                url: 'https://www.zdnet.com/news/rss.xml' },
+  { name: 'Axios',                url: 'https://api.axios.com/feed/' },
 
-  // ── West European business & economy ─────────────────────────────────────
-  { name: 'The Economist',   url: 'https://www.economist.com/business/rss.xml' },
-  { name: 'FT',              url: 'https://www.ft.com/rss/home/uk' },
-  { name: 'Reuters Business', url: 'https://feeds.reuters.com/reuters/businessNews' },
-  { name: 'Guardian Business', url: 'https://www.theguardian.com/uk/business/rss' },
-  { name: 'BBC Business',    url: 'http://feeds.bbci.co.uk/news/business/rss.xml' },
-  { name: 'City A.M.',       url: 'https://www.cityam.com/feed/' },
-  { name: 'Wired UK',        url: 'https://www.wired.co.uk/rss' },
-  { name: 'Management Today', url: 'https://www.managementtoday.co.uk/rss' },
-  { name: 'Business Insider', url: 'https://www.businessinsider.com/rss' },
-  { name: 'Forbes',          url: 'https://www.forbes.com/feeds/forbeslatam/2014/08/11/forbesfeeds.rss' },
-  { name: 'Handelsblatt',    url: 'https://www.handelsblatt.com/contentexport/feed/schlagzeilen' },
-  { name: 'Les Echos',       url: 'https://feeds.lesechos.fr/lesechos-start' },
-  { name: 'Politico Europe', url: 'https://www.politico.eu/feed/' },
-  { name: 'EurActiv Business', url: 'https://www.euractiv.com/feed/' },
+  // ── VC & startup intelligence ─────────────────────────────────────────────
+  { name: 'SaaStr',               url: 'https://www.saastr.com/feed/' },
+  { name: 'a16z',                 url: 'https://a16z.com/feed/' },
+  { name: 'First Round',          url: 'https://review.firstround.com/feed.xml' },
+  { name: 'YCombinator',          url: 'https://www.ycombinator.com/blog/rss' },
+  { name: 'Sequoia',              url: 'https://www.sequoiacap.com/feed/' },
+  { name: 'NFX',                  url: 'https://www.nfx.com/feed' },
+  { name: 'Bessemer',             url: 'https://www.bvp.com/atlas/rss.xml' },
+  { name: 'OpenView',             url: 'https://openviewpartners.com/blog/feed/' },
+  { name: 'Both Sides of Table',  url: 'https://bothsidesofthetable.com/feed' },
+  { name: 'Andrew Chen',          url: 'https://andrewchen.com/feed/' },
+  { name: 'Lenny Rachitsky',      url: 'https://www.lennysnewsletter.com/feed' },
+  { name: 'ChartMogul',           url: 'https://chartmogul.com/blog/feed/' },
+
+  // ── GTM, sales & B2B practitioners ───────────────────────────────────────
+  { name: 'Sales Hacker',         url: 'https://www.saleshacker.com/feed/' },
+  { name: 'Gong Labs',            url: 'https://www.gong.io/blog/feed/' },
+  { name: 'HubSpot Blog',         url: 'https://blog.hubspot.com/marketing/rss.xml' },
+  { name: 'HubSpot Sales',        url: 'https://blog.hubspot.com/sales/rss.xml' },
+  { name: 'Drift',                url: 'https://www.drift.com/blog/feed/' },
+  { name: 'Pavilion',             url: 'https://www.joinpavilion.com/blog/rss.xml' },
+  { name: 'Predictable Revenue',  url: 'https://predictablerevenue.com/feed' },
+
+  // ── AI & the future of work ───────────────────────────────────────────────
+  { name: 'The Information',      url: 'https://www.theinformation.com/feed' },
+  { name: 'AI News',              url: 'https://artificialintelligence-news.com/feed/' },
+  { name: 'Import AI',            url: 'https://jack-clark.net/feed/' },
+
+  // ── Global business news ──────────────────────────────────────────────────
+  { name: 'Guardian Business',    url: 'https://www.theguardian.com/uk/business/rss' },
+  { name: 'BBC Business',         url: 'http://feeds.bbci.co.uk/news/business/rss.xml' },
+  { name: 'AP Business',          url: 'https://rsshub.app/ap/topics/business' },
+
+  // ── European startup & tech ───────────────────────────────────────────────
+  { name: 'Sifted',               url: 'https://sifted.eu/feed/' },
+  { name: 'EU-Startups',          url: 'https://eu-startups.com/feed/' },
+  { name: 'Tech.eu',              url: 'https://tech.eu/feed/' },
+  { name: 'Dealroom',             url: 'https://dealroom.co/blog/rss' },
+  { name: 'Silicon Canals',       url: 'https://siliconcanals.com/news/startups/feed/' },
 ];
 
 // ── Topic classification ──────────────────────────────────────────────────────
@@ -68,6 +100,30 @@ const RELEVANT_KEYWORDS = [
   'prospecting', 'cold email', 'linkedin', 'strategy', 'scale', 'enterprise',
 ];
 
+// ── Companies with large LinkedIn tribes ──────────────────────────────────────
+// Articles mentioning 2+ of these get a bonus score — they have audiences that
+// engage publicly when their company is mentioned. This is the tribal reach multiplier.
+const TRIBAL_COMPANIES = [
+  'salesforce', 'hubspot', 'microsoft', 'google', 'openai', 'anthropic',
+  'gong', 'outreach', 'apollo', 'clay', 'zoominfo', 'linkedin', 'zoom',
+  'snowflake', 'datadog', 'stripe', 'notion', 'slack', 'workday', 'servicenow',
+  'sap', 'oracle', 'aws', 'amazon', 'meta', 'apple',
+  'klarna', 'revolut', 'pipedrive', 'wolt', 'wise',
+];
+
+// Count how many tribal companies are named in the article
+function tribalScore(title, description = '') {
+  const text = (title + ' ' + description).toLowerCase();
+  return TRIBAL_COMPANIES.filter(co => text.includes(co)).length;
+}
+
+// Count numeric data points — % figures, $M/$B numbers, ratios, year-over-year stats
+function dataScore(title, description = '') {
+  const text = title + ' ' + description;
+  const matches = text.match(/\d+(\.\d+)?(%|\s?x\b|\$[MBK]|\s?billion|\s?million|\s?percent|\s?times|x\s)/gi);
+  return matches ? matches.length : 0;
+}
+
 function classifyArticle(title, description = '') {
   const text = (title + ' ' + description).toLowerCase();
   const aiScore = AI_KEYWORDS.filter(kw => text.includes(kw)).length;
@@ -95,6 +151,17 @@ function scoreArticle(title, description = '') {
   for (const kw of RELEVANT_KEYWORDS) {
     if (text.includes(kw)) score++;
   }
+
+  // Bonus: tribal companies mentioned (each +3, max +9)
+  // Two named companies with audiences = reach multiplier potential
+  const tribal = tribalScore(title, description);
+  score += Math.min(tribal * 3, 9);
+
+  // Bonus: hard data present (each number +2, max +6)
+  // Articles with real numbers are the raw material for the data bomb hook
+  const data = dataScore(title, description);
+  score += Math.min(data * 2, 6);
+
   return score;
 }
 
