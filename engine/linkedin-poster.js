@@ -103,15 +103,20 @@ async function uploadImageToLinkedIn(imageUrl, personUrn) {
   const uploadUrl = value.uploadMechanism['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'].uploadUrl;
   const asset = value.asset;
 
-  // 2. Fetch image bytes
-  const imgRes = await fetch(imageUrl, { signal: AbortSignal.timeout(15000) });
+  // 2. Fetch image bytes — must set User-Agent or CDNs (Fortune, Bloomberg, etc.) return 403
+  const imgRes = await fetch(imageUrl, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Gritnord-Bot/1.0)' },
+    signal: AbortSignal.timeout(15000),
+  });
   if (!imgRes.ok) return null;
   const imgBuffer = await imgRes.arrayBuffer();
 
-  // 3. Upload
+  // 3. Upload — infer content type from URL so PNG/WebP don't fail
+  const ext = imageUrl.split('?')[0].split('.').pop().toLowerCase();
+  const mime = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
   const uploadRes = await fetch(uploadUrl, {
     method: 'PUT',
-    headers: { Authorization: `Bearer ${access_token}`, 'Content-Type': 'image/jpeg' },
+    headers: { Authorization: `Bearer ${access_token}`, 'Content-Type': mime },
     body: imgBuffer,
   });
 
