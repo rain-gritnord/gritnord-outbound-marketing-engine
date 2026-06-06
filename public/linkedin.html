@@ -444,8 +444,14 @@ async function approve(id) {
 }
 
 async function discard(id) {
-  await fetch(`/api/linkedin/queue/${id}`, { method: 'DELETE' });
-  toast('Discarded', 'success');
+  const r = await fetch(`/api/linkedin/queue/${id}`, { method: 'DELETE' });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({ error: r.status }));
+    toast(`Discard failed: ${err.error || r.status}`, 'error');
+    console.error('Discard failed', r.status, err);
+    return;
+  }
+  toast('Discarded — article permanently blocked', 'success');
   await loadQueue();
 }
 
