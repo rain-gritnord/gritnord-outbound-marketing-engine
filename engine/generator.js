@@ -142,12 +142,18 @@ const AI_SEARCH_TOPICS = [
 
 const AI_SEARCH_BASE = `Write content optimised for AI search engines (Perplexity, ChatGPT, Gemini) AND Google organic search.
 
+GEOGRAPHIC TARGETING — EU and US audiences only:
+- Primary markets: UK, Germany, Netherlands, Finland, Sweden, Norway, Denmark, Estonia, United States
+- Use European and US business context (currencies €/$, GDPR compliance where relevant, EU/US company examples)
+- Do NOT reference Asian markets, Chinese platforms, or non-EU/US regulatory environments
+- When citing benchmarks or examples, use EU or US companies and statistics
+
 TOPIC SELECTION — if no topic is given, pick the most relevant unused topic from this list (rotate through them over time):
 ${AI_SEARCH_TOPICS.map(t => `"${t}"`).join(', ')}
 
 MANDATORY STRUCTURE (drives Google indexing and AI citations):
 1. H1 title containing the exact target keyword
-2. Meta description line (prefix with "META:") — under 155 chars, keyword-first
+2. Meta description — write as a plain line starting with exactly "META:" (no bold, no asterisks) — under 155 chars, keyword-first
 3. One-paragraph direct definition — write this so AI assistants can quote it verbatim
 4. 4–6 H2 sections with substantive factual content (stats, comparisons, step-by-step)
 5. FAQ section (H2: "Frequently Asked Questions") — 5 questions, direct answers under 60 words each
@@ -157,6 +163,7 @@ KPI REQUIREMENTS:
 - Use the exact keyword in H1, first paragraph, and at least 2 H2s
 - Write definition and FAQ answers as complete, standalone sentences AI can extract and cite
 - Use semantic keyword variants naturally throughout (LSI keywords)
+- META: line must be plain text only — no markdown, no bold, no asterisks around the prefix
 
 VOICE: Direct, factual, authoritative. No filler. No "In today's fast-paced world…" openers.
 Target 750–950 words.`;
