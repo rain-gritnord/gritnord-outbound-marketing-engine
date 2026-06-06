@@ -361,6 +361,45 @@ app.get('/api/blog', async (req, res) => {
   }
 });
 
+// GET /api/sitemap.xml — dynamic sitemap including all published blog posts
+// Fetch this from Lovable's sitemap.xml route or ping gritnord.com/sitemap.xml
+// to include in a Supabase Edge Function or static file
+app.get('/api/sitemap.xml', async (req, res) => {
+  try {
+    const posts = await getBlogPosts({ limit: 500 });
+    const SITE = 'https://gritnord.com';
+
+    const staticUrls = [
+      '/', '/about', '/blog', '/contact', '/referrals',
+      '/sales-tools-guide', '/resources/nordic-meeting-booking-benchmark',
+    ].map(path => `
+  <url>
+    <loc>${SITE}${path}</loc>
+    <changefreq>${path === '/' ? 'weekly' : 'monthly'}</changefreq>
+    <priority>${path === '/' ? '1.0' : '0.7'}</priority>
+  </url>`).join('');
+
+    const blogUrls = posts.map(p => `
+  <url>
+    <loc>${SITE}/blog/${p.slug}</loc>
+    <lastmod>${new Date(p.published_at).toISOString().split('T')[0]}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>`).join('');
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${staticUrls}
+${blogUrls}
+</urlset>`;
+
+    res.set('Content-Type', 'application/xml');
+    res.send(xml);
+  } catch (err) {
+    res.status(500).send(`<?xml version="1.0"?><error>${err.message}</error>`);
+  }
+});
+
 // ─── LinkedIn Routes ─────────────────────────────────────────────────────────
 
 // GET /auth/linkedin — redirect to LinkedIn OAuth consent screen
