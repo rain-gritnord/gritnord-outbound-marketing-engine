@@ -6,7 +6,7 @@ import path from 'path';
 import crypto from 'crypto';
 import multer from 'multer';
 import * as XLSX from 'xlsx';
-import { readFileSync, readdirSync, renameSync, mkdirSync as fsMkdirSync, existsSync as fsExistsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, renameSync, mkdirSync as fsMkdirSync, existsSync as fsExistsSync } from 'fs';
 
 import { generateContent, scoreContent, CHANNELS } from './engine/generator.js';
 import { recordScore, getPrioritizedChannels, getLearningState } from './engine/learner.js';
@@ -37,6 +37,7 @@ import {
   generateAllFormats, compileWeeklyNewsletter,
 } from './engine/content-engine.js';
 import { sendNewsletter, sendTestNewsletter, previewNewsletterHtml } from './engine/newsletter.js';
+import { getVisitorStats, getWeeklyComparison, generateWeeklySuggestions } from './engine/analytics.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -347,6 +348,46 @@ app.post('/api/publish/:id', async (req, res) => {
     res.json({ success: true, item: updated, post });
   } catch (err) {
     console.error('[publish]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Visitor Analytics Routes ─────────────────────────────────────────────────
+
+// GET /api/analytics/stats?days=7 — visitor KPIs
+app.get('/api/analytics/stats', async (req, res) => {
+  try {
+    const days = Number(req.query.days) || 7;
+    const stats = await getWeeklyComparison();
+    res.json(stats);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/analytics/suggestions — latest weekly AI growth suggestions (cached)
+app.get('/api/analytics/suggestions', (req, res) => {
+  try {
+    const file = path.join(__dirname, 'data', 'analytics-weekly.json');
+    if (existsSync(file)) {
+      res.json(JSON.parse(readFileSync(file, 'utf-8')));
+    } else {
+      res.json({ suggestions: 'No weekly digest yet — runs every Monday at 10:00 Estonian.', generatedAt: null });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/analytics/suggestions/refresh — force regenerate now
+app.post('/api/analytics/suggestions/refresh', async (req, res) => {
+  try {
+    const stats = await getWeeklyComparison();
+    const suggestions = await generateWeeklySuggestions(stats);
+    const out = { stats, suggestions, generatedAt: new Date().toISOString() };
+    writeFileSync(path.join(__dirname, 'data', 'analytics-weekly.json'), JSON.stringify(out, null, 2));
+    res.json(out);
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
@@ -1450,6 +1491,24 @@ cron.schedule('0 8 * * 1,3,5', async () => {
     }
   } catch (err) {
     console.error('[cron] linkedin-drafts — error:', err.message);
+  }
+});
+
+// Analytics digest: every Monday 07:00 UTC (10:00 Estonian) — weekly visitor KPI + suggestions
+cron.schedule('0 7 * * 1', async () => {
+  console.log('[cron] analytics — generating weekly digest');
+  try {
+    const stats = await getWeeklyComparison();
+    const suggestions = await generateWeeklySuggestions(stats);
+    console.log('[cron] analytics — week:', stats.thisWeek.totalViews, 'views,', stats.thisWeek.uniqueSessions, 'sessions');
+    console.log('[cron] analytics — suggestions:\n', suggestions);
+    // Store for dashboard retrieval
+    writeFileSync(
+      path.join(__dirname, 'data', 'analytics-weekly.json'),
+      JSON.stringify({ stats, suggestions, generatedAt: new Date().toISOString() }, null, 2)
+    );
+  } catch (err) {
+    console.error('[cron] analytics — error:', err.message);
   }
 });
 
