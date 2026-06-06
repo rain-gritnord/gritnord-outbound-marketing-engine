@@ -32,10 +32,12 @@ export async function getVisitorStats({ days = 7 } = {}) {
   const totalViews = rows.length;
   const uniqueSessions = new Set(rows.map(r => r.session_id).filter(Boolean)).size;
 
-  // Country breakdown
+  // Country breakdown — skip empty/unknown, group by country name
   const byCountry = {};
   for (const r of rows) {
-    const key = r.country || 'Unknown';
+    // Empty country = IP geolocation failed or timed out — skip from country stats
+    if (!r.country || !r.country_code) continue;
+    const key = r.country;
     byCountry[key] = (byCountry[key] || 0) + 1;
   }
   const topCountries = Object.entries(byCountry)
@@ -43,16 +45,37 @@ export async function getVisitorStats({ days = 7 } = {}) {
     .slice(0, 10)
     .map(([country, views]) => ({ country, views, pct: Math.round(views / totalViews * 100) }));
 
-  // Page breakdown
+  // Page breakdown — map paths to readable labels
+  const PAGE_LABELS = {
+    '/': 'Homepage',
+    '/blog': 'Blog index',
+    '/about': 'About',
+    '/contact': 'Contact',
+    '/referrals': 'Referrals',
+    '/sales-tools-guide': 'Sales Tools Guide',
+    '/resources/nordic-meeting-booking-benchmark': 'Nordic Benchmark',
+    '/lead-magnet': 'Lead Magnet',
+    '/former-leaders': 'Former Leaders',
+  };
+
   const byPage = {};
   for (const r of rows) {
-    const page = r.page?.replace(/\?.*/, '') || '/';
-    byPage[page] = (byPage[page] || 0) + 1;
+    const path = r.page?.replace(/\?.*/, '') || '/';
+    let label = PAGE_LABELS[path];
+    if (!label) {
+      if (path.startsWith('/blog/')) label = `Blog: ${path.replace('/blog/', '').replace(/-[a-z0-9]{6,10}$/, '').replace(/-/g, ' ')}`;
+      else label = path;
+    }
+    const key = `${label}||${path}`;
+    byPage[key] = (byPage[key] || 0) + 1;
   }
   const topPages = Object.entries(byPage)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10)
-    .map(([page, views]) => ({ page, views }));
+    .map(([key, views]) => {
+      const [label, path] = key.split('||');
+      return { page: label, path, views };
+    });
 
   // Referrer breakdown
   const byReferrer = {};

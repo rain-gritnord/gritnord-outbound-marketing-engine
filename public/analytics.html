@@ -192,8 +192,8 @@ function renderStats(data) {
 
   // Countries
   renderBars('countries-list', w.topCountries.map(c => ({ label: c.country, value: c.views })), 'blue');
-  // Pages
-  renderBars('pages-list', w.topPages.map(p => ({ label: p.page, value: p.views })), 'purple');
+  // Pages — show readable label with path as tooltip
+  renderBars('pages-list', w.topPages.map(p => ({ label: p.page, sublabel: p.path, value: p.views })), 'purple');
   // Referrers
   renderBars('referrers-list', w.topReferrers.map(r => ({ label: r.referrer, value: r.views })), 'green');
   // UTM
@@ -210,7 +210,10 @@ function renderBars(id, items, color) {
   const max = Math.max(...items.map(i => i.value), 1);
   document.getElementById(id).innerHTML = items.map(item => `
     <div class="bar-row">
-      <div class="bar-label" title="${item.label}">${item.label}</div>
+      <div style="width:160px;min-width:0">
+        <div class="bar-label" title="${item.sublabel || item.label}">${item.label}</div>
+        ${item.sublabel && item.sublabel !== item.label ? `<div style="font-size:10px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${item.sublabel}</div>` : ''}
+      </div>
       <div class="bar-track"><div class="bar-fill ${color}" style="width:${Math.round(item.value/max*100)}%"></div></div>
       <div class="bar-count">${item.value}</div>
     </div>`).join('');
