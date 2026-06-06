@@ -1453,9 +1453,9 @@ cron.schedule('0 8 * * 1,3,5', async () => {
   }
 });
 
-// SEO blog auto-publish: every 2 days at 10:00 UTC (Mon/Wed/Fri/Sun)
-// Generate → score → publish to Supabase automatically
-cron.schedule('0 10 * * 1,3,5,0', async () => {
+// SEO blog auto-publish: Mon–Thu at 12:00 UTC (15:00 Estonian / EEST)
+// 1 post per business day, no Friday. Generate → score → publish to Supabase.
+cron.schedule('0 12 * * 1-4', async () => {
   console.log('[cron] seo-blog — starting');
   try {
     const result = await generateContent({ channel: 'seo_blog' });
