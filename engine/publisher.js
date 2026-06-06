@@ -4,8 +4,32 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 // Service key is required for INSERT — anon key is blocked by RLS on blog_posts
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
 
-// Topic-bucketed photo pools — each topic gets visually distinct images
-// so adjacent blog posts never share the same cover photo
+// Sequential photo pool — 60 distinct images cycled by total post count in DB.
+// Never uses hash/bucket — guarantees no two adjacent posts share a photo.
+const PHOTO_POOL_SEQ = [
+  '1556761223-4c4282c73f77','1551288049-bebda4e38f71','1552664730-d307ca884978',
+  '1573496359142-b8d87734a5a2','1516321318423-f06f85e504b3','1560472354-b33ff0c44a43',
+  '1498050108023-c5249f4df085','1531973576160-7125cd663d86','1507679799987-c73779587ccf',
+  '1519389950473-47ba0277781c','1563013544-824ae1b704d3','1460925895917-afdab827c52f',
+  '1600880292203-757bb62b4baf','1529400971008-f566de0e6dfc','1573164713988-8665fc963095',
+  '1542744173-8e7e53415bb0','1556742049-0cfed4f6a45d','1521737604082-1edd29267789',
+  '1486312338219-ce68d2c6f44d','1504868584819-f8e8b4b6d7e3','1450101499163-c8848c66ca85',
+  '1553028826-f4804a6dba3b','1507003211169-0a1dd7228f2d','1565106430-d6d7d90978e5',
+  '1522202176988-66273c2fd55f','1559136555-9303baea8ebd','1497366216548-37526070297c',
+  '1454165804606-c3d57bc86b40','1551836022-d5d88e9218df','1497366811353-6870744d04b2',
+  '1473968512647-3e404912272e','1538688525198-9b2583b77695','1503428593586-e225b39bae4a',
+  '1520607162513-77705c0f0d4a','1414235077428-338989a2e8c0','1522071820081-009f0129c71c',
+  '1491336440196-6d4fee45a05a','1483389127117-b6a2102724ae','1557804506-669a67965ba0',
+  '1568992687947-868a62a9f521','1584432810601-6c7f27d4ade3','1524758631624-e2822e304c36',
+  '1606857521015-7f9fcf423740','1516534669804-c6c0acfb8f3a','1515378960530-7c0da6231fb1',
+  '1551434678-e076c223a692','1423666639041-f56000c27a9a','1558618666-fcd25c85cd64',
+  '1532094348751-2def7e2dd3ba','1476357471311-43c0db9fb2b4','1530099486328-e021101a494a',
+  '1589829545856-d10d557cf95f','1551818255-e1cc68eb6adf','1600195077077-7c815f540a3d',
+  '1609921212029-bb5a28e60960','1517245386807-bb43f82c33c4','1563461660823-9c1a78b80019',
+  '1543269865-cbf427effbad','1499750310107-5fef28a66643','1504384308090-c5d1a1571275',
+];
+
+// Kept for legacy reference only — no longer used for new posts
 const PHOTO_POOLS = {
   sales: [
     '1556761223-4c4282c73f77', // sales call at desk
@@ -58,16 +82,11 @@ function topicBucket(slugOrTopic = '') {
   return 'office';
 }
 
-// Pick photo from topic bucket, then use hash offset within that bucket
-// Guarantees visually distinct covers for topically different posts
-function getCoverImageUrl(slugOrTopic = '') {
-  const bucket = PHOTO_POOLS[topicBucket(slugOrTopic)];
-  let hash = 0;
-  for (let i = 0; i < slugOrTopic.length; i++) {
-    hash = (hash * 31 + slugOrTopic.charCodeAt(i)) & 0xffffffff;
-  }
-  const idx = Math.abs(hash) % bucket.length;
-  return `https://images.unsplash.com/photo-${bucket[idx]}?w=1200&h=630&fit=crop&auto=format&q=80`;
+// Pick next photo sequentially based on current published post count.
+// Pass postCount = (current total posts in DB) so each new post advances by 1.
+function getCoverImageUrl(slugOrTopic = '', postCount = 0) {
+  const idx = postCount % PHOTO_POOL_SEQ.length;
+  return `https://images.unsplash.com/photo-${PHOTO_POOL_SEQ[idx]}?w=1200&h=630&fit=crop&auto=format&q=80`;
 }
 
 // Convert markdown to clean HTML for proper blog rendering
@@ -199,7 +218,10 @@ export async function publishToSupabase(item) {
   const baseSlug = slugify(title);
   const slug = baseSlug + '-' + Date.now().toString(36);
   const htmlContent = markdownToHtml(item.content);
-  const imageUrl = getCoverImageUrl(item.topic || title);
+  // Count existing posts to get next sequential image slot
+  const countRes = await fetch(`${SUPABASE_URL}/rest/v1/blog_posts?select=id&status=eq.published`, { headers: supabaseHeaders() });
+  const existing = countRes.ok ? await countRes.json() : [];
+  const imageUrl = getCoverImageUrl(item.topic || title, existing.length);
 
   const post = {
     title,
