@@ -214,7 +214,7 @@ export async function publishToSupabase(item) {
 
   const { title, metaDescription, excerpt, readingTimeMinutes, seoKeywords } = parseArticle(item.content);
   const baseSlug = slugify(title);
-  const slug = baseSlug + '-' + Date.now().toString(36);
+  const slug = item.customSlug || (baseSlug + '-' + Date.now().toString(36));
   const htmlContent = markdownToHtml(item.content);
   // Count existing posts to get next sequential image slot
   const countRes = await fetch(`${SUPABASE_URL}/rest/v1/blog_posts?select=id&status=eq.published`, { headers: supabaseHeaders() });
