@@ -78,9 +78,29 @@ export async function getVisitorStats({ days = 7 } = {}) {
     });
 
   // Referrer breakdown
+  // Clean referrer hostnames → human-readable source labels
+  function cleanReferrer(raw) {
+    if (!raw) return 'Direct';
+    let host;
+    try { host = new URL(raw).hostname; } catch { return 'Direct'; }
+    if (!host) return 'Direct';
+    // Lovable preview domains (UUID subdomains)
+    if (host.endsWith('.lovableproject.com') || host.endsWith('.lovable.dev') || host === 'lovable.dev') return 'Lovable Preview';
+    // Common sources
+    if (host.includes('google.')) return 'Google';
+    if (host.includes('linkedin.com')) return 'LinkedIn';
+    if (host.includes('twitter.com') || host.includes('t.co') || host.includes('x.com')) return 'Twitter / X';
+    if (host.includes('facebook.com') || host.includes('fb.com')) return 'Facebook';
+    if (host.includes('bing.com')) return 'Bing';
+    if (host.includes('duckduckgo.com')) return 'DuckDuckGo';
+    if (host === 'gritnord.com' || host === 'www.gritnord.com') return 'gritnord.com (internal)';
+    // Strip www.
+    return host.replace(/^www\./, '');
+  }
+
   const byReferrer = {};
   for (const r of rows) {
-    const ref = r.referrer ? (new URL(r.referrer).hostname || 'direct') : 'direct';
+    const ref = cleanReferrer(r.referrer);
     byReferrer[ref] = (byReferrer[ref] || 0) + 1;
   }
   const topReferrers = Object.entries(byReferrer)
