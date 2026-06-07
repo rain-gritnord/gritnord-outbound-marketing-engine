@@ -1512,37 +1512,40 @@ cron.schedule('0 7 * * 1', async () => {
   }
 });
 
-// SEO blog auto-publish: Mon–Thu at 12:00 UTC (15:00 Estonian / EEST)
-// 1 post per business day, no Friday. Generate → score → publish to Supabase.
-cron.schedule('0 12 * * 1-4', async () => {
-  console.log('[cron] seo-blog — starting');
-  try {
-    const result = await generateContent({ channel: 'seo_blog' });
-    const item = {
-      id:        newId(),
-      ...result,
-      cycleId:   `cron-seo-blog-${newId()}`,
-      status:    'draft',
-      score:     null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    saveContent(item);
-    console.log(`[cron] seo-blog — generated: ${item.topic}`);
+// SEO blog auto-publish: Mon–Fri at 09:00, 12:00, 15:00 UTC (3 posts/day, 15 posts/week)
+// Geo-targeted topics: UK, DE, NL, Nordics, US, CAN, SEA — drives real market traffic
+async function publishOneBlogPost() {
+  const result = await generateContent({ channel: 'ai_search' });
+  const item = {
+    id:        newId(),
+    ...result,
+    cycleId:   `cron-seo-blog-${newId()}`,
+    status:    'draft',
+    score:     null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  saveContent(item);
+  const { score, reasoning } = await scoreContent({ channel: 'ai_search', content: item.content });
+  updateContent(item.id, { score, scoreReasoning: reasoning, status: 'scored' });
+  recordScore('ai_search', score);
+  item.score = score;
+  const post = await publishToSupabase({ ...item, score });
+  updateContent(item.id, { status: 'published', supabaseId: post.id });
+  console.log(`[cron] seo-blog — live: "${post.title}" → /blog/${post.slug}`);
+  return post;
+}
 
-    const { score, reasoning } = await scoreContent({ channel: 'seo_blog', content: item.content });
-    updateContent(item.id, { score, scoreReasoning: reasoning, status: 'scored' });
-    recordScore('seo_blog', score);
-    item.score = score;
-    console.log(`[cron] seo-blog — scored: ${score}/10`);
-
-    const post = await publishToSupabase({ ...item, score });
-    updateContent(item.id, { status: 'published', supabaseId: post.id });
-    console.log(`[cron] seo-blog — live: "${post.title}" → /blog/${post.slug}`);
-  } catch (err) {
-    console.error('[cron] seo-blog — error:', err.message);
-  }
-});
+for (const time of ['0 9 * * 1-5', '0 12 * * 1-5', '0 15 * * 1-5']) {
+  cron.schedule(time, async () => {
+    console.log('[cron] seo-blog — starting');
+    try {
+      await publishOneBlogPost();
+    } catch (err) {
+      console.error('[cron] seo-blog — error:', err.message);
+    }
+  });
+}
 
 // UC sequence tick: every hour — checks all active sequences for due steps
 cron.schedule('0 * * * *', async () => {

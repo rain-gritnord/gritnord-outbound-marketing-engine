@@ -102,50 +102,77 @@ next step. Under 300 words. Peer-to-peer tone. Make it obviously worth a reply.`
 export const CHANNELS = Object.keys(CHANNEL_CONFIGS);
 
 const AI_SEARCH_TOPICS = [
-  // Core lead gen
-  'B2B lead generation software', 'how to find B2B leads', 'ICP ideal customer profile template',
-  'B2B pipeline automation', 'outbound sales automation tools', 'buying group B2B sales',
-  'HubSpot lead enrichment', 'Clay enrichment tool', 'B2B prospecting tools 2025',
-  'automated outbound sales', 'B2B meeting booking service', 'lead qualification automation',
-  'how to build a B2B pipeline fast', 'sales prospecting software for startups',
-  'B2B data enrichment tools', 'GTM strategy for SaaS founders', 'outbound vs inbound B2B',
-  'how to scale outbound sales', 'B2B lead scoring', 'SDR automation tools',
-  'AI sales tools for founders', 'HubSpot pipeline automation',
-  'what is pipeline orchestration', 'buying committee B2B', 'B2B ICP extraction AI',
+  // ── Market-specific: UK ───────────────────────────────────────────────────
+  'B2B meeting booking service UK', 'outbound sales agency UK', 'B2B lead generation UK startups',
+  'how to get B2B meetings in United Kingdom', 'best SDR agencies UK 2025',
+  'cold email strategy UK B2B', 'SaaS sales development UK',
 
-  // Hot leads & intent signals
-  'hot leads vs warm leads B2B', 'buyer intent signals B2B', 'intent data providers B2B',
-  'how to identify hot leads', 'MQL vs SQL difference', 'sales qualified leads definition',
-  'trigger-based outreach B2B', 'job change trigger sales', 'funding round outreach strategy',
-  'buying intent signals for sales', 'how to prioritise leads in B2B sales',
+  // ── Market-specific: Germany / DACH ──────────────────────────────────────
+  'B2B lead generation Germany', 'outbound sales Germany SaaS', 'how to sell to German enterprises',
+  'B2B meeting booking Germany', 'cold outreach DACH market', 'enterprise sales Germany B2B',
 
-  // Demand gen & pipeline
-  'B2B demand generation strategy', 'account based marketing ABM', 'ABM vs inbound marketing',
-  'pipeline coverage ratio', 'sales velocity formula', 'revenue operations RevOps',
-  'multi-touch attribution B2B', 'how to shorten B2B sales cycle',
+  // ── Market-specific: Nordics ──────────────────────────────────────────────
+  'B2B meeting booking Nordic markets', 'outbound sales Finland Sweden Norway Denmark',
+  'how to book enterprise meetings in Scandinavia', 'B2B lead generation Nordic SaaS',
+  'cold email open rates Nordic B2B', 'sales prospecting Norway Sweden Finland',
 
-  // Data & enrichment
+  // ── Market-specific: Netherlands / Benelux ───────────────────────────────
+  'B2B lead generation Netherlands', 'outbound sales agency Amsterdam',
+  'how to get B2B meetings in Netherlands', 'SaaS sales Netherlands startups',
+
+  // ── Market-specific: US ───────────────────────────────────────────────────
+  'B2B meeting booking service United States', 'outbound sales agency US startups',
+  'how to book enterprise meetings in USA', 'B2B lead generation for US SaaS founders',
+  'cold email strategy US B2B 2025', 'SDR as a service United States',
+
+  // ── Market-specific: Canada ───────────────────────────────────────────────
+  'B2B lead generation Canada', 'outbound sales Canada SaaS startups',
+  'how to get enterprise meetings in Canada', 'cold outreach strategy Canadian B2B',
+
+  // ── Market-specific: Southeast Asia ──────────────────────────────────────
+  'B2B lead generation Singapore', 'outbound sales Southeast Asia SaaS',
+  'how to enter Singapore B2B market', 'B2B meeting booking service Asia',
+  'cold email strategy Singapore Malaysia', 'enterprise sales Southeast Asia startups',
+
+  // ── Core ICP: B2B meeting booking ────────────────────────────────────────
+  'B2B meeting booking service', 'automated B2B meeting booking', 'outsourced SDR meeting booking',
+  'pay per meeting B2B sales', 'qualified meeting booking service B2B',
+  'how to book more B2B meetings', 'B2B appointment setting service Europe',
+
+  // ── Core ICP: outbound & pipeline ────────────────────────────────────────
+  'B2B lead generation software', 'outbound sales automation tools', 'B2B pipeline automation',
+  'how to build a B2B pipeline fast', 'automated outbound sales', 'GTM strategy for SaaS founders',
+  'how to scale outbound sales', 'SDR automation tools', 'AI sales tools for founders',
+  'founder-led sales strategy', 'first 10 B2B customers how to get',
+  'go-to-market strategy SaaS startup', 'when to hire first SDR',
+
+  // ── ICP qualification & scoring ───────────────────────────────────────────
+  'ICP ideal customer profile template', 'B2B lead scoring', 'buying group B2B sales',
+  'buyer intent signals B2B', 'how to identify hot leads', 'MQL vs SQL difference',
+  'lead qualification automation', 'B2B ICP extraction AI',
+
+  // ── Data & enrichment ─────────────────────────────────────────────────────
   'B2B contact data providers', 'ZoomInfo alternatives 2025', 'Apollo.io alternatives',
-  'technographic data for sales', 'firmographic data explained', 'best B2B databases 2025',
-  'email verification tools B2B', 'phone number enrichment sales',
+  'best B2B databases 2025', 'Clay enrichment tool', 'HubSpot lead enrichment',
 
-  // Outreach & conversion
-  'cold email open rates B2B', 'LinkedIn outreach automation', 'cold calling scripts B2B founders',
-  'email deliverability best practices', 'personalization at scale outbound',
-  'how to book more B2B meetings', 'B2B conversion rate benchmarks',
+  // ── Outreach tactics ──────────────────────────────────────────────────────
+  'cold email open rates B2B', 'LinkedIn outreach automation', 'email deliverability best practices',
+  'personalization at scale outbound', 'cold calling scripts B2B founders',
+  'B2B conversion rate benchmarks', 'trigger-based outreach B2B',
 
-  // Founder / GTM specific
-  'founder-led sales strategy', 'how to do outbound sales as a founder',
-  'first 10 B2B customers how to get', 'go-to-market strategy SaaS startup',
-  'product-led growth vs sales-led', 'when to hire first SDR',
+  // ── Demand gen & RevOps ───────────────────────────────────────────────────
+  'B2B demand generation strategy', 'account based marketing ABM',
+  'revenue operations RevOps', 'how to shorten B2B sales cycle',
+  'pipeline coverage ratio', 'multi-touch attribution B2B',
 ];
 
 const AI_SEARCH_BASE = `Write content optimised for AI search engines (Perplexity, ChatGPT, Gemini) AND Google organic search.
 
-GEOGRAPHIC TARGETING — EU and US audiences only:
-- Primary markets: UK, Germany, Netherlands, Finland, Sweden, Norway, Denmark, Estonia, United States
-- Use European and US business context (currencies €/$, GDPR compliance where relevant, EU/US company examples)
-- Do NOT reference Asian markets, Chinese platforms, or non-EU/US regulatory environments
+GEOGRAPHIC TARGETING — target markets only:
+- Primary markets: UK, Germany, Netherlands, Finland, Sweden, Norway, Denmark, Estonia, United States, Canada, Singapore, Malaysia, Australia
+- Use relevant business context per market (€/$/£/SGD, GDPR for EU, local company examples)
+- Do NOT reference Chinese domestic platforms or non-target markets
+- When covering Southeast Asia: focus on Singapore, Malaysia as the entry points
 - When citing benchmarks or examples, use EU or US companies and statistics
 
 TOPIC SELECTION — if no topic is given, pick the most relevant unused topic from this list (rotate through them over time):
